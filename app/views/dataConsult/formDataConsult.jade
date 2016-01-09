@@ -1,0 +1,51 @@
+form#data-consult-form
+	input(type="hidden" name="collection" value="#{collection}" id="collection")
+	div.fields-container
+		div(class="title left-content" style="padding-left: 30px; width: 10%")
+			input(type="checkbox" value="1" class="main-selector-js" style="float: left;" checked)
+		div(class="title right-content")
+			h4(style="margin-top: 0px; margin-bottom: 0px;") Fields
+		ul(class="fields-select-js fields-select")
+			for row in fields
+				li(class="option-js" data-field="#{row.field}", data-type="#{row.type}", data-description="#{row.description}")
+					div(class="option-selected")
+						input(type="checkbox" value="1" class="selector-js" checked)
+					div(class="option-title") #{row.description}
+					
+	div(class="filters-container-js filters-container")
+		br
+		span(class="title" style="display: none;")
+			h4 Filters
+
+	div(class="group-container-js group-container")
+		br
+		span(class="title")
+			h4 Group By
+
+		div(class="field-group-js")
+			div.form-group
+				select(name="exactly", class="form-control group-by-js" style="width: 40%")
+					option(value='minute') Minute
+					option(value='hour') Hour
+					option(value='day') Day
+					option(value='week') Week
+					option(value='month') Month
+					option(value='year') Year
+	div(class="group-container-js group-container")
+		br
+		span(class="title")
+			h4 Results limit
+
+		div(class="field-num-results-js")
+			div.form-group
+				select(name="exactly", class="form-control num-results-js" style="width: 40%")
+					option(value='50') 50
+					option(value='500') 500
+					option(value='5000') 5000
+					option(value='10000') 10 000
+					option(value='20000') 20 000
+					option(value='30000') 30 000
+					option(value='40000') 40 000
+					option(value='50000') 50 000
+
+

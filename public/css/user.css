@@ -1,0 +1,191 @@
+/** *************************
+ *							*
+ * 		Login Form style 	*
+ *							*
+ ****************************/
+
+.button{ 
+	display: inline-block; 
+	background: #000; 
+	padding:5px 10px; 
+	z-index: 0; 
+	color: #fff; 
+}
+
+
+.auth-container { 
+	margin:0 auto;
+	width: 650px;
+}
+
+.log-in-btn, .sign-up-btn{
+	width: 100%;
+}
+
+.btns-container {
+	margin: 5px 0px;
+}
+
+.sign-up-container {
+	margin-top: 10px;
+	display: none;
+}
+
+.form-group input,select {
+	margin-bottom: 5px;
+}
+
+.form-group .inline-left { 
+	display: inline-block;
+	float: left;
+	margin-right: 1%;
+	width: 49%;
+}
+
+.form-group .inline-right {
+	display: inline-block;
+	width: 50%;
+}
+
+.panel-group .panel-heading {
+	cursor: pointer;
+}
+
+.auth-container .pass-recover-container {
+	margin: 15px;
+	margin-top: 0px;
+	text-align: right;
+}
+
+.auth-container .pass-recover {
+	font-size: 10px;
+}
+
+.auth-container .pass-recover-container .pass-recover-form-container {
+	text-align: left;
+	display: none;
+	padding: 15px;
+	background-color: rgba(221, 221, 221, 0.29);
+	border: 1px solid rgba(221, 221, 221, 0.29);
+}
+
+.auth-container .pass-recover-container .panel-heading {
+	padding: 0px;
+}
+
+.auth-container .pass-recover-container .panel-body {
+	padding: 10px 0px;
+}
+
+/********************
+ * 		Profile		*
+ ********************/
+.profile-container .left-container {
+	padding: 0px;
+	width: 49%;
+	margin-right: 1%;
+	min-height: 500px;
+}
+
+.profile-container .right-container {
+	display: inline-block;
+	width: 49%;
+	margin-left: 1%;
+}
+
+.profile-container .right-container .panel-body{
+	overflow: hidden;
+	overflow-y: scroll;
+	height: 456px;
+}
+
+.profile-container ul.user-data {
+	margin: 0 auto;
+	font-size: 11px;
+}
+
+.profile-container li {
+	list-style: none;
+	padding: 5px;
+}
+
+.profile-container .inline-left { 
+	display: inline-block;
+	float: left;
+	margin-right: 1%;
+	width: 20%;
+	min-width: 130px;
+	font-weight: bold;
+}
+
+.profile-container .inline-right { 
+	width: 70%;
+}
+
+.profile-container .inline-right, .profile-container .settings-form {
+	display: inline-block;
+}
+
+.profile-container ul.user-address {
+	display: inline-block;
+}
+
+.profile-container ul.user-address, .profile-container ul.user-address li {
+	margin: 0px;
+	padding: 0px;
+}
+
+.profile-container ul.user-data .edit-setting {
+	float: right;
+	font-size: 11px;
+}
+
+.profile-container .settings-form {
+	display: none;
+	width: 70%;
+}
+
+.profile-container .settings-form form {
+	width: 100%;
+}
+
+.profile-container .settings-form input, .profile-container .settings-form select, .profile-container .settings-form textarea {
+	border-radius: 0px;
+	font-size: 11px;
+	height: 25px;
+	width: 100%;
+	font-weight: normal;
+	margin-bottom: 5px;
+}
+
+.profile-container .settings-form textarea {
+	height: 60px;
+}
+
+.profile-container .settings-form .btns-container, .auth-container .pass-recover-form-container .btns-container {
+	text-align: right;
+	margin: 0px;
+	padding: 0px;
+}
+
+.auth-container .pass-recover-form-container .btns-container {
+	margin-top: 10px;
+}
+
+.profile-container .settings-form .btns-container .btn {
+	margin-right: 2px;
+}
+
+.profile-container .settings-form .btns-container .btn {
+	margin-right: 2px;
+}
+
+.user-data .active-setting {
+	background-color: rgba(221, 221, 221, 0.29);
+}
+
+
+
+
+
+

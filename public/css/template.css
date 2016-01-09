@@ -1,0 +1,137 @@
+body {
+  height: 100%;
+  padding: 10px;
+  min-width: 800px;
+  padding-top: 0px;
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-weight: 300;
+}
+
+p {
+	margin: 0px;
+	padding: 0px;
+	padding-top: 5px;
+}
+
+.header .main-title {
+	margin: 0px;
+	padding: 0px;
+	padding-bottom: 10px;
+	text-align: center;
+}
+
+.header .main-title a {
+	color: #333333;
+	font-family: "Lucida Sans Unicode","Lucida Grande",sans-serif;
+	text-decoration: none;
+	font-size: 15px;
+}
+
+
+.inline-list li {
+	list-style: none;
+	display: inline-block;
+}
+
+ul {
+	padding: 0px;
+	margin: 0px;
+}
+
+.header .logo-container {
+	height: inherit;
+	display: inline-block;
+	float: left;
+	width: 20%;
+	min-width: 170px;
+	text-align: center;
+}
+
+.sinais-logo {
+	width: 170px;
+	height: 100px;
+}
+
+/** *************************
+ * 		Main Content 	 	*
+ ****************************/
+.wrap-content {
+	display: block;
+	min-height: 500px;
+	height: 100%;
+}
+
+.wrap-content .left-container {
+	display: inline-block;
+	float: left;
+	width: 20%;
+	min-width: 170px;
+	padding: 10px;
+}
+
+.wrap-content .main-container {
+	box-sizing: border-box;
+	-moz-box-sizing: border-box; /* Firefox */
+	padding: 5px 0px;
+}
+
+.main-container .about-sinais-items {
+	margin: 0px;
+	padding: 0px;
+}
+
+.main-container .about-sinais-items li {
+	list-style: none;
+	display: block;
+	min-height: 55px;
+}
+
+.main-container .about-sinais-items li .title {
+	text-align: right;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box; /* Firefox */
+	padding: 0 10px;
+	font-size: 15px;
+	font-weight: bold;
+	width: 10%;
+	min-width: 100px;
+}
+
+.main-container .about-sinais-items li .content {
+	text-align: justify;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box; /* Firefox */
+	padding: 0 10px;
+	padding-left: 102px;
+}
+
+.footer {
+	padding: 10px;
+	border-top: 1px solid gray;
+}
+
+.footer p{
+	font-size: 12px;
+	text-align: center;
+	padding: 10px;
+	border-top: gray;
+}
+
+.link, a {
+	font-size: 12px;
+	color: #428bca;
+	cursor: pointer;
+}
+
+.link:hover, a:hover {
+	text-decoration: none;
+}
+
+form .required::after {
+    content: "*";
+    right:0px;
+    top:10px;
+    border:0px solid;
+    position:absolute;
+    color: red;
+}

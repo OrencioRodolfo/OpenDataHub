@@ -1,0 +1,76 @@
+/** *************************
+ * 		Horizontal menu 	*
+ ****************************/
+.header .horizontal-nav {
+	margin-bottom: 10px;
+	margin: 0px;
+	padding: 5px 0;
+	border-bottom: 1px solid #8C8C8C;
+	border-top: 1px solid #8C8C8C;
+}
+
+.header .horizontal-nav li {
+	width: 12%;
+	min-width: 150px;
+	font-size: 13px;
+}
+
+.header .horizontal-nav li.user {
+	float: right;
+	text-align: right;
+}
+
+.header .horizontal-nav li a:hover, .header .horizontal-nav li span:hover{
+	cursor: pointer;
+}
+
+.header .horizontal-nav li a {
+	text-decoration: none;
+}
+
+.header .horizontal-nav li, .header .horizontal-nav li a{
+	color: #8C8C8C;
+}
+
+.header .horizontal-nav .active a, .header .horizontal-nav li a:hover{
+	color: #428BCA;
+}
+
+.header .horizontal-nav .active a{
+	text-transform: uppercase;
+}
+
+.header .horizontal-nav .home a{
+	color: #333333;
+}
+
+.header .horizontal-nav .user-menu .dropdown-toggle{
+	border: none;
+	padding: 0px;
+	background-color: #FFFFFF;
+	box-shadow: none;
+	width: 15px;
+}
+
+.header .horizontal-nav .user-menu .dropdown-toggle .caret {
+	position: relative;
+	top: -2px;
+}
+
+.header .horizontal-nav .user-menu .dropdown-menu {
+	left: -85px;
+	top: 22px;
+	min-width: 50px;
+	width: 100px;
+	border-radius: 0px;
+}
+
+.header .horizontal-nav .user-menu .dropdown-menu li{
+	width: 100%;
+	min-width: 0px;
+}
+
+.header .horizontal-nav .user-menu .dropdown-menu li a{
+	font-size: 11px;
+}
+

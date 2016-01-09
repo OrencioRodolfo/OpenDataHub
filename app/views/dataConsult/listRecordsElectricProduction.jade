@@ -1,0 +1,78 @@
+if (utilities.empty(more_results))
+	div(class="alert alert-warning" role="alert")
+		p 
+			| This data belongs to the local electric company (
+			a(href="http://www.eem.pt/" target="_blank") EEM
+			| ) , and it is not available for download at this time.
+
+	table(class="table table-striped list-records list-records-js" data-page="1")
+		thead
+			tr
+				for field in fields
+					th #{field}
+		tbody
+			for row in records
+				tr
+					for field in fields
+						block flag
+							- var flag = false;
+						each value, key in row
+							if key == field
+								block flag_
+									- flag = true;
+								td #{value}
+						if flag == false
+							td
+else
+	for row in records
+		tr
+			for field in fields
+				block flag
+					- var flag = false;
+				each value, key in row
+					if key == field
+						block flag_
+							- flag = true;
+						td #{value}
+				if flag == false
+					td
+
+div.animation-image(align='center')
+	img(src='/images/loading-bar.gif')
+
+script.
+	$(function(){
+		$('.operation-opts-js .separator-js').hide();
+		$('.operation-opts-js .download-csv-js').hide();
+		$('.operation-opts-js .download-js').hide();
+		
+		$(document).ready(function() {
+			var loading  	= false; //to prevents multipal ajax loads
+			var site_url 	= $('#site-url').data('site_url');
+			var element 	= $('.main-container .content .list-records-js');
+			var page 		= element.data('page');
+			
+			$(window).scroll(function() { //detect page scroll
+				if($(window).scrollTop() + $(window).height() == $(document).height()) { //user scrolled to bottom of the page?
+					if(loading==false) { //there's more data to load 
+						loading = true; //prevent further ajax loading
+						$('.animation-image').show(); //show loading image
+						var data 	= serializeSearchDatasetForm();
+						data.page 	= page;
+						element.data('page', ++page);
+						$.ajax({
+							type: 'POST',
+							contentType: "application/json; charset=utf-8",
+							data: JSON.stringify(data),
+							url: site_url+'/datasetExplorer/searchDatasetData',
+							global: false,
+							success: function(response){
+								$('.main-container .content .list-records-js tbody').append(response);
+								$('.animation-image').hide(); //hide loading image
+							}
+						});
+					}
+				}
+			});
+		});
+	});

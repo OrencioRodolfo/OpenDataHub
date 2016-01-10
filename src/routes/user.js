@@ -10,10 +10,25 @@ module.exports = function (app) {
 import UserCtrl from '../controllers/user';
 let userCtrl = new UserCtrl();
 
-router.get('/', userCtrl.signIn);
+// load login/sign up page
+router.get('/', function(req, res) {
+  userCtrl.signIn(req, res);
+});
 
 // submission and validation of login form
-router.post('/login', userCtrl.logIn);
+router.post('/login', function(req, res) {
+  userCtrl.logIn(req, res);
+});
+
+// submission and validation of login form
+router.get('/logout', function(req, res) {
+  userCtrl.logout(req, res);
+});
+
+// record new user
+router.post('/saveUser', function(req, res){
+  userCtrl.saveUser(req, res);
+});
 
 // // User profile
 // router.get('/profile', userCtrl.profile);
@@ -23,19 +38,7 @@ router.post('/login', userCtrl.logIn);
 //
 // // Edit user settings
 // router.post('/editSettings', userCtrl.editSettings);
-//
-// router.get('/downloadExample', userCtrl.downloadExample);
-//
-//
-// // submission and validation of login form
-// router.get('/logout', userCtrl.logout);
-//
-// // list of all users
-// router.get('s', userCtrl.listUsers);
-//
-// // insert record new user
-// router.post('/saveUser', userCtrl.saveUser);
-//
+
 // // manage password recovery request
 // router.post('/recoverPassword', userCtrl.recoverPasswordRequest);
 //

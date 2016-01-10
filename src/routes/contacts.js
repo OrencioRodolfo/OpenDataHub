@@ -7,7 +7,7 @@ module.exports = function (app) {
   app.use('/contacts', router);
 };
 
-import Contacts from '../controllers/contacts';
+import ContactsCtrl from '../controllers/contacts';
 let contactsCtrl = new ContactsCtrl();
 
 router.get('/', contactsCtrl.loadPage);

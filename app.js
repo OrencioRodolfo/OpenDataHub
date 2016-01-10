@@ -18,14 +18,21 @@ var express  = require('express'),
     // url         = require('url'); // http:    //momentjs.com/docs/
     // progressBar = require('progress');
     // activityLog = require('user/activityLog.js');
-    // utilities   = require('general/utilities.js');
     // mailer      = require('mailer'); // Global mailer file
 
 /**
  * Globals
  */
-GLOBAL.config = require('./config/config');
-GLOBAL.session = {};
+GLOBAL.config   = require('./config/config');
+GLOBAL.session  = {};
+GLOBAL.mongo    = require('mongodb');
+GLOBAL.mongoose = require('mongoose');
+GLOBAL.Schema   = mongoose.Schema;
+
+/**
+ * Libs
+ */
+GLOBAL.utils = require('./app/libs/utilities');
 
 /**
  * Models require
@@ -52,14 +59,11 @@ app.use(session({
 
 app.use(function (req, res, next) {
   session = req.session;
-  console.log('Session:', session);
   next();
 });
 
 require('./config/express')(app, config);
 
-// app.use(express.session({secret: '1234567890QWERTY'}));
-// console.log("session", session);
 /**
  * MongoDB connection
  */

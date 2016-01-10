@@ -1,6 +1,6 @@
 'use strict';
 
-export default class About {
+export default class AboutCtrl {
   constructor() {}
 
   loadPage(req, res) {
@@ -9,6 +9,6 @@ export default class About {
     if (!req.session.logged_in)
       res.render('about/index', {title});
   	else
-  		res.render('dataConsult/index', {title}); 
+  		res.render('dataConsult/index', {title});
   }
 }

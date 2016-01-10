@@ -13,6 +13,6 @@ module.exports = function (app) {
   app.use('/contacts', router);
 };
 
-var contactsInst = new _contacts2.default();
+var contactsCtrl = new _contacts2.default();
 
-router.get('/', contactsInst.loadPage);
+router.get('/', contactsCtrl.loadPage);

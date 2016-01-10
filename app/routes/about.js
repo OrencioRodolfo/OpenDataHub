@@ -13,6 +13,15 @@ module.exports = function (app) {
   app.use('/', router);
 };
 
-var aboutInst = new _about2.default();
+var aboutCtrl = new _about2.default();
 
-router.get(['/', '/about'], aboutInst.loadPage);
+router.get(['/', '/about'], aboutCtrl.loadPage);
+//
+// mongodump --host aveiro.m-iti.org --port 37017 --db sinais --collection power_event --out /data/sinais_dump_10_01_2016
+// mongodump --host aveiro.m-iti.org --port 37017 --db sinais --collection power_sample --out /data/sinais_dump_10_01_2016
+//
+//
+//
+// mongorestore --db sinais --collection power_event power_event.bson
+// mongorestore --db sinais --collection power_sample power_sample.bson
+// mongorestore --db sinais --collection electric_production electric_production.bson

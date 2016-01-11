@@ -17,6 +17,7 @@
     "grunt-sync": "^0.5.1",
     "jade": "^1.11.0",
     "method-override": "^2.3.0",
+    "moment": "^2.11.1",
     "mongoose": "^4.1.2",
     "morgan": "^1.6.1",
     "password-hash": "^1.2.2",

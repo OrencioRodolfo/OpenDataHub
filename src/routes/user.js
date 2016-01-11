@@ -11,7 +11,7 @@ import UserCtrl from '../controllers/user';
 let userCtrl = new UserCtrl();
 
 // load login/sign up page
-router.get('/', function(req, res) {
+router.get(['/', '/signin'], function(req, res) {
   userCtrl.signIn(req, res);
 });
 

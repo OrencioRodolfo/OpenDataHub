@@ -57,8 +57,14 @@ app.use(session({
   saveUninitialized: true
 }));
 
+// @TODO - evaluate authentication
 app.use(function (req, res, next) {
-  session = req.session;
+  if (app.get('env') === 'development') {
+    // simulating login
+    req.session.logged_in = true;
+    req.session.name      = "Rodolfo Gonçalves";
+  }
+  
   next();
 });
 

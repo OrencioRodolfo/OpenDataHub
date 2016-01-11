@@ -4,7 +4,9 @@ export default class ContactsCtrl {
   constructor() {}
 
   loadPage(req, res) {
-    let title = 'Contacts';
-    res.render('contacts/index', {title});
+    let title   = 'Contacts';
+    let session = req.session;
+
+    res.render('contacts/index', {title, session});
   }
 }

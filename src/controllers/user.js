@@ -7,12 +7,13 @@ export default class UserCtrl {
   signIn (req, res) {
     let mongoose  = require('mongoose');
     let Country_m = mongoose.model('country');
+    let session   = req.session;
 
     Country_m
   		.find()
   		.sort({name: 1}) // DESC order
   		.exec(function(err, countries){
-  			res.render('user/authenticationIndex', {countries} );
+  			res.render('user/authenticationIndex', {countries, session} );
   		});
   }
 
@@ -32,7 +33,7 @@ export default class UserCtrl {
       } else {
   			response = {'errors' : ['Incorrect password']}
   		}
-  		res.send(response);
+      res.send(req.session);
   	});
   }
 

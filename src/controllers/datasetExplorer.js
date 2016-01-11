@@ -8,8 +8,10 @@ export default class ExplorerCtrl {
   }
 
   loadPage (req, res) {
-    let title = 'Data Explorer';
-    res.render('dataConsult/index', {title});
+    let title   = 'Data Explorer';
+    let session = req.session;
+
+    res.render('dataConsult/index', {title, session});
   }
 
   queryData (req, res) {

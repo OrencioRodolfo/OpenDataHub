@@ -30,8 +30,10 @@ router.post('/saveUser', function(req, res){
   userCtrl.saveUser(req, res);
 });
 
-// // User profile
-// router.get('/profile', userCtrl.profile);
+// User profile
+router.get('/profile', function(req, res){
+  userCtrl.profile(req, res);
+});
 //
 // // User profile details (settings)
 // router.get('/getProfileInfo', userCtrl.getProfileInfo);

@@ -1,7 +1,7 @@
-div.panel-heading General Account Settings 
+div.panel-heading General Account Settings
 div.panel-body
 	ul(class="user-data list-group" id="account-settings-js")
-		
+
 		// Name
 		li(class="list-group-item setting-js" data-setting="name")
 			div.inline-left Name
@@ -31,11 +31,11 @@ div.panel-body
 							span(class="glyphicon glyphicon-ok") Save
 						button(type="button" class="btn btn-default btn-xs btn-cancel-js")
 							span(class="glyphicon glyphicon-remove") Cancel
-				
+
 		// Password
 		li(class="list-group-item setting-js" data-setting="email")
 			div.inline-left Password
-			div.inline-right.inline-right-js 
+			div.inline-right.inline-right-js
 			span(class="edit-setting link edit-setting-js") edit
 			div(class="settings-form settings-form-js")
 				form
@@ -47,70 +47,69 @@ div.panel-body
 							span(class="glyphicon glyphicon-ok") Save
 						button(type="button" class="btn btn-default btn-xs btn-cancel-js")
 							span(class="glyphicon glyphicon-remove") Cancel
-				
+
 		// Organization
 		li(class="list-group-item setting-js" data-setting="organization")
 			div.inline-left Organization
-			div.inline-right.inline-right-js #{!utilities.empty(user.organization) ? user.organization : ''}
+			div.inline-right.inline-right-js #{!utils.empty(user.organization) ? user.organization : ''}
 			span(class="edit-setting link edit-setting-js") edit
 			div(class="settings-form settings-form-js")
 				form
-					input(name="organization", type="text", placeholder="Organization", value="#{!utilities.empty(user.organization) ? user.organization : ''}" class="form-control inline-left")
+					input(name="organization", type="text", placeholder="Organization", value="#{!utils.empty(user.organization) ? user.organization : ''}" class="form-control inline-left")
 					div(class="btns-container col-xs-12")
 						button(type="button" class="btn btn-default btn-xs btn-save-js")
 							span(class="glyphicon glyphicon-ok") Save
 						button(type="button" class="btn btn-default btn-xs btn-cancel-js")
 							span(class="glyphicon glyphicon-remove") Cancel
-				
+
 		// Organization role
 		li(class="list-group-item setting-js" data-setting="organization_role")
 			div.inline-left Organization Role
-			div.inline-right.inline-right-js #{!utilities.empty(user.organization_role) ? user.organization_role : ''}
+			div.inline-right.inline-right-js #{!utils.empty(user.organization_role) ? user.organization_role : ''}
 			span(class="edit-setting link edit-setting-js") edit
 			div(class="settings-form settings-form-js")
 				form
-					input(name="organization_role", type="text", placeholder="Role at organization", value="#{!utilities.empty(user.organization_role) ? user.organization_role : ''}" class="form-control inline-right")
+					input(name="organization_role", type="text", placeholder="Role at organization", value="#{!utils.empty(user.organization_role) ? user.organization_role : ''}" class="form-control inline-right")
 					div(class="btns-container col-xs-12")
 						button(type="button" class="btn btn-default btn-xs btn-save-js")
 							span(class="glyphicon glyphicon-ok") Save
 						button(type="button" class="btn btn-default btn-xs btn-cancel-js")
 							span(class="glyphicon glyphicon-remove") Cancel
-		
-		// Address	
+
+		// Address
 		li(class="list-group-item setting-js" data-setting="address")
 			div.inline-left Address
 			div.inline-right.inline-right-js
 				ul.user-address
-					li #{!utilities.empty(user.address.country) ? user.address.country.name : ''}
-					li #{!utilities.empty(user.address.city) ? user.address.city : ''}
-					li #{!utilities.empty(user.address.street) ? user.address.street : ''}
-					li #{!utilities.empty(user.address.zip_code) ? user.address.zip_code : ''}
+					li #{!utils.empty(user.address.country) ? user.address.country.name : ''}
+					li #{!utils.empty(user.address.city) ? user.address.city : ''}
+					li #{!utils.empty(user.address.street) ? user.address.street : ''}
+					li #{!utils.empty(user.address.zip_code) ? user.address.zip_code : ''}
 			span(class="edit-setting link edit-address-setting-js") edit
 			div(class="settings-form settings-form-js")
 				form
-					input(name="street", type="text", placeholder="Street" value="#{!utilities.empty(user.address.street) ? user.address.street : ''}", class="form-control")
+					input(name="street", type="text", placeholder="Street" value="#{!utils.empty(user.address.street) ? user.address.street : ''}", class="form-control")
 					select(name="country", class="form-control", id="country")
 						option(disabled="disabled" selected)
-					input(name="city", type="text", placeholder="City" value="#{!utilities.empty(user.address.city) ? user.address.city : ''}", class="form-control inline-left", id="city")
-					input(name="zip_code", type="text", placeholder="Zip Code" value="#{!utilities.empty(user.address.zip_code) ? user.address.zip_code : ''}", class="form-control inline-right")
+					input(name="city", type="text", placeholder="City" value="#{!utils.empty(user.address.city) ? user.address.city : ''}", class="form-control inline-left", id="city")
+					input(name="zip_code", type="text", placeholder="Zip Code" value="#{!utils.empty(user.address.zip_code) ? user.address.zip_code : ''}", class="form-control inline-right")
 					div(class="btns-container col-xs-12")
 						button(type="button" class="btn btn-default btn-xs btn-save-js")
 							span(class="glyphicon glyphicon-ok") Save
 						button(type="button" class="btn btn-default btn-xs btn-cancel-js")
 							span(class="glyphicon glyphicon-remove") Cancel
-		
-		// Purpose 
+
+		// Purpose
 		li(class="list-group-item setting-js" data-setting="purpose")
 			div.inline-left Purpose
-			div.inline-right.inline-right-js #{!utilities.empty(user.purpose) ? user.purpose : ''}
-				
+			div.inline-right.inline-right-js #{!utils.empty(user.purpose) ? user.purpose : ''}
+
 			span(class="edit-setting link edit-setting-js") edit
 			div(class="settings-form settings-form-js")
 				form
-					textarea(name="purpose", class="form-control") #{!utilities.empty(user.purpose) ? user.purpose : ''}
+					textarea(name="purpose", class="form-control") #{!utils.empty(user.purpose) ? user.purpose : ''}
 					div(class="btns-container col-xs-12")
 						button(type="button" class="btn btn-default btn-xs btn-save-js")
 							span(class="glyphicon glyphicon-ok") Save
 						button(type="button" class="btn btn-default btn-xs btn-cancel-js")
 							span(class="glyphicon glyphicon-remove") Cancel
-			

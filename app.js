@@ -63,8 +63,9 @@ app.use(function (req, res, next) {
     // simulating login
     req.session.logged_in = true;
     req.session.name      = "Rodolfo Gonçalves";
+    req.session.user_id 	= '53fa47f3fbce10512ee32985';
   }
-  
+
   next();
 });
 

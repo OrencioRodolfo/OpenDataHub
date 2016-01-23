@@ -10,7 +10,9 @@ module.exports = function (app) {
 import AboutCtrl from '../controllers/about';
 let aboutCtrl = new AboutCtrl();
 
-router.get(['/', '/about'], aboutCtrl.loadPage);
+router.get(['/', '/about'], function (req, res) {
+  aboutCtrl.loadPage(req, res);
+});
 //
 // mongodump --host aveiro.m-iti.org --port 37017 --db sinais --collection power_event --out /data/sinais_dump_10_01_2016
 // mongodump --host aveiro.m-iti.org --port 37017 --db sinais --collection power_sample --out /data/sinais_dump_10_01_2016

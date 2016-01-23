@@ -1,0 +1,13 @@
+{
+  "name": "jquery-switchbutton",
+  "homepage": "https://github.com/Naeka/jquery-switchbutton",
+  "_release": "3f3412d4d7",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "3f3412d4d761b887e78317a4378503adfefc8fef"
+  },
+  "_source": "https://github.com/Naeka/jquery-switchbutton.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/Naeka/jquery-switchbutton.git"
+}

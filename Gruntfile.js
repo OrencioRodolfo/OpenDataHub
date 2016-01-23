@@ -93,7 +93,7 @@ module.exports = function (grunt) {
         mangle: false
       },
       my_target: {
-        files: {
+        files: { 
           'public/js/min/allinone.min.js': ['public/js/*.js']
         }
       }

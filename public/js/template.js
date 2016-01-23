@@ -21,14 +21,14 @@ $(function(){
 	 *	blockUI settings
 	 */
 	$.blockUI.defaults.message 		= $("#slider");
-	$.blockUI.defaults.css.border 	= '0px'; 
-	$.blockUI.defaults.overlayCSS.opacity 	= '0.1'; 
-	
+	$.blockUI.defaults.css.border 	= '0px';
+	$.blockUI.defaults.overlayCSS.opacity 	= '0.1';
+
 	$(document).ajaxStart(function(){
 		$.blockUI();
 		$("#slider").show();
 	});
-	
+
 	$(document).ajaxStop(function(){
 		$.unblockUI();
 		$("#slider").hide();

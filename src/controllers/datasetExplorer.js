@@ -314,7 +314,7 @@ export default class ExplorerCtrl {
   	return query;
   }
 
-  setProjection (group_by) {
+  setProjection(group_by) {
   	let json = {};
   	switch (group_by) {
   		case "minute":
@@ -364,33 +364,29 @@ export default class ExplorerCtrl {
   	}
   	return json;
   }
+
+  addFilter(req, res) {
+  	let req_data = req.body;
+  	if( req_data.type == 'integer' ){
+  		let PowerSample_m 	= mongoose.model('power_sample');
+  		let homes = PowerSample_m
+  					.find()
+  					.distinct('iid')
+  					.exec(function( err, home_ids ){
+  						res.render('dataConsult/addFilter', {'field': req_data, 'homes': home_ids});
+  					});
+  	}else{
+  		res.render('dataConsult/addFilter', {'field': req_data});
+  	}
+  }
 }
 
-//
-// exports.addFilter = function (req, res) {
-// 	let req_data = req.body;
-// 	if( req_data.type == 'integer' ){
-// 		let PowerSample_m 	= mongoose.model('power_sample');
-// 		let homes = PowerSample_m
-// 					.find()
-// 					.distinct('iid')
-// 					.exec(function( err, home_ids ){
-// 						res.render('dataConsult/addFilter', {'field': req_data, 'homes': home_ids});
-// 					});
-// 	}else{
-// 		res.render('dataConsult/addFilter', {'field': req_data});
-// 	}
-// }
 //
 // exports.downloadDatasetFile = function (req, res) {
 // 	let req_data = req.query;
 // 	res.download(config.fs.storage_folder+req_data.file);
 // }
-//
-//
 
-//
-//
 // function saveDatasetFile( data, fields, collection, extension ){
 // 	let directory 	= generateStoragePath();
 // 	let time 		= dateFormat("HHmmss");

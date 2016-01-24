@@ -18,7 +18,7 @@ router.post('/queryData', function(req, res){
   explorerCtrl.queryData(req, res);
 });
 
-router.get('/addFilter', function(req, res){
+router.post('/addFilter', function(req, res){
   explorerCtrl.addFilter(req, res);
 });
 

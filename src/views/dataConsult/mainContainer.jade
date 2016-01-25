@@ -17,13 +17,3 @@ div(class="operation-opts operation-opts-js")
 			img(src="/icons/csv_blue_1.png" class="medium download-csv-js" data-extension="csv" alt="Download CSV" title="Download CSV")
 div.content
 	// content loaded via ajax
-
-script.
-	$(function(){
-		var site_url 	= $('#site-url').data('site_url');
-		var element 	= $('.datasets-picker-js li .active').closest('li');
-		$('#data-consult-form-dialog-js').load(site_url+'/datasetExplorer/queryData', { 'dataset': element.data('option') }, function( response ){
-			previewDatasetData();
-		});
-	});
-	

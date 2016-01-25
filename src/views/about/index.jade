@@ -10,16 +10,16 @@ block main_container
 
 			br
 			b.
-				Publications 
-			p 
-				| Lucas Pereira, Filipe Quintal, Rodolfo Gonçalves and Nuno J. Nunes, 
+				Publications
+			p
+				| Lucas Pereira, Filipe Quintal, Rodolfo Gonçalves and Nuno J. Nunes,
 				i SustData: A Public Dataset for ICT4S Electric Energy Research In Proceedings of the second International Conference on ICT for Sustainability
-				| . Stockholm, Sweden. August 24 – 27, 2014. 
-			p 
+				| . Stockholm, Sweden. August 24 – 27, 2014.
+			p
 				| [
 				a(href="http://scholar.google.com/citations?view_op=view_citation&hl=en&user=ZBvNgMsAAAAJ&citation_for_view=ZBvNgMsAAAAJ:4DMP91E08xMC" target="_blank") Google Scholar
 				| ]
-			
+
 			div(class="alert alert-success" role="alert")
 				p Please refer to this publication when citing this dataset.
 
@@ -241,13 +241,4 @@ block main_container
 										td Electricity produced by burning waste
 										td MWh
 
-
-		script.
-			$(function(){
-				$('.dataset-table-js').on('click', function(){
-					$(this).closest('div').children('.table-js').slideToggle('medium');
-				});
-			});
-								
-
-
+	script(src="/build/about-bundle.js")

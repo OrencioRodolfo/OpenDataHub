@@ -5,15 +5,15 @@ div(class="field-filters-js" data-field="#{field.field}" data-data_type="#{field
 		if field.type == 'float'
 			div.input-container
 				input(name="exactly", type="text", placeholder="Exactly", class="form-control")
-				
+
 			div.input-container
 					input(name="min", type="text", placeholder="Minimum", class="form-control inline-left")
 					input(name="max", type="text", placeholder="Maximum", class="form-control inline-right")
-		
+
 		else if field.type == 'date'
 			div.input-container
 				input(name="exactly", type="text", placeholder="Exact date", class="form-control date")
-				
+
 			div.input-container
 				input(name="min", type="text", placeholder="Minimum date", class="form-control inline-left date")
 				input(name="max", type="text", placeholder="Maximum date", class="form-control inline-right date")
@@ -23,15 +23,14 @@ div(class="field-filters-js" data-field="#{field.field}" data-data_type="#{field
 				option(value="")
 				for row in homes
 					option(value='#{row}') #{row}
-		
+
 		else if field.type == 'boolean'
 			select(name="exactly", class="form-control" style="width: 40%")
 				option(value="") ALL
 				option(value="1") Yes
 				option(value="0") No
-				
-				
-script
-	$('.date').datetimepicker();
-	$('.date').datepicker( "option", "dateFormat", "yy-mm-dd" );
 
+block extend_js
+	script.
+		$('.date').datetimepicker();
+		$('.date').datepicker( "option", "dateFormat", "yy-mm-dd" );

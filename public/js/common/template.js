@@ -1,7 +1,15 @@
+var $ = jQuery = require('jquery');
+require('jquery-ui');
+require('blockUI');
+var Spinner = require('spin.js');
+require('bootstrap');
+
 var site_url = $('#site-url').data('site_url');
 
 $(function(){
 	var site_url = $('#site-url').data('site_url');
+
+	initNavBar();
 
 	$('#errors-container-js').dialog({
 		title: 'Error',
@@ -66,6 +74,20 @@ $(function(){
 });
 
 
+function initNavBar(){
+	var url = window.location.href;
+	if (url.indexOf("datasetExplorer") > -1)
+		$('.horizontal-nav .data-consult-js').addClass('active');
+	else if (url.indexOf("about") > -1)
+		$('.horizontal-nav .about-js').addClass('active');
+	else if (url.indexOf("contacts") > -1)
+		$('.horizontal-nav .contacts-js').addClass('active');
+	else if (url.indexOf("signin") > -1)
+		$('.horizontal-nav .signin-js').addClass('active');
+	else if (url.indexOf("directDownload") > -1)
+		$('.horizontal-nav .direct-download-js').addClass('active');
+}
+
 function displayErrors(errors){
 	var html = "";
 	for(var i=0; i<errors.length; i++)
@@ -80,14 +102,4 @@ function successMessages(messages){
 		html += '<p>'+messages[i]+'</p>';
 	$('#success-messages-js').html( html );
 	$('#success-messages-js').dialog('open');
-}
-
-function newActivityLog (activity_id, obs) {
-	var site_url = $('#site-url').data('site_url');
-	$.ajax({
-		url: site_url+'/activityLog/new',
-		data: {activity_id: activity_id, obs: obs},
-		global: false,     // this makes sure ajaxStart is not triggered
-		type: "POST"
-	});
 }

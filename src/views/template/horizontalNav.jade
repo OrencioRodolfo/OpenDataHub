@@ -24,18 +24,3 @@ ul(class="horizontal-nav horizontal-nav-js inline-list")
 						a(href='#{config.web.site_url}:#{config.web.port}/user/profile') Profile
 					li
 						a(href='#' class="log-out-js") Log Out
-
-script.
-	$(function(){
-		var url = window.location.href;
-		if (url.indexOf("datasetExplorer") > -1)
-			$('.horizontal-nav .data-consult-js').addClass('active');
-		else if (url.indexOf("about") > -1)
-			$('.horizontal-nav .about-js').addClass('active');
-		else if (url.indexOf("contacts") > -1)
-			$('.horizontal-nav .contacts-js').addClass('active');
-		else if (url.indexOf("signin") > -1)
-			$('.horizontal-nav .signin-js').addClass('active');
-		else if (url.indexOf("directDownload") > -1)
-			$('.horizontal-nav .direct-download-js').addClass('active');
-	});

@@ -34,9 +34,10 @@ module.exports = function (grunt) {
         files: [
           'app.js',
           'src/**/*.js',
-          'config/*.js'
+          'config/*.js',
+          'public/js/**/*.js'
         ],
-        tasks: ['babel', 'develop', 'delayed-livereload']
+        tasks: ['babel', 'browserify', 'develop', 'delayed-livereload']
       },
       css: {
         files: [
@@ -93,8 +94,21 @@ module.exports = function (grunt) {
         mangle: false
       },
       my_target: {
-        files: { 
+        files: {
           'public/js/min/allinone.min.js': ['public/js/*.js']
+        }
+      }
+    },
+    browserify: {
+      dist: {
+        files: {
+          'public/build/user-bundle.js': ['public/js/user/*.js'],
+          'public/build/explorer-bundle.js': ['public/js/explorer/*.js'],
+          'public/build/common-bundle.js': ['public/js/common/*.js'],
+          'public/build/about-bundle.js': ['public/js/about/*.js']
+        },
+        options: {
+          transform: ['debowerify']
         }
       }
     }
@@ -106,6 +120,7 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-sync');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-browserify');
 
   grunt.registerTask('delayed-livereload', 'Live reload after the node server has restarted.', function () {
     var done = this.async();
@@ -121,5 +136,5 @@ module.exports = function (grunt) {
     }, 500);
   });
 
-  grunt.registerTask('default', ['babel', 'sync', 'less', 'uglify', 'develop', 'watch']);
+  grunt.registerTask('default', ['babel', 'sync', 'less', 'uglify', 'browserify', 'develop', 'watch']);
 };

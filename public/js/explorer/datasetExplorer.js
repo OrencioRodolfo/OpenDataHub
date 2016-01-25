@@ -1,45 +1,42 @@
-$(function(){
-	var site_url 	= $('#site-url').data('site_url');	
-	/*
-	 *	Dialog que possibilita a adicao de campos e filtros
-	 *	de pesquisa sobre os dados dos datasets
-	 */
-	$('#data-consult-form-dialog-js').dialog({
-		title: 'Customize your data',
-		modal: true,
-		autoOpen: false,
-		width: 800,
-		resizable: false,
-		minHeight: 350,
-		position:['middle', 50],
-		open: function() {
-			$(this).css("maxHeight", 500);        
-		},
-		buttons: {
-			'Submit': function(){
-				previewDatasetData();
-				//$(this).dialog('close');
-			}
-		}
-	});
- 
-	$('.datasets-picker-js li a').on('click', function(){
-		$('.datasets-picker-js li a').each(function(){
-			$(this).removeClass('active');
-		});
+var $ = jQuery = require('jquery');
+require ('jquery-ui');
 
-		// reset number of consulted pages
-		$('.list-records-js').data('page', '0');
-
-		$(this).addClass('active');
-		var element 	= $('.datasets-picker-js li .active').closest('li');
-		$('#data-consult-form-dialog-js').load(site_url+'/datasetExplorer/queryData', { 'dataset': element.data('option') }, function( response ){
-			// Activity log for data consult
-			newActivityLog (3, 'Data consult on '+element.data('option')+' dataset');
-			
+var site_url 	= $('#site-url').data('site_url');
+/*
+ *	Dialog que possibilita a adicao de campos e filtros
+ *	de pesquisa sobre os dados dos datasets
+ */
+$('#data-consult-form-dialog-js').dialog({
+	title: 'Customize your data',
+	modal: true,
+	autoOpen: false,
+	width: 800,
+	resizable: false,
+	minHeight: 350,
+	position:['middle', 50],
+	open: function() {
+		$(this).css("maxHeight", 500);
+	},
+	buttons: {
+		'Submit': function(){
 			previewDatasetData();
-		});
-		
+			//$(this).dialog('close');
+		}
+	}
+});
+
+$('.datasets-picker-js li a').on('click', function(){
+	$('.datasets-picker-js li a').each(function(){
+		$(this).removeClass('active');
+	});
+
+	// reset number of consulted pages
+	$('.list-records-js').data('page', '0');
+
+	$(this).addClass('active');
+	var element 	= $('.datasets-picker-js li .active').closest('li');
+	$('#data-consult-form-dialog-js').load(site_url+'/datasetExplorer/queryData', { 'dataset': element.data('option') }, function( response ){
+		previewDatasetData();
 	});
 });
 
@@ -69,9 +66,9 @@ $(document).on('click','.operation-opts .listing-js', function(){
 $(document).on('click','.fields-select-js .option-js .option-title', function(){
 	var site_url 	= $('#site-url').data('site_url');
 	var parent 		= $(this).closest('.option-js');
-	
+
 	$(this).toggleClass('selected');
-	
+
 	var status = true;
 	$('.filters-container-js .field-filters-js').each(function(){
 		if( $(this).data('field') == parent.data('field') ){
@@ -85,7 +82,7 @@ $(document).on('click','.fields-select-js .option-js .option-title', function(){
 
 	if( !status )
 		return;
-	
+
 	var data = {'field':  parent.data('field'), 'type':  parent.data('type'), 'description':  parent.data('description')}
 	$.post(site_url+'/datasetExplorer/addFilter', data, function( response ){
 		$('.filters-container-js').append( response );
@@ -93,7 +90,7 @@ $(document).on('click','.fields-select-js .option-js .option-title', function(){
 		$('.filters-container-js .title').show();
 	});
 });
-	
+
 function previewDatasetData(){
 	var site_url 	= $('#site-url').data('site_url');
 	var data 		= serializeSearchDatasetForm();
@@ -143,7 +140,7 @@ function serializeSearchDatasetForm(){
 	data.selected_fields 	= getFieldsForDisplay();
 	data.group_by = $('.field-group-js .group-by-js').val();
 	data.num_rows = $('.field-num-results-js .num-results-js').val();
-	
+
 	return data;
 }
 
@@ -170,7 +167,7 @@ function moreResults () {
 	var data 		= serializeSearchDatasetForm();
 	var element 	= $('.main-container .content .list-records-js');
 	var page 		= element.data('page');
-	data.page 		= page;		
+	data.page 		= page;
 	element.data('page', ++page);
 	$.ajax({
 		type: 'POST',
@@ -198,19 +195,19 @@ function buildGraph (records) {
 						sub_val = 0;
 					else if (typeof sub_val !== 'number')
 						return;
-					
+
 					data.push(sub_val);
 				}
 			});
-			
+
 			labels.push(item.tmstp);
 		});
-		
+
 		if (data.length == 0)
 			return;
-		
+
 		var color = getRandomColor();
-		
+
 		var json = {
 						label: label,
 						fillColor: color.alpha(0.6).toRgbaString(),
@@ -221,14 +218,14 @@ function buildGraph (records) {
 						pointHighlightStroke: "rgba(220,220,220,1)",
 						data: data
 					};
-		
+
 		datasets.push(json);
 	});
 
 	var data = { 	labels: labels,
 					datasets: datasets
 				};
-	
+
 	var ctx = document.getElementById("myChart").getContext("2d");
 	var myLineChart = new Chart(ctx).Line(data);
 }
@@ -244,3 +241,11 @@ function getRandomColor() {
 		alpha: 0.5,
 	});
 }
+
+$(function(){
+	var site_url 	= $('#site-url').data('site_url');
+	var element 	= $('.datasets-picker-js li .active').closest('li');
+	$('#data-consult-form-dialog-js').load(site_url+'/datasetExplorer/queryData', { 'dataset': element.data('option') }, function( response ){
+		previewDatasetData();
+	});
+});

@@ -7,7 +7,7 @@ module.exports = function (app) {
   app.use('/datasetExplorer', router);
 };
 
-import ExplorerCtrl from '../controllers/datasetExplorer';
+import ExplorerCtrl from '../controllers/dataset-explorer';
 let explorerCtrl = new ExplorerCtrl();
 
 router.get('/', function(req, res){

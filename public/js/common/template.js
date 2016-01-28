@@ -1,5 +1,3 @@
-var $ = jQuery = require('jquery');
-require('jquery-ui');
 require('blockUI');
 var Spinner = require('spin.js');
 require('bootstrap');

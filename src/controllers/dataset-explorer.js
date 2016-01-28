@@ -1,5 +1,3 @@
-'use strict';
-
 export default class ExplorerCtrl {
   constructor() {
     this.password_hash = require('password-hash');
@@ -11,12 +9,12 @@ export default class ExplorerCtrl {
     let title   = 'Data Explorer';
     let session = req.session;
 
-    res.render('dataConsult/index', {title, session});
+    res.render('explorer/index', {title, session});
   }
 
   queryData (req, res) {
     let data = this.queryDataset(req);
-    res.render('dataConsult/formDataConsult', data);
+    res.render('explorer/formDataConsult', data);
   }
 
   queryDataset (req) {

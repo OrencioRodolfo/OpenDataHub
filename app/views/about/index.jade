@@ -1,0 +1,244 @@
+extends ../template
+
+block main_container
+	div.about-container
+		div.left-container
+			p.
+				Energy and environmental sustainability can benefit a lot from advances in data mining and machine learning techniques. However, those advances rely on the availability of relevant datasets required to develop, improve and validate new techniques.
+				SustData is one o such datasets, and contains about five years of electric energy related data that was collected from four energy monitoring and eco-feedback deployments that were done for the SINAIS project.
+				Overall, SustData contains over 35 million individual records of electric energy related data among the consumption and demographic information from 50 monitored homes, electric energy production in Madeira Island and supporting environmental data.
+
+			br
+			b.
+				Publications
+			p
+				| Lucas Pereira, Filipe Quintal, Rodolfo Gonçalves and Nuno J. Nunes,
+				i SustData: A Public Dataset for ICT4S Electric Energy Research In Proceedings of the second International Conference on ICT for Sustainability
+				| . Stockholm, Sweden. August 24 – 27, 2014.
+			p
+				| [
+				a(href="http://scholar.google.com/citations?view_op=view_citation&hl=en&user=ZBvNgMsAAAAJ&citation_for_view=ZBvNgMsAAAAJ:4DMP91E08xMC" target="_blank") Google Scholar
+				| ]
+
+			div(class="alert alert-success" role="alert")
+				p Please refer to this publication when citing this dataset.
+
+		div.right-container
+			//
+				div(class="alert alert-success" role="alert")
+					p Related Pages
+					ul
+						li
+							a(href="http://aveiro.m-iti.org/feel/data/") Data
+						li
+							a(href="http://aveiro.m-iti.org/feel/data/sustdata/") SustData: A Public Dataset for ICT4S Electric Energy Research
+
+			div(class="panel-group" id="accordion")
+				div(class="panel panel-default")
+					div(class="panel-heading")
+						h4(class="panel-title")
+							a(data-toggle="collapse" data-parent="#accordion" href="#collapseOne") Access SustData
+
+				div(id="collapseOne" class="panel-collapse collapse")
+					div(class="panel-body")
+						ul
+							li [online] dataset explorer
+							li [online] open api
+							li [offline] csv / json file
+
+				div(class="panel panel-default")
+					div(class="panel-heading")
+						h4(class="panel-title")
+							a(data-toggle="collapse" data-parent="#accordion" href="#collapseTwo") Dataset Details
+
+				div(id="collapseTwo" class="panel-collapse collapse")
+					div(class="panel-body")
+						div
+							p(class="dataset-table-js link") Table I. Energy Consumption Measuments
+							table(class="table-js table table-striped list-records" style="display: none;")
+								thead
+									tr
+										th Field
+										th Description
+										th Units
+
+								tbody
+									tr
+										td home_id
+										td Monitored home unique identifier
+										td -
+									tr
+										td timestamp
+										td Date and time of the measurement
+										td -
+									tr
+										td deploy
+										td Deployment identifier
+										td -
+									tr
+										td Imin
+										td Minimum current
+										td A
+									tr
+										td Imax
+										td Maximum current
+										td A
+									tr
+										td Iavg
+										td Average current
+										td A
+									tr
+										td Vmin
+										td Minimum voltage
+										td V
+									tr
+										td Vmax
+										td Maximum voltage
+										td V
+									tr
+										td Vavg
+										td Average voltage
+										td V
+									tr
+										td Pmin
+										td Minimum real power
+										td W
+									tr
+										td Pmax
+										td Maximum real power
+										td W
+									tr
+										td Pavg
+										td Average real power
+										td W
+									tr
+										td Qmin
+										td Minimum reactive power
+										td VAR
+									tr
+										td Qmax
+										td Maximum reactive power
+										td VAR
+									tr
+										td Qavg
+										td Average reactive power
+										td VAR
+									tr
+										td Smin
+										td Minimum apparent power
+										td -
+									tr
+										td Smax
+										td Maximum apparent power
+										td -
+									tr
+										td Savg
+										td Average apparent power
+										td -
+									tr
+										td Savg
+										td Post process
+										td -
+						div
+							p(class="dataset-table-js link") Table II. Power Event Measuments
+							table(class="table-js table table-striped list-records" style="display: none;")
+								thead
+									tr
+										th Field
+										th Description
+										th Units
+								tbody
+									tr
+										td home_id
+										td Unique identifier of the monitored home
+										td -
+									tr
+										td deploy
+										td Date and time of the measurement
+										td -
+									tr
+										td delta_P
+										td Deployment identifier
+										td -
+									tr
+										td delta_Q
+										td Real power change
+										td W
+									tr
+										td trace_P
+										td Reactive power change
+										td VA
+									tr
+										td trace_Q
+										td Real power trace of the event (50 Hz)
+										td W
+									tr
+										td delta_P
+										td Reactive power trace of the event (50 Hz)
+										td VAR
+
+						div
+							p(class="dataset-table-js link") Table III. User Event Features
+							table(class="table-js table table-striped list-records" style="display: none;")
+								thead
+									tr
+										th Field
+										th Description
+								tbody
+									tr
+										td home_id
+										td Unique identifier of the monitored home
+									tr
+										td timestamp
+										td Date and time of the measurement
+									tr
+										td deploy
+										td Deployment identifier
+									tr
+										td type
+										td Type of interaction. Either mouse or motion
+									tr
+										td view_id
+										td Identifier of the visualized screen
+									tr
+										td view_name
+										td Name of visualized screen
+						div
+							p(class="dataset-table-js link") Table IV. Electric Energy Production Measuments
+							table(class="table-js table table-striped list-records" style="display: none;")
+								thead
+									tr
+										th Field
+										th Description
+										th Units
+								tbody
+									tr
+										td timestamp
+										td Unique
+										td datetime
+									tr
+										td total
+										td Total production
+										td MWh
+									tr
+										td thermal_fuel
+										td Electricity produced by burning fuel
+										td MWh
+									tr
+										td hydro
+										td Hydro electricity produced
+										td MWh
+									tr
+										td eolic
+										td Wind farms production
+										td MWh
+									tr
+										td photovoltaic
+										td Solar electricity produced
+										td MWh
+									tr
+										td thermal_waste
+										td Electricity produced by burning waste
+										td MWh
+
+	script(src="/build/about-bundle.js")

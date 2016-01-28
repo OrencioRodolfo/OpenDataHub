@@ -35,7 +35,7 @@ module.exports = function (grunt) {
           'app.js',
           'src/**/*.js',
           'config/*.js',
-          'public/js/**/*.js'
+          'public/js/**/*'
         ],
         tasks: ['babel', 'browserify', 'develop', 'delayed-livereload']
       },
@@ -89,26 +89,34 @@ module.exports = function (grunt) {
         failOnError: true
       }
     },
-    uglify: {
-      options: {
-        mangle: false
-      },
-      my_target: {
-        files: {
-          'public/js/min/allinone.min.js': ['public/js/*.js']
-        }
-      }
-    },
     browserify: {
       dist: {
         files: {
           'public/build/user-bundle.js': ['public/js/user/*.js'],
-          'public/build/explorer-bundle.js': ['public/js/explorer/*.js'],
+          'public/build/explorer-bundle.js': ['public/js/explorer/**/*.js'],
           'public/build/common-bundle.js': ['public/js/common/*.js'],
-          'public/build/about-bundle.js': ['public/js/about/*.js']
+          'public/build/about-bundle.js': ['public/js/about/*.js'],
+          'public/build/app.js': ['public/js/app.js'],
+          'public/build/vendors.js': ['public/js/vendors.js']
         },
         options: {
-          transform: ['debowerify']
+          transform: ['babelify', 'debowerify']
+        }
+      }
+    },
+    bower_concat: {
+      all: {
+        dest: 'public/build/vendors/_bower.js',
+        cssDest: 'public/build/vendors/_bower.css'
+      }
+    },
+    uglify: {
+      options: {
+        mangle: false
+      },
+      min: {
+        files: {
+          'public/build/min/allinone.min.js': ['public/js/*.js']
         }
       }
     }
@@ -119,6 +127,7 @@ module.exports = function (grunt) {
   files = grunt.file.expand(files);
 
   grunt.loadNpmTasks('grunt-sync');
+  grunt.loadNpmTasks('grunt-bower-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-browserify');
 
@@ -136,5 +145,5 @@ module.exports = function (grunt) {
     }, 500);
   });
 
-  grunt.registerTask('default', ['babel', 'sync', 'less', 'uglify', 'browserify', 'develop', 'watch']);
+  grunt.registerTask('default', ['babel', 'sync', 'less', 'bower_concat', 'uglify', 'browserify', 'develop', 'watch']);
 };

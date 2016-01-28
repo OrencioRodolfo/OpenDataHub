@@ -1,0 +1,44 @@
+block main_container
+	// javascript
+	script(src="/js/user/signUp.js")
+
+	form(role="form", name="sign_up_form" id="sign-up-form")
+
+		// Name
+		div(class="form-group  col-xs-12")
+			div(class="input-container required")
+				input(name="first_name", type="text", placeholder="First", class="form-control inline-left", id="first-name")
+				input(name="last_name", type="text", placeholder="Last", class="form-control inline-right required", id="last-name")
+
+		// Email
+		div(class="form-group  col-xs-12")
+			div(class="input-container required")
+				input(name="email", type="text", placeholder="Email", class="form-control inline-left", id="email")
+				input(name="email_confirm", type="text", placeholder="Email Confirmation", class="form-control inline-right", id="email-confirm")
+
+		// Password
+		div(class="form-group  col-xs-12")
+			div(class="input-container required")
+				input(name="password", type="password", placeholder="Password", class="form-control inline-left", id="password")
+				input(name="password_confirm", type="password", placeholder="Password Confirmation", class="form-control inline-right", id="password-confirm")
+
+		// Organization
+		div(class="form-group  col-xs-12")
+			div(class="input-container")
+				input(name="organization", type="text", placeholder="Organization", class="form-control inline-left")
+				input(name="organization_role", type="text", placeholder="Role at organization", class="form-control inline-right")
+
+		// Address
+		div(class="form-group  col-xs-12")
+			input(name="street", type="text", placeholder="Street Address", class="form-control")
+			select(name="country", class="form-control", id="country")
+				option(disabled="disabled" selected)
+				for row in countries
+					option(value='#{row._id}') #{row.name}
+			input(name="city", type="text", placeholder="City", class="form-control inline-left", id="city")
+			input(name="zip_code", type="text", placeholder="Zip Code", class="form-control inline-right")
+
+		// Goals
+		div(class="form-group  col-xs-12")
+			textarea(name="purpose", placeholder="Purpose", class="form-control")
+		input(type="submit" style="display: none;")

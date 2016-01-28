@@ -14,6 +14,8 @@
     "Chart.js": "~1.0.2",
     "blockUI": "blockui#*",
     "spin.js": "~2.3.2",
-    "timepicker": "https://github.com/trentrichardson/jQuery-Timepicker-Addon.git"
+    "timepicker": "https://github.com/trentrichardson/jQuery-Timepicker-Addon.git",
+    "angular": "~1.4.9",
+    "angular-material": "~1.0.3"
   }
 }

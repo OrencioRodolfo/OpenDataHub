@@ -1,0 +1,21 @@
+extends ../template
+
+block main_container
+	div(class="auth-container auth-container-js")
+		// sign in form
+		div.sign-in-container-js
+			include signIn.jade
+		div(class="btns-container col-xs-12")
+			button(class="btn btn-primary log-in-btn log-in-btn-js") Log In
+		
+		// sign up form
+		div(class="sign-up-container sign-up-container-js")
+			include signUp.jade
+		div(class="btns-container col-xs-12")
+			button(class="btn btn-primary sign-up-btn sign-up-btn-js") Sign Up
+
+		// recover password
+		div.pass-recover-container
+			span(class="link pass-recover pass-recover-js") Forgot your password?
+			div(class="pass-recover-form-container pass-recover-form-js")
+				include recoverPassword.jade

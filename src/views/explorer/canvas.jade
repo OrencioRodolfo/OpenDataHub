@@ -1,0 +1,10 @@
+div.canvas-container
+	canvas(id="myChart" width="900" height="500" style="margin-left: auto; margin-right: auto; width: 400px;")
+
+block append js
+	script.
+		console.log(buildGraph);
+		$(function(){
+			var records = !{JSON.stringify(records)};
+			buildGraph(records);
+		});

@@ -106,6 +106,10 @@ module.exports = function (grunt) {
     },
     bower_concat: {
       all: {
+        exclude: [
+          'jquery',
+          'jquery-ui'
+        ],
         dest: 'public/build/vendors/_bower.js',
         cssDest: 'public/build/vendors/_bower.css'
       }

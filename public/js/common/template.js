@@ -1,7 +1,3 @@
-require('blockUI');
-var Spinner = require('spin.js');
-require('bootstrap');
-
 var site_url = $('#site-url').data('site_url');
 
 $(function(){

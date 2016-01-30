@@ -14435,6 +14435,334 @@ md-tooltip {
 
 .ui-switchbutton{display:inline-block;padding:0;position:relative;overflow:hidden;cursor:pointer;user-select:none;-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none}.ui-switchbutton input{display:none}.ui-switchbutton label{white-space:nowrap;cursor:pointer;display:block;position:absolute;top:0;width:auto;overflow:hidden;user-select:none;-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none}.ui-switchbutton label.ui-switchbutton-disabled{right:0;text-align:right;text-shadow:0 0 2px rgba(255,255,255,0.6)}.ui-switchbutton label.ui-switchbutton-disabled span{display:inline-block;text-align:center;padding-left:2px;padding-right:3px}.ui-switchbutton.ui-switchbutton-no-labels label span{width:1em}.ui-switchbutton label.ui-switchbutton-enabled{left:0;text-shadow:0 0 2px rgba(0,0,0,0.6)}.ui-switchbutton label.ui-switchbutton-enabled span{display:inline-block;text-align:center;padding-left:3px;padding-right:2px}.ui-switchbutton .ui-switchbutton-handle{display:block;width:0;position:absolute;top:0;left:0;cursor:pointer}.ui-switchbutton.ui-switchbutton-disabled{opacity:.4;-ms-filter:alpha(opacity=40);filter:alpha(opacity=40);filter:Alpha(Opacity=40);cursor:default}.ui-switchbutton.ui-switchbutton-disabled label,.ui-switchbutton.ui-switchbutton-disabled .ui-switchbutton-handle{cursor:default}.ui-switchbutton-default{height:24px}.ui-switchbutton-default label{font-size:14px;line-height:18px;font-weight:bold;font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;text-transform:uppercase;height:20px;padding-top:4px}.ui-switchbutton-default label.ui-switchbutton-disabled{color:#8b8b8b;background:#e2e2e2;background:-moz-linear-gradient(top,#7c7c7c 0,#c5c4c5 25%,#e2e2e2 50%,#efefef 75%,#f8f8f8 100%);background:-webkit-gradient(linear,left top,left bottom,color-stop(0%,#7c7c7c),color-stop(25%,#c5c4c5),color-stop(50%,#e2e2e2),color-stop(75%,#efefef),color-stop(100%,#f8f8f8));background:-webkit-linear-gradient(top,#7c7c7c 0,#c5c4c5 25%,#e2e2e2 50%,#efefef 75%,#f8f8f8 100%);background:-o-linear-gradient(top,#7c7c7c 0,#c5c4c5 25%,#e2e2e2 50%,#efefef 75%,#f8f8f8 100%);background:-ms-linear-gradient(top,#7c7c7c 0,#c5c4c5 25%,#e2e2e2 50%,#efefef 75%,#f8f8f8 100%);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#7c7c7c',endColorstr='#f8f8f8',GradientType=0);background:linear-gradient(top,#7c7c7c 0,#c5c4c5 25%,#e2e2e2 50%,#efefef 75%,#f8f8f8 100%);box-shadow:inset 0 0 1px rgba(0,0,0,0.5);-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}.ui-switchbutton-default label.ui-switchbutton-enabled{color:white;background:#488fe4;background:-moz-linear-gradient(top,#2f63a0 0,#488fe4 25%,#569aef 49%,#5d9ff2 51%,#77aff8 75%,#86b6f4 100%);background:-webkit-gradient(linear,left top,left bottom,color-stop(0%,#2f63a0),color-stop(25%,#488fe4),color-stop(49%,#569aef),color-stop(51%,#5d9ff2),color-stop(75%,#77aff8),color-stop(100%,#86b6f4));background:-webkit-linear-gradient(top,#2f63a0 0,#488fe4 25%,#569aef 49%,#5d9ff2 51%,#77aff8 75%,#86b6f4 100%);background:-o-linear-gradient(top,#2f63a0 0,#488fe4 25%,#569aef 49%,#5d9ff2 51%,#77aff8 75%,#86b6f4 100%);background:-ms-linear-gradient(top,#2f63a0 0,#488fe4 25%,#569aef 49%,#5d9ff2 51%,#77aff8 75%,#86b6f4 100%);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#2f63a0',endColorstr='#86b6f4',GradientType=0);background:linear-gradient(top,#2f63a0 0,#488fe4 25%,#569aef 49%,#5d9ff2 51%,#77aff8 75%,#86b6f4 100%);box-shadow:inset 0 0 1px rgba(0,0,0,0.7);-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding-right:4px}.ui-switchbutton-default .ui-switchbutton-handle{height:22px;background:#f2f2f2;background:-moz-linear-gradient(top,#d7d7d7 0,#fcfcfc 100%);background:-webkit-gradient(linear,left top,left bottom,color-stop(0%,#d7d7d7),color-stop(100%,#fcfcfc));background:-webkit-linear-gradient(top,#d7d7d7 0,#fcfcfc 100%);background:-o-linear-gradient(top,#d7d7d7 0,#fcfcfc 100%);background:-ms-linear-gradient(top,#d7d7d7 0,#fcfcfc 100%);filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#d7d7d7',endColorstr='#fcfcfc',GradientType=0);background:linear-gradient(top,#d7d7d7 0,#fcfcfc 100%);box-shadow:inset 0 0 2px rgba(255,255,255,1);border:1px solid #a2a2a2;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}.ui-switchbutton-thin{height:20px}.ui-switchbutton-thin label{font-size:13px;line-height:16px;height:18px;padding-top:2px}.ui-switchbutton-thin .ui-switchbutton-handle{height:18px}.ui-switchbutton-ios5 label.ui-switchbutton-disabled{-webkit-border-radius:12px;-moz-border-radius:12px;border-radius:12px}.ui-switchbutton-ios5 label.ui-switchbutton-enabled{-webkit-border-radius:12px;-moz-border-radius:12px;border-radius:12px;-webkit-border-top-right-radius:0;-moz-border-radius-topright:0;border-top-right-radius:0;-webkit-border-bottom-right-radius:0;-moz-border-radius-bottomright:0;border-bottom-right-radius:0}.ui-switchbutton-ios5 label.ui-switchbutton-enabled{padding-right:0}.ui-switchbutton-ios5.ui-state-active label.ui-switchbutton-enabled{padding-right:10px}.ui-switchbutton-ios5 .ui-switchbutton-handle{height:22px;width:22px!important;-webkit-border-radius:12px;-moz-border-radius:12px;border-radius:12px}
 
+/*!
+ * Angular Material Design
+ * https://github.com/angular/material
+ * @license MIT
+ * v0.9.7
+ */
+/* mixin definition ; sets LTR and RTL within the same style call */
+
+md-autocomplete button ng-md-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate3d(-50%, -50%, 0) scale(0.9);
+    transform: translate3d(-50%, -50%, 0) scale(0.9);
+}
+
+md-autocomplete button ng-md-icon path {
+    stroke-width: 0;
+}
+
+.md-button.ng-md-icon {
+    padding: 0;
+    background: none;
+}
+
+.md-button.md-fab ng-md-icon {
+    margin-top: 0;
+}
+
+md-checkbox .ng-md-icon {
+    transition: 240ms;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    border: 2px solid;
+    border-radius: 2px;
+}
+
+md-checkbox.md-checked .ng-md-icon {
+    border: none;
+}
+
+md-checkbox.md-checked .ng-md-icon:after {
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    display: table;
+    width: 6px;
+    height: 12px;
+    border: 2px solid;
+    border-top: 0;
+    border-left: 0;
+    content: '';
+}
+
+.md-chips .md-chip .md-chip-remove ng-md-icon {
+    height: 18px;
+    width: 18px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate3d(-50%, -50%, 0);
+    transform: translate3d(-50%, -50%, 0);
+}
+
+ng-md-icon {
+    margin: auto;
+    background-repeat: no-repeat no-repeat;
+    display: inline-block;
+    vertical-align: middle;
+    fill: currentColor;
+    height: 24px;
+    width: 24px;
+}
+
+ng-md-icon svg {
+    pointer-events: none;
+    display: block;
+}
+
+ng-md-icon[md-font-icon] {
+    line-height: 1;
+    width: auto;
+}
+
+md-input-container > ng-md-icon {
+    position: absolute;
+    top: 5px;
+    left: 2px;
+}
+
+md-input-container > ng-md-icon + input {
+    margin-left: 36px;
+}
+
+md-input-container.md-icon-float > ng-md-icon {
+    top: 26px;
+    left: 2px;
+}
+
+md-input-container.md-icon-float > ng-md-icon + input {
+    margin-left: 36px;
+}
+
+@media screen and (-ms-high-contrast: active) {
+    md-input-container.md-default-theme > ng-md-icon {
+        fill: #fff;
+    }
+}
+
+md-list-item > div.md-primary > ng-md-icon,
+md-list-item > div.md-secondary > ng-md-icon,
+md-list-item > ng-md-icon:first-child,
+md-list-item > ng-md-icon.md-secondary,
+md-list-item .md-list-item-inner > div.md-primary > ng-md-icon,
+md-list-item .md-list-item-inner > div.md-secondary > ng-md-icon,
+md-list-item .md-list-item-inner > ng-md-icon:first-child,
+md-list-item .md-list-item-inner > ng-md-icon.md-secondary {
+    width: 24px;
+    margin-top: 16px;
+    margin-bottom: 12px;
+    box-sizing: content-box;
+}
+
+md-list-item > ng-md-icon:first-child,
+md-list-item .md-list-item-inner > ng-md-icon:first-child {
+    margin-right: 32px;
+}
+
+md-list-item.md-2-line > ng-md-icon:first-child,
+md-list-item.md-2-line > .md-no-style > ng-md-icon:first-child {
+    -webkit-align-self: flex-start;
+    -ms-flex-item-align: start;
+    align-self: flex-start;
+}
+
+md-list-item.md-3-line > ng-md-icon:first-child,
+md-list-item.md-3-line > .md-no-style > ng-md-icon:first-child {
+    margin-top: 16px;
+}
+
+md-tabs-wrapper md-prev-button ng-md-icon,
+md-tabs-wrapper md-next-button ng-md-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate3d(-50%, -50%, 0);
+    transform: translate3d(-50%, -50%, 0);
+}
+
+md-tabs-wrapper md-next-button ng-md-icon {
+    -webkit-transform: translate3d(-50%, -50%, 0) rotate(180deg);
+    transform: translate3d(-50%, -50%, 0) rotate(180deg);
+}
+
+.mdtTable {
+  font-size: 15px;
+  /* 12sp Roboto Medium, 54% black */
+  /* optional animation of sort icons: add class 'animate-sort-icon' to mdt-header-row to activate animation */
+  /* 64dp card header height */
+  /* 56do for last row */
+  /* column padding */
+  /* 48dp row height */
+  /* 13sp Roboto Regular, 87% black */
+  /* border separation color */
+  /* INTERACTION */
+  /* default icon color */
+  /* virtual repeat needed classes */
+}
+.mdtTable table {
+  width: 100%;
+}
+.mdtTable table:focus {
+  outline: none;
+}
+.mdtTable td, .mdtTable th {
+  padding: 0;
+  margin: 0;
+}
+.mdtTable th {
+  font-size: 12px;
+  font-weight: 500;
+  color: #757575;
+  white-space: nowrap;
+  /* prevent ink ripple bleeding */
+  position: relative;
+  /* no pointer cursor when disabled, could be not-allowed but i think that indication is to strong */
+  /* remove the default blue outline in Chrome for consistent button-like behaviour */
+  /* when hoverSortIcons on a non-sorted column*/
+}
+.mdtTable th.clickable {
+  cursor: pointer;
+}
+.mdtTable th[disabled] {
+  cursor: auto;
+}
+.mdtTable th:focus {
+  outline: none;
+}
+.mdtTable th .hoverSortIcons ng-md-icon {
+  visibility: hidden;
+  width: 16px;
+  height: 16px;
+  fill: #b3b3b3;
+}
+.mdtTable th .hoverSortIcons ng-md-icon svg {
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.mdtTable th:hover .hoverSortIcons ng-md-icon {
+  visibility: visible;
+}
+.mdtTable th .sortedColumn {
+  /* when hoverSortIcons on a sorted column*/
+  /* sort icon rotated -90 degrees for descending sort */
+}
+.mdtTable th .sortedColumn .hoverSortIcons ng-md-icon {
+  display: none;
+}
+.mdtTable th .sortedColumn ng-md-icon {
+  /* specified 16px is a fix now cause angular materia generates a 24x24 icon even the passed value is 16  */
+  width: 16px;
+  height: 16px;
+  fill: #212121;
+  /* sort icon rotated 90 degrees for ascending sort (default) */
+}
+.mdtTable th .sortedColumn ng-md-icon svg {
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.mdtTable th .sortedColumn.descending ng-md-icon > svg {
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+.mdtTable thead tr.animate-sort-icon .sortedColumn ng-md-icon svg {
+  -webkit-transition: 0.3s linear all;
+  transition: 0.3s linear all;
+}
+.mdtTable .mdt-header, .mdtTable .mdt-header-alternate {
+  height: 64px;
+  padding-left: 24px;
+  padding-right: 14px;
+}
+.mdtTable .mdt-header md-button, .mdtTable .mdt-header-alternate md-button {
+  margin-left: 24px;
+}
+.mdtTable .mdt-header ng-md-icon, .mdtTable .mdt-header-alternate ng-md-icon {
+  fill: #757575;
+}
+.mdtTable .mdt-header-alternate {
+  background-color: #e3edfd;
+}
+.mdtTable .mdt-header-alternate .alternate-text {
+  color: #0D47A1;
+}
+.mdtTable .mdt-footer, .mdtTable tr th {
+  height: 56px;
+}
+.mdtTable .mdt-footer .mdt-pagination, .mdtTable tr th .mdt-pagination {
+  font-size: 12px;
+  color: #757575;
+}
+.mdtTable .mdt-footer .mdt-pagination md-input-container, .mdtTable tr th .mdt-pagination md-input-container {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.mdtTable .checkboxCell {
+  width: 18px;
+  /*the next cell should not have just 24px padding */
+}
+.mdtTable .checkboxCell md-checkbox {
+  margin: 0;
+  padding: 0;
+}
+.mdtTable .checkboxCell + td, .mdtTable .checkboxCell + th {
+  padding-left: 24px;
+}
+.mdtTable tr td {
+  padding: 0;
+  height: 48px;
+  font-size: 13px;
+  color: #212121;
+}
+.mdtTable td:first-child, .mdtTable th:first-child {
+  padding: 0 0 0 24px;
+}
+.mdtTable td:last-child, .mdtTable th:last-child {
+  padding-right: 24px;
+}
+.mdtTable .column {
+  padding-left: 56px;
+}
+.mdtTable .leftAlignedColumn {
+  text-align: left;
+}
+.mdtTable .rightAlignedColumn {
+  text-align: right;
+}
+.mdtTable tr th {
+  border-bottom: solid 1px #DDDDDD;
+}
+.mdtTable tr td {
+  border-bottom: solid 1px #DDDDDD;
+}
+.mdtTable tr:hover td {
+  background: #EEEEEE;
+}
+.mdtTable .selectedRow td {
+  background: #F5F5F5;
+}
+.mdtTable ng-md-icon {
+  fill: #757575;
+}
+.mdtTable .virtualRepeatEnabled .originalHeader tr th {
+  height: 0px !important;
+  line-height: 0px !important;
+  margin: 0px !important;
+  overflow: hidden !important;
+  border: none !important;
+}
+.mdtTable .virtualRepeatEnabled .originalHeader md-checkbox {
+  display: none;
+}
+
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
 .ui-timepicker-div dl { text-align: left; }
 .ui-timepicker-div dl dt { float: left; clear:left; padding: 0 0 0 5px; }

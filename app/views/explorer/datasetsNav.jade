@@ -1,12 +1,12 @@
 div.search-container-js
-	ul(class="datasets-picker datasets-picker-js inline-list ")
-		li(data-option="energy_consumption")
+	ul(class="datasets-picker datasets-picker-js inline-list")
+		li(ng-click="previewDatasetData('energy_consumption')")
 			a.active Energy Consumption
-		li(data-option="power_event")
+		li(ng-click="previewDatasetData('power_event')")
 			a Power event
-		li(data-option="user_event")
+		li(ng-click="previewDatasetData('user_event')")
 			a User event
-		li(data-option="electric_production")
+		li(ng-click="previewDatasetData('electric_production')")
 			a Electricity Production
-		li(data-option="environmental_data")
+		li(ng-click="previewDatasetData('environmental_data')")
 			a Environmental

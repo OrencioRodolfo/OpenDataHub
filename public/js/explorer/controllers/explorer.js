@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @ngdoc function
  * @name openDataHubApp.controller:ExplorerctrlCtrl
@@ -7,9 +5,37 @@
  * # ExplorerctrlCtrl
  * Controller of the openDataHubApp
  */
-angular.module('openDataHubApp').controller('ExplorerctrlCtrl', [function(){
-  var site_url 	= $('#site-url').data('site_url');
-  console.log("on controller", site_url);
+angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "ExplorerService", "$http", "$mdToast", function($scope, ExplorerService, $http, $mdToast){
+  $scope.paginatorCallback = paginatorCallback;
+
+
+  $scope.previewDatasetData = function(target) {
+    ExplorerService.previewDatasetData(target);
+  };
+
+
+  function paginatorCallback(page, pageSize){
+    var offset = (page-1) * pageSize;
+
+    return $http.post('https://api.nutritionix.com/v1_1/search', {
+      'appId':'a03ba45f',
+      'appKey':'b4c78c1472425c13f9ce0e5e45aa1e16',
+      'offset': offset,
+      'limit':pageSize,
+      'query': '*',
+      'fields': ['*'],
+      'sort':{
+        'field':'nf_iron_dv',
+        'order':'desc'
+      }
+    }).then(function(result){
+      return {
+        results: result.data.hits,
+        totalResultCount: result.data.total
+      }
+    });
+  }
+
 }]);
 
 // var site_url 	= $('#site-url').data('site_url');

@@ -1,31 +1,32 @@
-<md-content>
-    <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
-        <md-button ng-href="{{googleUrl}}" target="_blank">Default Link</md-button>
-        <md-button class="md-primary" ng-href="{{googleUrl}}" target="_blank">Primary Link</md-button>
-        <md-button>Default Button</md-button>
-      <div class="label">Link vs. Button</div>
-    </section>
-    <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
-      <md-button class="md-primary md-hue-1">Primary Hue 1</md-button>
-      <md-button class="md-warn md-raised md-hue-2">Warn Hue 2</md-button>
-      <md-button class="md-accent">Accent</md-button>
-      <md-button class="md-accent md-raised md-hue-1">Accent Hue 1</md-button>
-      <div class="label">Themed</div>
-    </section>
-    <section layout="row" layout-sm="column" layout-align="center center" layout-wrap>
-      <md-button class="md-icon-button md-primary" aria-label="Settings">
-      </md-button>
-      <md-button class="md-icon-button md-accent" aria-label="Favorite">
-      </md-button>
-      <md-button class="md-icon-button" aria-label="More">
-      </md-button>
-      <md-button href="http://google.com"
-                 title="Launch Google.com in new window"
-                 target="_blank"
-                 ng-disabled="true"
-                 aria-label="Google.com"
-                 class="md-icon-button launch" >
-      </md-button>
-      <div class="label">Icon Button</div>
-    </section>
-  </md-content>
+<div layout="row">
+  <div layout-margin flex>
+    <mdt-table
+        paginated-rows="{isEnabled: true, rowsPerPageValues: [5,10,20,50]}"
+        mdt-row-paginator="paginatorCallback(page, pageSize)"
+        mdt-row-paginator-error-message="Error happened during loading nutritions."
+        mdt-row="{
+            'table-row-id-key': 'fields.item_id',
+            'column-keys': [
+                'fields.item_name',
+                'fields.nf_calories',
+                'fields.nf_total_fat',
+                'fields.nf_total_carbohydrate',
+                'fields.nf_protein',
+                'fields.nf_sodium',
+                'fields.nf_calcium_dv',
+                'fields.nf_iron_dv'
+            ],
+        }">
+        <mdt-header-row>
+            <mdt-column align-rule="left">Dessert (100g serving)</mdt-column>
+            <mdt-column align-rule="right">Calories</mdt-column>
+            <mdt-column align-rule="right">Fat (g)</mdt-column>
+            <mdt-column align-rule="right">Carbs (g)</mdt-column>
+            <mdt-column align-rule="right">Protein (g)</mdt-column>
+            <mdt-column align-rule="right">Sodium (mg)</mdt-column>
+            <mdt-column align-rule="right">Calcium (%)</mdt-column>
+            <mdt-column align-rule="right">Iron (%)</mdt-column>
+        </mdt-header-row>
+    </mdt-table>
+  </div>
+</div>

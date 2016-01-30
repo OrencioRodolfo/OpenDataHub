@@ -6,6 +6,7 @@ head
 	block css
 		// css
 		link(rel="stylesheet", href="/build/vendors/_bower.css")
+		link(rel="stylesheet", href="/components/bootstrap/dist/css/bootstrap.min.css")
 		link(rel="stylesheet", href="/css/template.css")
 		link(rel="stylesheet", href="/css/horizontalNav.css")
 		link(rel="stylesheet", href="/css/user.css")
@@ -14,11 +15,6 @@ head
 		link(rel="stylesheet", href="/css/directDownload.css")
 		link(rel="stylesheet", href="/css/contacts.css")
 		link(rel="stylesheet", href="/css/timeline.css")
-
-		// javascript
-		script(src="/components/jquery/dist/jquery.min.js")
-		script(src="/components/jquery-ui/jquery-ui.min.js")
-		script(src="/build/vendors/_bower.js")
 
 		body(ng-app="openDataHubApp")
 			div#site-url(data-site_url="#{config.web.site_url}:#{config.web.port}")
@@ -42,7 +38,10 @@ head
 
 // javascript
 block js
-	script(src="/build/min/allinone.min.js")
+	script(src="/build/min/vendors.min.js")
+	// script(src="/components/mdDataTable/dist/md-data-table.js")
+	// script(src="/components/mdDataTable/dist/md-data-table-templates.js")
+	// script(src="/build/min/scripts.min.js")
 	script(src="js/app.js")
 	script(src="build/common-bundle.js")
 	if ENV_DEVELOPMENT

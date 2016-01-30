@@ -96,8 +96,7 @@ module.exports = function (grunt) {
           'public/build/explorer-bundle.js': ['public/js/explorer/**/*.js'],
           'public/build/common-bundle.js': ['public/js/common/*.js'],
           'public/build/about-bundle.js': ['public/js/about/*.js'],
-          'public/build/app.js': ['public/js/app.js'],
-          'public/build/vendors.js': ['public/js/vendors.js']
+          'public/build/app.js': ['public/js/app.js']
         },
         options: {
           transform: ['babelify', 'debowerify']
@@ -106,10 +105,12 @@ module.exports = function (grunt) {
     },
     bower_concat: {
       all: {
-        exclude: [
-          'jquery',
-          'jquery-ui'
-        ],
+        dependencies: {
+          'jquery-ui': 'jquery'
+        },
+        // exclude: [
+        //   'mdDataTable'
+        // ],
         dest: 'public/build/vendors/_bower.js',
         cssDest: 'public/build/vendors/_bower.css'
       }
@@ -120,7 +121,8 @@ module.exports = function (grunt) {
       },
       min: {
         files: {
-          'public/build/min/allinone.min.js': ['public/js/*.js']
+          'public/build/min/vendors.min.js': ['public/build/vendors/*.js'],
+          // 'public/build/min/scripts.min.js': ['public/js/*.js']
         }
       }
     }
@@ -149,5 +151,5 @@ module.exports = function (grunt) {
     }, 500);
   });
 
-  grunt.registerTask('default', ['babel', 'sync', 'less', 'bower_concat', 'uglify', 'browserify', 'develop', 'watch']);
+  grunt.registerTask('default', ['babel', 'sync', 'less', 'bower_concat', 'browserify', /*'uglify',*/ 'develop', 'watch']);
 };

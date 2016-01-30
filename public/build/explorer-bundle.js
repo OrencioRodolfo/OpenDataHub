@@ -11,10 +11,34 @@
  * # ExplorerctrlCtrl
  * Controller of the openDataHubApp
  */
+angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "ExplorerService", "$http", "$mdToast", function ($scope, ExplorerService, $http, $mdToast) {
+  $scope.paginatorCallback = paginatorCallback;
 
-angular.module('openDataHubApp').controller('ExplorerctrlCtrl', [function () {
-  var site_url = $('#site-url').data('site_url');
-  console.log("on controller", site_url);
+  $scope.previewDatasetData = function (target) {
+    ExplorerService.previewDatasetData(target);
+  };
+
+  function paginatorCallback(page, pageSize) {
+    var offset = (page - 1) * pageSize;
+
+    return $http.post('https://api.nutritionix.com/v1_1/search', {
+      'appId': 'a03ba45f',
+      'appKey': 'b4c78c1472425c13f9ce0e5e45aa1e16',
+      'offset': offset,
+      'limit': pageSize,
+      'query': '*',
+      'fields': ['*'],
+      'sort': {
+        'field': 'nf_iron_dv',
+        'order': 'desc'
+      }
+    }).then(function (result) {
+      return {
+        results: result.data.hits,
+        totalResultCount: result.data.total
+      };
+    });
+  }
 }]);
 
 // var site_url 	= $('#site-url').data('site_url');
@@ -334,4 +358,78 @@ $(document).ready(function () {
   });
 });
 
-},{}]},{},[1,2,3,4,5]);
+},{}],6:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc service
+ * @name explorerApp.ExplorerService
+ * @description
+ * # ExplorerService
+ * Service in the explorerApp.
+ */
+angular.module('openDataHubApp').service('ExplorerService', ["$http", function ($http) {
+  console.log("HERE");
+
+  function serializeSearchDatasetForm() {
+    var form = $('#data-consult-form');
+    var data = { collection: $("#collection").val(), fields: [], selected_fields: [] };
+    var element = null;
+    $('.field-filters-js').each(function () {
+      var filters = [];
+      $(this).find(':input').each(function () {
+        filters.push({ name: $(this).attr('name'), value: $(this).val() });
+      });
+      element = { field: $(this).data('field'), type: $(this).data('data_type'), filters: filters };
+      data.fields.push(element);
+    });
+
+    // get selected fields to show on results
+    data.selected_fields = getFieldsForDisplay();
+    data.group_by = $('.field-group-js .group-by-js').val();
+    data.num_rows = $('.field-num-results-js .num-results-js').val();
+
+    return data;
+  }
+
+  function getFieldsForDisplay() {
+    var selected_fields = [];
+    var parent = null;
+    $('.fields-select-js .selector-js:checked').each(function () {
+      parent = $(this).closest('.option-js');
+
+      selected_fields.push({ field: parent.data('field'), description: parent.data('description') });
+    });
+    return selected_fields;
+  }
+
+  function previewDatasetData(target) {
+    var site_url = $('#site-url').data('site_url');
+    // var data        = serializeSearchDatasetForm();
+    // data.collection = target;
+    // data.context    = $('.datasets-container-js').data('context');
+    var data = {
+      collection: "user_event",
+      group_by: "minute",
+      num_rows: "50",
+      fields: [],
+      selected_fields: [{ field: "iid", description: "Monitored home unique identifier" }, { field: "tmstp", description: "Date and time of the measurement" }, { field: "deploy", description: "Deployment" }, { field: "type_id", description: "Identifier of the type of interactions" }, { field: "type_name", description: "Type of interaction" }, { field: "view_id", description: "Identifier of the visualized screen" }, { field: "view_name", description: "Name of visualized screen" }]
+    };
+
+    $.ajax({
+      type: 'POST',
+      contentType: "application/json; charset=utf-8",
+      data: JSON.stringify(data),
+      url: site_url + '/datasetExplorer/searchDatasetData',
+      success: function success(response) {
+        $('.main-container .content').html(response);
+      }
+    });
+  }
+
+  return {
+    previewDatasetData: previewDatasetData
+  };
+}]);
+
+},{}]},{},[1,2,3,4,5,6]);

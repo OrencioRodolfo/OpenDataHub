@@ -41,12 +41,9 @@ angular.module('openDataHubApp')
     	return selected_fields;
     }
 
-    function previewDatasetData(target) {
-      var site_url    = $('#site-url').data('site_url');
-      // var data        = serializeSearchDatasetForm();
-      // data.collection = target;
-      // data.context    = $('.datasets-container-js').data('context');
-      var data = {
+    function previewDatasetData() {
+      let site_url = $('#site-url').data('site_url');
+      let data     = {
         collection: "user_event",
         group_by: "minute",
         num_rows: "50",
@@ -62,18 +59,45 @@ angular.module('openDataHubApp')
         ]
       };
 
-      $.ajax({
-        type: 'POST',
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify(data),
-        url: site_url+'/datasetExplorer/searchDatasetData',
-        success: function(response){
-          $('.main-container .content').html( response );
-        }
-      });
+      let url = `${site_url}/datasetExplorer/searchDatasetData`;
+      return $http.post(url, data);
     }
+
 
     return {
       previewDatasetData
     }
   }]);
+
+
+  // function previewDatasetData(target) {
+  //   var site_url    = $('#site-url').data('site_url');
+  //   // var data        = serializeSearchDatasetForm();
+  //   // data.collection = target;
+  //   // data.context    = $('.datasets-container-js').data('context');
+  //   var data = {
+  //     collection: "user_event",
+  //     group_by: "minute",
+  //     num_rows: "50",
+  //     fields: [],
+  //     selected_fields: [
+  //       {field: "iid", description: "Monitored home unique identifier"},
+  //       {field: "tmstp", description: "Date and time of the measurement"},
+  //       {field: "deploy", description: "Deployment"},
+  //       {field: "type_id", description: "Identifier of the type of interactions"},
+  //       {field: "type_name", description: "Type of interaction"},
+  //       {field: "view_id", description: "Identifier of the visualized screen"},
+  //       {field: "view_name", description: "Name of visualized screen"},
+  //     ]
+  //   };
+  //
+  //   $.ajax({
+  //     type: 'POST',
+  //     contentType: "application/json; charset=utf-8",
+  //     data: JSON.stringify(data),
+  //     url: site_url+'/datasetExplorer/searchDatasetData',
+  //     success: function(response){
+  //       $('.main-container .content').html( response );
+  //     }
+  //   });
+  // }

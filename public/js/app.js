@@ -1,1 +1,1 @@
-angular.module('openDataHubApp', ['ngMaterial', 'mdDataTable']);
+angular.module('openDataHubApp', ['ngMaterial', 'md.data.table']);

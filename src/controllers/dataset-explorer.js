@@ -166,7 +166,8 @@ export default class ExplorerCtrl {
   	let query       = this.buildQuery( UserEvent_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
 
   	query.exec((err, docs) => {
-  		this.response (req_data, docs, res);
+      res.json(docs);
+      // this.response (req_data, docs, res);
   	});
   }
 

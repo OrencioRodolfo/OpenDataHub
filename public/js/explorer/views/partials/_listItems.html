@@ -1,32 +1,17 @@
-<div layout="row">
-  <div layout-margin flex>
-    <mdt-table
-        paginated-rows="{isEnabled: true, rowsPerPageValues: [5,10,20,50]}"
-        mdt-row-paginator="paginatorCallback(page, pageSize)"
-        mdt-row-paginator-error-message="Error happened during loading nutritions."
-        mdt-row="{
-            'table-row-id-key': 'fields.item_id',
-            'column-keys': [
-                'fields.item_name',
-                'fields.nf_calories',
-                'fields.nf_total_fat',
-                'fields.nf_total_carbohydrate',
-                'fields.nf_protein',
-                'fields.nf_sodium',
-                'fields.nf_calcium_dv',
-                'fields.nf_iron_dv'
-            ],
-        }">
-        <mdt-header-row>
-            <mdt-column align-rule="left">Dessert (100g serving)</mdt-column>
-            <mdt-column align-rule="right">Calories</mdt-column>
-            <mdt-column align-rule="right">Fat (g)</mdt-column>
-            <mdt-column align-rule="right">Carbs (g)</mdt-column>
-            <mdt-column align-rule="right">Protein (g)</mdt-column>
-            <mdt-column align-rule="right">Sodium (mg)</mdt-column>
-            <mdt-column align-rule="right">Calcium (%)</mdt-column>
-            <mdt-column align-rule="right">Iron (%)</mdt-column>
-        </mdt-header-row>
-    </mdt-table>
-  </div>
-</div>
+<!-- exact table from live demo -->
+<md-table-container>
+  <table md-table md-progress="promise">
+    <thead md-head>
+      <tr md-row>
+        <th md-column ng-repeat="header in headers"><span>{{ header.label }}</span></th>
+      </tr>
+    </thead>
+    <tbody md-body>
+      <tr md-row ng-repeat="row in rows">
+        <td md-cell ng-repeat="header in headers">{{row[header.field]}}</td>
+      </tr>
+    </tbody>
+  </table>
+</md-table-container>
+
+<md-table-pagination md-limit="query.limit" md-page="query.page" md-total="{{desserts.count}}" md-on-paginate="onPaginate" md-page-select></md-table-pagination>

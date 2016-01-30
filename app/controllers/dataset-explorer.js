@@ -142,13 +142,12 @@ var ExplorerCtrl = function () {
   }, {
     key: 'searchUserEventData',
     value: function searchUserEventData(req_data, res) {
-      var _this3 = this;
-
       var UserEvent_m = mongoose.model('user_event');
       var query = this.buildQuery(UserEvent_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
 
       query.exec(function (err, docs) {
-        _this3.response(req_data, docs, res);
+        res.json(docs);
+        // this.response (req_data, docs, res);
       });
     }
   }, {
@@ -179,13 +178,13 @@ var ExplorerCtrl = function () {
   }, {
     key: 'searchEnvironmentalData',
     value: function searchEnvironmentalData(req_data, res) {
-      var _this4 = this;
+      var _this3 = this;
 
       var Environmental_m = mongoose.model('environmental');
       var query = this.buildQuery(Environmental_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
 
       query.exec(function (err, docs) {
-        _this4.response(req_data, docs, res);
+        _this3.response(req_data, docs, res);
       });
     }
   }, {

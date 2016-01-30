@@ -27,7 +27,8 @@ var config = {
         user: 'rodolfo.goncalves@m-iti.org',
         pass: 'rg1014'
     }
-  },   test: {
+  },
+  test: {
     encryption_key: 'Fasdf354Dfva5009f',
     web: {
     	site_url: 'http://localhost',

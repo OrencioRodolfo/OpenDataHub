@@ -21,11 +21,12 @@ head
 
 			include template/header.jade
 
-			div.wrap-content
+			div(class="wrap-content" layout)
 				div.main-container
 					block main_container
 
-			include template/footer.jade
+			div(class="main-container")
+				include template/footer.jade
 
 			// General jquery UI dialogs
 			div#errors-container-js

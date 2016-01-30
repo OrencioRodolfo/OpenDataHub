@@ -76,7 +76,7 @@ require('./config/express')(app, config);
  */
 mongoose.connect('mongodb://'+config.db.host+':'+config.db.port+'/'+config.db.database);
 
-var db = mongoose.connection;
+GLOBAL.db = mongoose.connection;
 db.on('error', function () {
   throw new Error('unable to connect to database at ' + config.db.database);
 });

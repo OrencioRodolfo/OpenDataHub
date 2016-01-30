@@ -6,95 +6,39 @@
  * Controller of the openDataHubApp
  */
 angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "ExplorerService", "$http", "$mdToast", function($scope, ExplorerService, $http, $mdToast){
-  $scope.selected = [];
-
-   $scope.query = {
-     order: 'name',
-     limit: 5,
-     page: 1
-   };
-
-   function getDesserts(query) {
-     $scope.promise = $nutrition.desserts.get(query, success).$promise;
-   }
-
-   function success(desserts) {
-     $scope.desserts = desserts;
-   }
-
-   $scope.onPaginate = function (page, limit) {
-     getDesserts(angular.extend({}, $scope.query, {page: page, limit: limit}));
-   };
-
-   $scope.onReorder = function (order) {
-     getDesserts(angular.extend({}, $scope.query, {order: order}));
-   };
-
-
-
-
-
-
-
-
-  $scope.paginatorCallback = paginatorCallback;
-  $scope.collection        = 'user_event';
-  $scope.columns           = {
-    'table-row-id-key': 'fields.item_id',
-    'column-keys': [
-        'fields.item_name',
-        'fields.nf_calories',
-        'fields.nf_total_fat',
-        'fields.nf_total_carbohydrate',
-        'fields.nf_protein',
-        'fields.nf_sodium',
-        'fields.nf_calcium_dv',
-        'fields.nf_iron_dv'
-    ]
+  /**
+   * Public attributes
+   */
+  $scope.data   = {
+    'headers': [],
+    'rows': []
   };
-  $scope.headers = [
-    {'field': 'tmstp', 'label': 'Home ID'},
-    {'field': 'deploy', 'label': 'Date'},
-    {'field': 'type_id', 'label': 'Deploy'},
-    {'field': 'type_name', 'label': 'Interaction'},
-    {'field': 'view_id', 'label': 'Screen ID'},
-    {'field': 'view_name', 'label': 'Screen name'}
-  ];
-  $scope.rows = [];
-  $scope.previewDatasetData = function() {
-    ExplorerService.previewDatasetData().then(function(response) {
-      $scope.rows = response.data;
-      console.log($scope.rows);
+  $scope.search = {
+    'collection': '',
+    'group_by': 'minute',
+    'num_rows': '50',
+    'fields': [],
+    'selected_fields': []
+  };
+
+  /**
+   * Public methods
+   */
+  $scope.previewDatasetData = function(collection='power_sample') {
+    $scope.search.collection = collection;
+    ExplorerService.previewDatasetData($scope.search).then(function(res) {
+      try {
+        if (res.status !== 200) throw res.statusText;
+        $scope.data.headers = res.data.headers;
+        $scope.data.rows    = res.data.rows;
+      } catch (e) {
+        alert(e);
+      };
     });
   };
+
+  // preview data on page load
   $scope.previewDatasetData();
-
-
-  function paginatorCallback(page, pageSize){
-    var offset = (page-1) * pageSize;
-
-    console.log("executed");
-
-    return $http.post('https://api.nutritionix.com/v1_1/search', {
-      'appId':'a03ba45f',
-      'appKey':'b4c78c1472425c13f9ce0e5e45aa1e16',
-      'offset': offset,
-      'limit':pageSize,
-      'query': '*',
-      'fields': ['*'],
-      'sort':{
-        'field':'nf_iron_dv',
-        'order':'desc'
-      }
-    }).then(function(result){
-      console.log("result--", result);
-      return {
-        results: result.data.hits,
-        totalResultCount: result.data.total
-      }
-    });
-  }
-
 }]);
 
 // var site_url 	= $('#site-url').data('site_url');

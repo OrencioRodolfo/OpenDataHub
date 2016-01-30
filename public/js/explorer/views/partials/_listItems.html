@@ -1,17 +1,18 @@
-<!-- exact table from live demo -->
-<md-table-container>
-  <table md-table md-progress="promise">
-    <thead md-head>
-      <tr md-row>
-        <th md-column ng-repeat="header in headers"><span>{{ header.label }}</span></th>
-      </tr>
-    </thead>
-    <tbody md-body>
-      <tr md-row ng-repeat="row in rows">
-        <td md-cell ng-repeat="header in headers">{{row[header.field]}}</td>
-      </tr>
-    </tbody>
-  </table>
-</md-table-container>
+<md-content flex>
+  <md-table-container>
+    <table md-table md-progress="promise">
+      <thead md-head>
+        <tr md-row>
+          <th md-column ng-repeat="header in data.headers"><span>{{ header.label }}</span></th>
+        </tr>
+      </thead>
+      <tbody md-body>
+        <tr md-row ng-repeat="row in data.rows">
+          <td md-cell ng-repeat="header in data.headers">{{row[header.field]}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </md-table-container>
 
-<md-table-pagination md-limit="query.limit" md-page="query.page" md-total="{{desserts.count}}" md-on-paginate="onPaginate" md-page-select></md-table-pagination>
+  <md-table-pagination md-limit="query.limit" md-page="query.page" md-total="{{desserts.count}}" md-on-paginate="onPaginate" md-page-select></md-table-pagination>
+</md-content>

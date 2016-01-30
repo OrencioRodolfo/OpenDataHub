@@ -144,68 +144,112 @@ export default class ExplorerCtrl {
   }
 
   searchPowerSampleData (req_data, res){
-  	let PowerSample_m = mongoose.model('power_sample');
-  	let query         = this.buildQuery(PowerSample_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
-
-  	query.exec( (err, docs)  => {
-  		this.response(req_data, docs, res);
+  	let cursor = this.buildQuery('power_sample');
+    cursor.toArray(function(err, docs) {
+      let response = {
+        'headers': [
+          {'field': 'iid' , 	'label': 'Home ID'},
+          {'field': 'tmstp', 	'label': 'Date '},
+          {'field': 'deploy', 'label': 'Deployment'},
+          {'field': 'Imin', 	'label': 'Min. current'},
+          {'field': 'Imax', 	'label': 'Max. current'},
+          {'field': 'Iavg', 	'label': 'Avg current'},
+          {'field': 'Vmin', 	'label': 'Min. voltage'},
+          {'field': 'Vmax', 	'label': 'Max. voltage'},
+          {'field': 'Vavg', 	'label': 'Avg voltage'},
+          {'field': 'Pmin', 	'label': 'Min. real power'},
+          {'field': 'Pmax', 	'label': 'Max. real power'},
+          {'field': 'Pavg', 	'label': 'Avg real power'},
+          {'field': 'miss_flag', 'label': 'Post Process'}
+        ],
+        'rows': docs
+      };
+      res.json(response);
   	});
   }
 
   searchPowerEventData (req_data, res) {
-  	let PowerEvent_m = mongoose.model('power_event');
-  	let query        = this.buildQuery( PowerEvent_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
-
-  	query.exec((err, docs) => {
-  		this.response( req_data, docs, res );
+  	let cursor = this.buildQuery('power_event');
+    cursor.toArray(function(err, docs) {
+      let response = {
+        'headers': [
+          {'field': 'iid' , 	 'label': 'Home ID'},
+					{'field': 'tmstp', 	 'label': 'Date'},
+					{'field': 'deploy',  'label': 'Deployment'},
+					{'field': 'delta_P', 'label': 'Real power change'},
+					{'field': 'delta_Q', 'label': 'Reactive power change'},
+					{'field': 'trace_P', 'label': 'Real power trace'},
+					{'field': 'trace_Q', 'label': 'Reactive power trace'}
+        ],
+        'rows': docs
+      };
+      res.json(response);
   	});
   }
 
   searchUserEventData (req_data, res) {
-  	let UserEvent_m = mongoose.model('user_event');
-  	let query       = this.buildQuery( UserEvent_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
-
-  	query.exec((err, docs) => {
-      res.json(docs);
-      // this.response (req_data, docs, res);
-  	});
+  	let cursor = this.buildQuery('user_event');
+    cursor.toArray(function(err, docs) {
+      let response = {
+        'headers': [
+          {'field': 'tmstp',      'label': 'Home ID'},
+          {'field': 'deploy',     'label': 'Date'},
+          {'field': 'type_id',    'label': 'Deployment'},
+          {'field': 'type_name',  'label': 'Interaction'},
+          {'field': 'view_id',    'label': 'Screen ID'},
+          {'field': 'view_name',  'label': 'Screen name'}
+        ],
+        'rows': docs
+      };
+      res.json(response);
+      // db.close();
+    });
   }
 
   searchElectricProductionData (req_data, res) {
-  	let ElectricProduction_m = mongoose.model('electric_production');
-  	let query                = this.buildQuery(ElectricProduction_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
+    let cursor = this.buildQuery('electric_production');
 
-  	query.exec(function (err, docs) {
-  		let fields 	= [];
-  		req_data.selected_fields.forEach(function(field){
-  			fields.push(field.field);
-  		});
-
-  		if (req_data.context == 'download') {
-  			let file_path = saveDatasetFile( docs, fields, req_data.collection, req_data.file_extension );
-  			res.send({file: file_path})
-  		}else if (req_data.context == 'chart') {
-  			let response = {records: docs, fields: fields};
-  			res.render('dataConsult/canvas', response);
-  		}else{
-  			let response = {records: docs, fields: fields};
-  			if (!utils.empty(req_data.page))
-  				response.more_results = true;
-  			res.render('dataConsult/listRecordsElectricProduction', response)
-  		}
-  	});
+    cursor.toArray(function(err, docs) {
+      let response = {
+        'headers': [
+          {'field': 'id' , 		'label': 'ID'},
+					{'field': 'tmstp', 	'label': 'Date'},
+					{'field': 'total', 	'label': 'Total'},
+					{'field': 'thermal','label': 'Thermal'},
+					{'field': 'hydro',	'label': 'Hydro'},
+					{'field': 'eolic',	'label': 'Eolic'},
+					{'field': 'biomass','label': 'Biomass'},
+					{'field': 'solar',	'label': 'Solar'}
+        ],
+        'rows': docs
+      };
+      res.json(response);
+      // db.close();
+    });
   }
 
   searchEnvironmentalData (req_data, res) {
-  	let Environmental_m = mongoose.model('environmental');
-  	let query           = this.buildQuery( Environmental_m, req_data.fields, req_data.selected_fields, req_data.group_by, req_data.page, req_data.num_rows);
-
-  	query.exec((err, docs) => {
-  		this.response( req_data, docs, res );
+  	let cursor = this.buildQuery('environmental');
+    cursor.toArray(function(err, docs) {
+      let response = {
+        'headers': [
+          {'field': 'tmstp', 		 	'label': 'Date'},
+					{'field': 'station_id', 'label': 'Station ID'},
+					{'field': 'station',	 	'label': 'Station'},
+					{'field': 'Temp',		 	  'label': 'Temperature'},
+					{'field': 'Hum',		 	  'label': 'Eolic'},
+					{'field': 'WS',			 	  'label': 'Wind Speed'},
+					{'field': 'WD',			 	  'label': 'Wind Direction'},
+					{'field': 'Pre',		 	  'label': 'Precipitation'},
+					{'field': 'Cond',		 	  'label': 'Conditions'}
+        ],
+        'rows': docs
+      };
+      res.json(response);
   	});
   }
 
-  response (req_data, docs, res) {
+  response(req_data, docs, res) {
   	let fields 	= [];
   	req_data.selected_fields.forEach(function(field){
   		fields.push(field.field);
@@ -225,92 +269,9 @@ export default class ExplorerCtrl {
   	}
   }
 
-  buildQuery (model, fields, selected_fields, group_by, page, num_rows) {
-    let query = null;
-  	if (!utils.empty(page))
-      query = model.aggregate({$skip: page * config.rows_per_page});
-  	else
-  		query = model.aggregate();
-
-  	let group = { '_id': { 'year': '$y', 'month': '$m', 'day': '$d', 'hour': '$h', 'minute': '$m'} };
-
-    let limit = 0;
-  	if (!utils.empty(num_rows))
-  		limit = parseInt(num_rows);
-  	else
-  		limit = config.rows_per_page;
-
-  	let projection 	= this.setProjection(group_by);
-
-  	// Specify the fields for output
-  	if( !utils.empty(selected_fields) ){
-  		selected_fields.forEach(function(field){
-  			projection[field.field] = 1;
-
-  			if (field.field == 'tmstp')
-  				group[field.field] = {$max: '$'+field.field};
-  			else
-  				group[field.field] = {$avg: '$'+field.field};
-  		});
-  	}
-
-  	query
-  		.project(projection);
-
-  	fields.forEach(function( field ){
-  		// run the defined filters for the field
-  		let where = {};
-  		field.filters.forEach(function(filter){
-  			if( utils.empty(filter.value) )
-  				return;
-
-  			if( field.type == 'date' ){
-  				let date_time 	= new Date( filter.value );
-  				filter.value 	= dateFormat(date_time, "yyyy-mm-dd HH:mm");
-  			}else if( field.type == 'integer' || field.type == 'boolean' ){
-  				filter.value = parseInt(filter.value);
-  			}else if( field.type == 'float' ){
-  				filter.value = parseFloat(filter.value);
-  			}
-
-  			if( filter.name == 'exactly' )
-  				where.exact = filter.value;
-  			else if(filter.name == 'max')
-  				where.max = filter.value;
-  			else if(filter.name == 'min')
-  				where.min = filter.value;
-  		});
-
-  		let match = {};
-  		if( !utils.empty(where.min) && !utils.empty(where.max) ){
-  			match[field.field] = {$gte: where.min, $lte: where.max};
-  		}else if( !utils.empty(where.min) ){
-  			match[field.field] = {$gte: where.min};
-  		}else if( !utils.empty(where.max) ){
-  			match[field.field] = {$lte: where.max};
-  		}else if( !utils.empty(where.exact) ){
-  			match[field.field] = where.exact;
-  		}
-  		if (!utils.empty(match))
-  			query
-  				.match(match);
-  	});
-
-  	/*
-  	console.log('----------------- projection -----------------');
-  	console.log(projection);
-  	console.log('----------------- limit -----------------');
-  	console.log(limit);
-  	console.log('----------------- group -----------------');
-  	console.log(group);
-  	*/
-
-  	query
-  		.project(projection)
-  		.limit(limit)
-  		.group(group);
-
-  	return query;
+  buildQuery(collection) {
+    let cursor = db.collection(collection).find();
+    return cursor.limit(10);
   }
 
   setProjection(group_by) {

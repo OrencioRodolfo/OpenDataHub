@@ -7,8 +7,6 @@
  */
 angular.module('openDataHubApp')
   .service('ExplorerService', ["$http", function ($http) {
-    console.log("HERE");
-
     function serializeSearchDatasetForm(){
     	var form    = $('#data-consult-form');
     	var data    = { collection: $("#collection").val(), fields: [], selected_fields: [] };
@@ -41,28 +39,11 @@ angular.module('openDataHubApp')
     	return selected_fields;
     }
 
-    function previewDatasetData() {
+    function previewDatasetData(search) {
       let site_url = $('#site-url').data('site_url');
-      let data     = {
-        collection: "user_event",
-        group_by: "minute",
-        num_rows: "50",
-        fields: [],
-        selected_fields: [
-          {field: "iid", description: "Monitored home unique identifier"},
-          {field: "tmstp", description: "Date and time of the measurement"},
-          {field: "deploy", description: "Deployment"},
-          {field: "type_id", description: "Identifier of the type of interactions"},
-          {field: "type_name", description: "Type of interaction"},
-          {field: "view_id", description: "Identifier of the visualized screen"},
-          {field: "view_name", description: "Name of visualized screen"},
-        ]
-      };
-
-      let url = `${site_url}/datasetExplorer/searchDatasetData`;
-      return $http.post(url, data);
+      let url      = `${site_url}/datasetExplorer/searchDatasetData`;
+      return $http.post(url, search);
     }
-
 
     return {
       previewDatasetData

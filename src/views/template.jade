@@ -7,6 +7,7 @@ head
 		// css
 		link(rel="stylesheet", href="/build/vendors/_bower.css")
 		link(rel="stylesheet", href="/components/bootstrap/dist/css/bootstrap.min.css")
+		link(rel="stylesheet", href="/components/components-font-awesome/css/font-awesome.min.css")
 		link(rel="stylesheet", href="/css/template.css")
 		link(rel="stylesheet", href="/css/horizontalNav.css")
 		link(rel="stylesheet", href="/css/user.css")
@@ -21,12 +22,14 @@ head
 
 			include template/header.jade
 
-			div(class="wrap-content" layout)
-				div.main-container
-					block main_container
+			section(layout="row" flex)
+				oph-side-nav
 
-			div(class="main-container")
-				include template/footer.jade
+				md-content(class="wrap-content")
+					div.main-container
+						block main_container
+
+			include template/footer.jade
 
 			// General jquery UI dialogs
 			div#errors-container-js

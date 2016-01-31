@@ -1,11 +1,13 @@
 extends ../template
 
 block main_container
-	div(class="datasets-container-js" ng-controller="ExplorerCtrl" layout="column")
-		div.datasets-nav
-			include datasetsNav.jade
 
-		include mainContainer.jade
+	div(class="data-explorer datasets-container-js" ng-controller="ExplorerCtrl" layout="column")
+		// actions bar
+		oph-explorer-actions-bar.actions-bar
+
+		// data preview
+		oph-explorer-list.data-preview
 
 block append js
 	script(src="build/explorer-bundle.js")

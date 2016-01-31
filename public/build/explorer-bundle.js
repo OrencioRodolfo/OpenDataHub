@@ -315,18 +315,42 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophExploreList', function () {
+angular.module('openDataHubApp').directive('ophExplorerActionsBar', function () {
+  return {
+    templateUrl: 'js/explorer/views/partials/_explorerActionsBar.html',
+    restrict: 'E',
+    controller: ['$scope', function postLink($scope) {
+      $scope.isOpen = false;
+      $scope.demo = {
+        isOpen: false,
+        count: 0,
+        selectedDirection: 'left'
+      };
+    }]
+  };
+});
+
+},{}],5:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
+angular.module('openDataHubApp').directive('ophExplorerList', function () {
   return {
     templateUrl: 'js/explorer/views/partials/_listItems.html',
     restrict: 'E',
     link: function postLink(scope, element, attrs) {
-      scope.name = "Rodolfo";
       // element.text('this is the ophExploreList directive');
     }
   };
 });
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 $('.operation-opts-js .separator-js').show();
@@ -366,7 +390,7 @@ $(document).ready(function () {
   });
 });
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 /**
@@ -452,4 +476,4 @@ angular.module('openDataHubApp').service('ExplorerService', ["$http", function (
 //   });
 // }
 
-},{}]},{},[1,2,3,4,5,6]);
+},{}]},{},[1,2,3,4,5,6,7]);

@@ -1,7 +1,7 @@
 body {
   /*height: 100%;*/
-  padding: 10px;
-  min-width: 800px;
+  /*padding: 10px;*/
+  /*min-width: 800px;*/
   padding-top: 0px;
   font-family: 'Open Sans', Arial, sans-serif;
   font-weight: 300;
@@ -72,7 +72,7 @@ ul {
 .wrap-content .main-container {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box; /* Firefox */
-	padding: 5px 0px;
+	/*padding: 5px 0px;*/
 }
 
 .main-container .about-sinais-items {

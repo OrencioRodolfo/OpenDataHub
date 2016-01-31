@@ -92,10 +92,10 @@ module.exports = function (grunt) {
     browserify: {
       dist: {
         files: {
-          'public/build/user-bundle.js': ['public/js/user/*.js'],
+          'public/build/user-bundle.js': ['public/js/user/**/*.js'],
           'public/build/explorer-bundle.js': ['public/js/explorer/**/*.js'],
-          'public/build/common-bundle.js': ['public/js/common/*.js'],
-          'public/build/about-bundle.js': ['public/js/about/*.js'],
+          'public/build/common-bundle.js': ['public/js/common/**/*.js'],
+          'public/build/about-bundle.js': ['public/js/about/**/*.js'],
           'public/build/app.js': ['public/js/app.js']
         },
         options: {

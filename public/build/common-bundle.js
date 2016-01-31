@@ -1,6 +1,39 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
+angular.module('openDataHubApp').directive('ophSideNav', function () {
+  return {
+    templateUrl: '/js/common/views/partials/_sideNav.html',
+    restrict: 'E',
+    replace: true,
+    controller: ['$scope', '$mdSidenav', function ($scope, $mdSidenav) {
+      var site_url = $('#site-url').data('site_url');
+      $scope.links = {
+        'explore': site_url + '/datasetExplorer',
+        'download': site_url + '/directDownload',
+        'about': site_url + '/about',
+        'contacts': site_url + '/contacts',
+        'login': site_url + '/user/signin'
+      };
+      $scope.close = function () {
+        $mdSidenav('left').close().then(function () {
+          $log.debug("close LEFT is done");
+        });
+      };
+    }]
+  };
+});
+
+},{}],2:[function(require,module,exports){
+'use strict';
+
 var site_url = $('#site-url').data('site_url');
 
 $(function () {
@@ -91,4 +124,4 @@ function successMessages(messages) {
 	$('#success-messages-js').dialog('open');
 }
 
-},{}]},{},[1]);
+},{}]},{},[1,2]);

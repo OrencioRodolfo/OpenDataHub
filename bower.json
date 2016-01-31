@@ -17,6 +17,7 @@
     "timepicker": "https://github.com/trentrichardson/jQuery-Timepicker-Addon.git",
     "angular": "~1.4.9",
     "angular-material": "~1.0.3",
-    "angular-material-data-table": "^0.9.9"
+    "angular-material-data-table": "^0.9.9",
+    "components-font-awesome": "^4.5.0"
   }
 }

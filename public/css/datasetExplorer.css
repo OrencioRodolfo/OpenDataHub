@@ -133,7 +133,6 @@
 	width: 50%;
 }
 
-
 .list-records {
 	font-size: 11px;
 	margin-bottom: 0px;
@@ -150,4 +149,20 @@
 
 .canvas-container {
 	text-align: center;
+}
+
+.data-explorer .actions-bar md-toolbar {
+	min-height: inherit;
+}
+
+.data-explorer .actions-bar md-toolbar .md-toolbar-tools {
+	height: 36px;
+}
+
+.data-explorer .actions-bar md-toolbar .md-toolbar-tools button span {
+	font-size: 12px;
+}
+
+.data-explorer .data-preview {
+	margin-top: 10px;
 }

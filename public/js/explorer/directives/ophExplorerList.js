@@ -7,12 +7,11 @@
  * # ophExploreList
  */
 angular.module('openDataHubApp')
-  .directive('ophExploreList', function () {
+  .directive('ophExplorerList', function () {
     return {
       templateUrl: 'js/explorer/views/partials/_listItems.html',
       restrict: 'E',
       link: function postLink(scope, element, attrs) {
-        scope.name = "Rodolfo";
         // element.text('this is the ophExploreList directive');
       }
     };

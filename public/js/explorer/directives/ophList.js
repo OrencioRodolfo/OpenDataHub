@@ -7,7 +7,7 @@
  * # ophExploreList
  */
 angular.module('openDataHubApp')
-  .directive('ophExplorerList', function () {
+  .directive('ophList', function () {
     return {
       templateUrl: 'js/explorer/views/partials/_listItems.html',
       restrict: 'E',

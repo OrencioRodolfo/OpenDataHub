@@ -20,9 +20,17 @@ module.exports = function (grunt) {
     },
     less: {
       dist: {
-        files: {
-          'public/css/style.css': 'public/css/style.less'
-        }
+        files: [
+          {
+            expand: true,
+            cwd: 'public/less',
+            // Compile each LESS component excluding "bootstrap.less",
+            // "mixins.less" and "variables.less"
+            src: ['**/*.less'],
+            dest: 'public/css/',
+            ext: '.css'
+          }
+        ]
       }
     },
     watch: {
@@ -41,7 +49,7 @@ module.exports = function (grunt) {
       },
       css: {
         files: [
-          'public/css/*.less'
+          'public/less/**/*.less'
         ],
         tasks: ['less'],
         options: {
@@ -50,7 +58,6 @@ module.exports = function (grunt) {
       },
       views: {
         files: [
-          'src/views/*.jade',
           'src/views/**/*.jade'
         ],
         options: { livereload: reloadPort },
@@ -151,5 +158,5 @@ module.exports = function (grunt) {
     }, 500);
   });
 
-  grunt.registerTask('default', ['babel', 'sync', 'less', 'bower_concat', 'browserify', /*'uglify',*/ 'develop', 'watch']);
+  grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'uglify', 'develop', 'watch']);
 };

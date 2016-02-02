@@ -1,13 +1,17 @@
 extends ../template
 
-block main_container
+block outer_main_container
 
-	div(class="data-explorer datasets-container-js" ng-controller="ExplorerCtrl" layout="column")
-		// actions bar
-		oph-explorer-actions-bar.actions-bar
+	section(layout="row" flex)
+		oph-filters-container
 
-		// data preview
-		oph-explorer-list.data-preview
+		md-content(flex)
+			div(class="data-explorer datasets-container-js" ng-controller="ExplorerCtrl" layout="column")
+				// actions bar
+				oph-actions-bar(class="actions-bar" flex)
+
+				// data preview
+				oph-list(class="data-preview" flex)
 
 block append js
 	script(src="build/explorer-bundle.js")

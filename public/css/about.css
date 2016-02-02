@@ -1,38 +1,26 @@
-/** *********************
- * 		About page 		*
- ************************/
-
 .about-container {
-	margin: 0 auto;
-    overflow: hidden;
-    width: 90%;
+  margin: 0 auto;
+  overflow: hidden;
+  width: 90%;
 }
-
 .about-container .left-container {
-	width: 50%;
- 	text-align: justify;
+  width: 50%;
+  text-align: justify;
 }
-
-.about-container ul{
-	padding-left: 15px;
+.about-container ul {
+  padding-left: 15px;
 }
-
 .about-container .right-container {
-	padding: 10px;
-	display: inline-block;
-	width: 50%;
+  padding: 10px;
+  display: inline-block;
+  width: 50%;
 }
-
-.about-container .right-container ul li{
-	list-style: none;
+.about-container .right-container ul li {
+  list-style: none;
 }
-
-.about-container .right-container .alert{
-	max-width: 500px;
+.about-container .right-container .alert {
+  max-width: 500px;
 }
-
 .about-container .about-title {
-	padding-left: 10px;
+  padding-left: 10px;
 }
-
-

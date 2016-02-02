@@ -24,7 +24,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
   /**
    * Public methods
    */
-  $scope.previewDatasetData = function(collection='power_sample') {
+  $scope.previewDatasetData = function(collection='user_event') {
     $scope.search.collection = collection;
     ExplorerService.previewDatasetData($scope.search).then(function(res) {
       try {

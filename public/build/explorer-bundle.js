@@ -31,7 +31,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
    * Public methods
    */
   $scope.previewDatasetData = function () {
-    var collection = arguments.length <= 0 || arguments[0] === undefined ? 'power_sample' : arguments[0];
+    var collection = arguments.length <= 0 || arguments[0] === undefined ? 'user_event' : arguments[0];
 
     $scope.search.collection = collection;
     ExplorerService.previewDatasetData($scope.search).then(function (res) {
@@ -315,18 +315,10 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophExplorerActionsBar', function () {
+angular.module('openDataHubApp').directive('ophActionsBar', function () {
   return {
-    templateUrl: 'js/explorer/views/partials/_explorerActionsBar.html',
-    restrict: 'E',
-    controller: ['$scope', function postLink($scope) {
-      $scope.isOpen = false;
-      $scope.demo = {
-        isOpen: false,
-        count: 0,
-        selectedDirection: 'left'
-      };
-    }]
+    templateUrl: 'js/explorer/views/partials/_actionsBar.html',
+    restrict: 'E'
   };
 });
 
@@ -340,7 +332,29 @@ angular.module('openDataHubApp').directive('ophExplorerActionsBar', function () 
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophExplorerList', function () {
+angular.module('openDataHubApp').directive('ophFiltersContainer', function () {
+  return {
+    templateUrl: 'js/explorer/views/partials/_filtersContainer.html',
+    restrict: 'E',
+    controller: ['$scope', '$mdSidenav', function postLink($scope, $mdSidenav) {
+      $scope.close = function () {
+        $mdSidenav('right').close();
+      };
+    }]
+  };
+});
+
+},{}],6:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
+angular.module('openDataHubApp').directive('ophList', function () {
   return {
     templateUrl: 'js/explorer/views/partials/_listItems.html',
     restrict: 'E',
@@ -350,7 +364,7 @@ angular.module('openDataHubApp').directive('ophExplorerList', function () {
   };
 });
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 $('.operation-opts-js .separator-js').show();
@@ -390,7 +404,7 @@ $(document).ready(function () {
   });
 });
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 /**
@@ -476,4 +490,4 @@ angular.module('openDataHubApp').service('ExplorerService', ["$http", function (
 //   });
 // }
 
-},{}]},{},[1,2,3,4,5,6,7]);
+},{}]},{},[1,2,3,4,5,6,7,8]);

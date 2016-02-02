@@ -8,6 +8,27 @@
  * # ophExploreList
  */
 
+angular.module('openDataHubApp').directive('ophHeader', function () {
+  return {
+    templateUrl: '/js/common/views/partials/_header.html',
+    restrict: 'E',
+    replace: true,
+    link: function link(scope, element, attrs) {
+      scope.url = "$('#site-url').data('site_url');";
+    }
+  };
+});
+
+},{}],2:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
 angular.module('openDataHubApp').directive('ophSideNav', function () {
   return {
     templateUrl: '/js/common/views/partials/_sideNav.html',
@@ -31,7 +52,24 @@ angular.module('openDataHubApp').directive('ophSideNav', function () {
   };
 });
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
+angular.module('openDataHubApp').directive('ophSubHeader', function () {
+  return {
+    template: '<md-toolbar class="short"><div class="md-toolbar-tools"></div></md-toolbar>',
+    restrict: 'E'
+  };
+});
+
+},{}],4:[function(require,module,exports){
 'use strict';
 
 var site_url = $('#site-url').data('site_url');
@@ -124,4 +162,4 @@ function successMessages(messages) {
 	$('#success-messages-js').dialog('open');
 }
 
-},{}]},{},[1,2]);
+},{}]},{},[1,2,3,4]);

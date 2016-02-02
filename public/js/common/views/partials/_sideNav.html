@@ -1,14 +1,32 @@
 <md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
-  <md-toolbar class="md-theme-indigo">
-    <md-button>
-      <i class="fa fa-user"></i>Rodolfo
-    </md-button>
+  <md-toolbar class="short">
+    <div class="md-toolbar-tools centered-toolbar">
+      <md-button aria-label="Energy Consumption" ng-click="previewDatasetData('power_sample')">
+        <i class="fa fa-user"></i>
+        Rodolfo Gonçalves
+      </md-button>
+    </div>
   </md-toolbar>
-  <md-content layout-padding layout="column">
-    <md-button class="md-primary" ng-href="{{links.explore}}">Explore</md-button>
-    <md-button class="md-primary" ng-href="{{links.download}}">Download</md-button>
-    <md-button class="md-primary" ng-href="{{links.about}}">About</md-button>
-    <md-button class="md-primary" ng-href="{{links.contacts}}">Contacts</md-button>
-    <md-button class="md-primary" ng-href="{{links.login}}">Log In</md-button>
-  </md-content>
+  <div class="content">
+    <md-button class="md-primary" ng-href="{{links.explore}}">
+      <i class="fa fa-database"></i>
+      Explore
+    </md-button>
+    <md-button class="md-primary" ng-href="{{links.download}}">
+      <i class="fa fa-cloud-download"></i>
+      Download
+    </md-button>
+    <md-button class="md-primary" ng-href="{{links.about}}">
+      <i class="fa fa-info"></i>
+      About
+    </md-button>
+    <md-button class="md-primary" ng-href="{{links.contacts}}">
+      <i class="fa fa-phone"></i>
+      Contacts
+    </md-button>
+    <md-button class="md-primary" ng-href="{{links.login}}">
+      <i class="fa fa-sign-in"></i>
+      Log In
+    </md-button>
+  </div>
 </md-sidenav>

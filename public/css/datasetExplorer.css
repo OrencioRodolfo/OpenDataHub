@@ -1,168 +1,132 @@
 /** *************************
- *							*
- * 		Dataset Explorer 	*
- *							*
+ *													*
+ * 		Dataset Explorer 			*
+ *													*
  ****************************/
 .datasets-nav {
-	margin-bottom: 40px;
+  margin-bottom: 40px;
 }
-
 .datasets-picker {
-	padding: 10px 0px;
+  padding: 10px 0px;
 }
-
-.datasets-picker li{
-	font-size: 13px;
-	font-family: "Lucida Sans Unicode","Lucida Grande",sans-serif;
+.datasets-picker li {
+  font-size: 13px;
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 }
-
 .datasets-picker li a {
-	text-decoration: none;
-	padding: 0px 5px;
-	color: #8C8C8C;
-	margin-right: 25px;
+  text-decoration: none;
+  padding: 0px 5px;
+  color: #8c8c8c;
+  margin-right: 25px;
 }
-
-.datasets-picker li a:hover{
-	cursor: pointer;
+.datasets-picker li a:hover {
+  cursor: pointer;
+  border-bottom: 2.5px solid #428bca;
+  color: #4185bf;
 }
-
-.datasets-picker li .active, .datasets-picker li a:hover{
-	border-bottom: 2.5px solid #428BCA;
-	color: #4185BF;
+.datasets-picker li .active {
+  border-bottom: 2.5px solid #428bca;
+  color: #4185bf;
 }
-
 .operation-opts {
-	position: absolute;
-	right: 15px;
-	top: 110px;
-	background-color: #8C8C8C;
-	padding: 1px 20px;
-	border-radius: 3px;
-	background-color: rgba(237, 237, 237, 0.8);
-	-webkit-box-shadow: 0px 0px 9px 0px rgba(46, 50, 50, 0.4);
-	-moz-box-shadow:    0px 0px 9px 0px rgba(46, 50, 50, 0.4);
-	box-shadow:         0px 0px 9px 0px rgba(46, 50, 50, 0.4);
+  position: absolute;
+  right: 15px;
+  top: 110px;
+  background-color: #8c8c8c;
+  background-color: rgba(237, 237, 237, 0.8);
+  padding: 1px 20px;
+  border-radius: 3px;
+  -webkit-box-shadow: 0px 0px 9px 0px rgba(46, 50, 50, 0.4);
+  -moz-box-shadow: 0px 0px 9px 0px rgba(46, 50, 50, 0.4);
+  box-shadow: 0px 0px 9px 0px rgba(46, 50, 50, 0.4);
 }
-
 .operation-opts ul {
-    height: 30px;
+  height: 30px;
 }
-
 .operation-opts ul li {
-	margin: 0 2.5px;
-	height: inherit;
-	vertical-align: bottom;
+  margin: 0 2.5px;
+  height: inherit;
+  vertical-align: bottom;
 }
-
 .operation-opts ul li img {
-	width: 30px;
-	cursor: pointer;
+  width: 30px;
+  cursor: pointer;
 }
-
 .operation-opts ul li .small {
-	width: 20px;
-	position: relative;
-	top: 5px;
+  width: 20px;
+  position: relative;
+  top: 5px;
 }
-
 .operation-opts ul li .separator {
-	width: 5px;
-	cursor: auto;
-	margin: 0 10px;
-	height: 30px;
+  width: 5px;
+  cursor: auto;
+  margin: 0 10px;
+  height: 30px;
 }
-
 #data-consult-form {
-	font-size: 11px;
+  font-size: 11px;
 }
-
 #data-consult-form .fields-select {
-	height: 200px;
-	overflow: auto;
-	padding: 0px;
+  height: 200px;
+  overflow: auto;
+  padding: 0px;
 }
-
-#data-consult-form .fields-select li{
-	list-style: none;
-	color: #333333;
-	border-top: 1px solid #333333;
-	cursor: pointer;
-	margin-right: 10px;
-	height: 30px;
+#data-consult-form .fields-select li {
+  list-style: none;
+  color: #333333;
+  border-top: 1px solid #333333;
+  cursor: pointer;
+  margin-right: 10px;
+  height: 30px;
 }
-
-#data-consult-form .fields-select .selected{
-	background-color: #428BCA;
+#data-consult-form .fields-select .selected {
+  background-color: #428bca;
 }
-
-.fields-container .title {
-	font-weight: bold;
+#data-consult-form .fields-select .option-title {
+  display: inline-block;
+  float: right;
+  width: 90%;
+  padding: 5px;
+  height: 30px;
 }
-
-#data-consult-form .fields-select .option-title{
-	display: inline-block;
-	float: right;
-	width: 90%;
-	padding: 5px;
-	height: 30px;
+#data-consult-form .fields-select .option-selected {
+  display: inline-block;
+  width: 10%;
+  text-align: center;
+  background-color: #428bca;
+  padding: 5px;
+  height: 30px;
 }
-
-#data-consult-form .fields-select .option-selected{
-	display: inline-block;
-	width: 10%;
-	text-align: center;
-	background-color: #428BCA;
-	padding: 5px;
-	height: 30px;
-}
-
 #data-consult-form .fields-select input {
-	margin: 0px;
-	padding: 0px;
+  margin: 0px;
+  padding: 0px;
 }
-
+.fields-container .title {
+  font-weight: bold;
+}
 .left-content {
-	display: inline-block;
-	float: left;
-	width: 50%;
+  display: inline-block;
+  float: left;
+  width: 50%;
 }
-
 .right-content {
-	display: inline-block;
-	width: 50%;
+  display: inline-block;
+  width: 50%;
 }
-
 .list-records {
-	font-size: 11px;
-	margin-bottom: 0px;
+  font-size: 11px;
+  margin-bottom: 0px;
 }
-
 .animation-image {
-	display: none;
-	margin-bottom: 20px;
+  display: none;
+  margin-bottom: 20px;
 }
-
 .animation-image img {
-	width: 200px;
+  width: 200px;
 }
-
 .canvas-container {
-	text-align: center;
+  text-align: center;
 }
-
-.data-explorer .actions-bar md-toolbar {
-	min-height: inherit;
-}
-
-.data-explorer .actions-bar md-toolbar .md-toolbar-tools {
-	height: 36px;
-}
-
-.data-explorer .actions-bar md-toolbar .md-toolbar-tools button span {
-	font-size: 12px;
-}
-
 .data-explorer .data-preview {
-	margin-top: 10px;
+  margin-top: 10px;
 }

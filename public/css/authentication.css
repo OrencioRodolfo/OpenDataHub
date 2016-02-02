@@ -1,52 +1,44 @@
 /** *************************
- *							*
- * 		Login Form style 	*
- *							*
+ *													*
+ * 		Login Form style 			*
+ *													*
  ****************************/
-
-.button{ 
-	display: inline-block; 
-	background: #000; 
-	padding:5px 10px; 
-	z-index: 0; 
-	color: #fff; 
+.button {
+  display: inline-block;
+  background: #000000;
+  padding: 5px 10px;
+  z-index: 0;
+  color: #ffffff;
 }
-
-
-.auth-container { 
-	margin:0 auto;
-	width: 650px;
+.auth-container {
+  margin: 0 auto;
+  width: 650px;
 }
-
-.log-in-btn, .sign-up-btn{
-	width: 100%;
+.log-in-btn,
+.sign-up-btn {
+  width: 100%;
 }
-
 .btns-container {
-	margin: 5px 0px;
+  margin: 5px 0px;
 }
-
 .sign-up-container {
-	margin-top: 10px;
-	display: none;
+  margin-top: 10px;
+  display: none;
 }
-
-.form-group input,select {
-	margin-bottom: 5px;
+.form-group input,
+select {
+  margin-bottom: 5px;
 }
-
-.form-group .inline-left { 
-	display: inline-block;
-	float: left;
-	margin-right: 1%;
-	width: 49%;
+.form-group .inline-left {
+  display: inline-block;
+  float: left;
+  margin-right: 1%;
+  width: 49%;
 }
-
 .form-group .inline-right {
-	display: inline-block;
-	width: 50%;
+  display: inline-block;
+  width: 50%;
 }
-
 .panel-group .panel-heading {
-	cursor: pointer;
+  cursor: pointer;
 }

@@ -1,5 +1,5 @@
 
-<md-toolbar>
+<md-toolbar class="short">
   <div class="md-toolbar-tools datasets-picker-js">
     <md-button aria-label="Energy Consumption" ng-click="previewDatasetData('power_sample')">
       Energy Consumption
@@ -18,7 +18,7 @@
     </md-button>
 
     <span flex></span>
-    <md-button class="md-icon-button" aria-label="Favorite" title="Favorite">
+    <md-button class="md-icon-button" aria-label="Favorite" title="Favorite" ng-click="toggleFiltersContainer()">
       <i class="fa fa-filter"></i>
     </md-button>
     <md-button class="md-icon-button" aria-label="Raw data" title="Raw data">

@@ -8,6 +8,10 @@ head
 		link(rel="stylesheet", href="/build/vendors/_bower.css")
 		link(rel="stylesheet", href="/components/bootstrap/dist/css/bootstrap.min.css")
 		link(rel="stylesheet", href="/components/components-font-awesome/css/font-awesome.min.css")
+		link(rel="stylesheet", href="/css/theme-overrides/angular-material/side-nav.css")
+		link(rel="stylesheet", href="/css/theme-overrides/angular-material/toolbar.css")
+		link(rel="stylesheet", href="/css/theme-overrides/angular-material/button.css")
+		link(rel="stylesheet", href="/css/theme-overrides/md-table.css")
 		link(rel="stylesheet", href="/css/template.css")
 		link(rel="stylesheet", href="/css/horizontalNav.css")
 		link(rel="stylesheet", href="/css/user.css")
@@ -20,14 +24,19 @@ head
 		body(ng-app="openDataHubApp")
 			div#site-url(data-site_url="#{config.web.site_url}:#{config.web.port}")
 
-			include template/header.jade
+			// include template/header.jade
+			oph-header(flex)
 
-			section(layout="row" flex)
-				oph-side-nav
+			section(layout="row")
+				oph-side-nav(class="left-side-navigation" flex)
 
-				md-content(class="wrap-content")
-					div.main-container
-						block main_container
+				block outer_main_container
+					section(layout="column" flex)
+						oph-sub-header
+
+						md-content(class="wrap-content")
+							div.main-container
+								block main_container
 
 			include template/footer.jade
 

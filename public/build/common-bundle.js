@@ -34,7 +34,7 @@ angular.module('openDataHubApp').directive('ophSideNav', function () {
     templateUrl: '/js/common/views/partials/_sideNav.html',
     restrict: 'E',
     replace: true,
-    controller: ['$scope', '$mdSidenav', function ($scope, $mdSidenav) {
+    controller: ['$scope', '$mdMedia', function ($scope, $mdMedia) {
       var site_url = $('#site-url').data('site_url');
       $scope.links = {
         'explore': site_url + '/datasetExplorer',
@@ -42,11 +42,6 @@ angular.module('openDataHubApp').directive('ophSideNav', function () {
         'about': site_url + '/about',
         'contacts': site_url + '/contacts',
         'login': site_url + '/user/signin'
-      };
-      $scope.close = function () {
-        $mdSidenav('left').close().then(function () {
-          $log.debug("close LEFT is done");
-        });
       };
     }]
   };
@@ -64,8 +59,23 @@ angular.module('openDataHubApp').directive('ophSideNav', function () {
 
 angular.module('openDataHubApp').directive('ophSubHeader', function () {
   return {
-    template: '<md-toolbar class="short"><div class="md-toolbar-tools"></div></md-toolbar>',
-    restrict: 'E'
+    templateUrl: '/js/common/views/partials/_subHeader.html',
+    restrict: 'E',
+    controller: ['$scope', '$mdSidenav', '$mdMedia', function ($scope, $mdSidenav, $mdMedia) {
+      var site_url = $('#site-url').data('site_url');
+      $scope.sideNavTrigger = !$mdMedia('gt-md');
+      $scope.links = {
+        'explore': site_url + '/datasetExplorer',
+        'download': site_url + '/directDownload',
+        'about': site_url + '/about',
+        'contacts': site_url + '/contacts',
+        'login': site_url + '/user/signin'
+      };
+
+      $scope.openLeftNav = function () {
+        $mdSidenav('left-nav').toggle();
+      };
+    }]
   };
 });
 

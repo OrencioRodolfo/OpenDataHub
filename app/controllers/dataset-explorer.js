@@ -202,7 +202,7 @@ var ExplorerCtrl = function () {
     key: 'buildQuery',
     value: function buildQuery(collection) {
       var cursor = db.collection(collection).find();
-      return cursor.limit(10);
+      return cursor.limit(50);
     }
   }, {
     key: 'setProjection',

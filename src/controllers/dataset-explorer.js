@@ -271,7 +271,7 @@ export default class ExplorerCtrl {
 
   buildQuery(collection) {
     let cursor = db.collection(collection).find();
-    return cursor.limit(10);
+    return cursor.limit(50);
   }
 
   setProjection(group_by) {

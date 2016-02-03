@@ -1,15 +1,12 @@
 extends ../template
 
-block outer_main_container
+block main_container
 
 	section(layout="row" flex)
 		oph-filters-container
 
 		md-content(flex)
-			div(class="data-explorer datasets-container-js" ng-controller="ExplorerCtrl" layout="column")
-				// actions bar
-				oph-actions-bar(class="actions-bar" flex)
-
+			div(class="data-explorer datasets-container-js" ng-controller="ExplorerCtrl" layout="row")
 				// data preview
 				oph-list(class="data-preview" flex)
 

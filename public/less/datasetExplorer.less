@@ -130,3 +130,40 @@
 .data-explorer .data-preview {
  margin-top:10px;
 }
+
+
+.left-side-navigation {
+  &, md-sidenav{
+    box-shadow: none!important;
+    max-width: 180px;
+  }
+
+  .content {
+    // border-right: 1px solid gray;
+    margin: 0px;
+    padding-top: 10px;
+    // background-color: #E0F2F1;
+
+    a, .md-button {
+      padding: 0px;
+      padding-left: 20px;
+      margin: 0px;
+      font-size: 11px;
+      text-align: left;
+      width: 100%;
+      border-radius: 0px;
+
+      i {
+        min-width: 15px;
+      }
+    }
+  }
+
+  div.table {
+    display: table;
+    div.table-cell {
+      display: table-cell;
+      vertical-align: middle;
+    }
+  }
+}

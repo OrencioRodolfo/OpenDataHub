@@ -1,32 +1,44 @@
-<md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
-  <md-toolbar class="short">
-    <div class="md-toolbar-tools centered-toolbar">
-      <md-button aria-label="Energy Consumption" ng-click="previewDatasetData('power_sample')">
-        <i class="fa fa-user"></i>
-        Rodolfo Gonçalves
+<md-sidenav class="left-side-navigation md-sidenav-left md-whiteframe-z2" md-component-id="left-nav" md-is-locked-open="$mdMedia('gt-sm')">
+  <div class="content" layout="column">
+    <!-- navigation between the collections -->
+    <section hide-gt-sm>
+      <md-button class="md-primary" ng-href="{{links.explore}}">
+        <i class="fa fa-database"></i>
+        Explore
       </md-button>
-    </div>
-  </md-toolbar>
-  <div class="content">
-    <md-button class="md-primary" ng-href="{{links.explore}}">
-      <i class="fa fa-database"></i>
-      Explore
+      <md-button class="md-primary" ng-href="{{links.download}}">
+        <i class="fa fa-cloud-download"></i>
+        Download
+      </md-button>
+      <md-button class="md-primary" ng-href="{{links.about}}">
+        <i class="fa fa-info"></i>
+        About
+      </md-button>
+      <md-button class="md-primary" ng-href="{{links.contacts}}">
+        <i class="fa fa-phone"></i>
+        Contacts
+      </md-button>
+      <md-button class="md-primary" ng-href="{{links.login}}">
+        <i class="fa fa-sign-in"></i>
+        Log In
+      </md-button>
+    </section>
+
+    <!-- navigation between the collections -->
+    <md-button aria-label="Energy Consumption" class="md-primary" ng-click="previewDatasetData('power_sample')">
+      Energy Consumption
     </md-button>
-    <md-button class="md-primary" ng-href="{{links.download}}">
-      <i class="fa fa-cloud-download"></i>
-      Download
+    <md-button aria-label="Power event" class="md-primary" ng-click="previewDatasetData('power_event')">
+      Power event
     </md-button>
-    <md-button class="md-primary" ng-href="{{links.about}}">
-      <i class="fa fa-info"></i>
-      About
+    <md-button aria-label="User event" class="md-primary" ng-click="previewDatasetData('user_event')">
+      User event
     </md-button>
-    <md-button class="md-primary" ng-href="{{links.contacts}}">
-      <i class="fa fa-phone"></i>
-      Contacts
+    <md-button aria-label="Electricity Production" class="md-primary" ng-click="previewDatasetData('electric_production')">
+      Electricity Production
     </md-button>
-    <md-button class="md-primary" ng-href="{{links.login}}">
-      <i class="fa fa-sign-in"></i>
-      Log In
+    <md-button aria-label="Environmental" class="md-primary" ng-click="previewDatasetData('environmental')">
+      Environmental
     </md-button>
   </div>
 </md-sidenav>

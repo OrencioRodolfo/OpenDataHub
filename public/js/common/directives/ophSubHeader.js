@@ -9,7 +9,22 @@
 angular.module('openDataHubApp')
   .directive('ophSubHeader', function () {
     return {
-      template: '<md-toolbar class="short"><div class="md-toolbar-tools"></div></md-toolbar>',
-      restrict: 'E'
+      templateUrl: '/js/common/views/partials/_subHeader.html',
+      restrict: 'E',
+      controller: ['$scope', '$mdSidenav', '$mdMedia', function($scope, $mdSidenav, $mdMedia) {
+        let site_url          = $('#site-url').data('site_url');
+        $scope.sideNavTrigger = !$mdMedia('gt-md');
+        $scope.links          = {
+          'explore':  `${site_url}/datasetExplorer`,
+          'download': `${site_url}/directDownload`,
+          'about':    `${site_url}/about`,
+          'contacts': `${site_url}/contacts`,
+          'login':    `${site_url}/user/signin`,
+        };
+
+        $scope.openLeftNav = function() {
+          $mdSidenav('left-nav').toggle();
+        };
+      }]
     };
   });

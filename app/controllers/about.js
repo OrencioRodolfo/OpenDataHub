@@ -18,7 +18,7 @@ var AboutCtrl = function () {
     value: function loadPage(req, res) {
       var title = 'About Sinais';
       var session = req.session;
-
+      console.log(session);
       res.render('about/index', { title: title, session: session });
     }
   }]);

@@ -1,17 +1,17 @@
-var path = require('path'),
+var path     = require('path'),
     rootPath = path.normalize(__dirname + '/..'),
-    env = process.env.NODE_ENV || 'development';
-
+    env      = process.env.NODE_ENV || 'development';
+    host     = '10.2.5.59';
 var config = {
   development: {
     root: rootPath,
     encryption_key: 'Fasdf354Dfva5009f',
     web: {
-    	site_url: 'http://localhost',
+    	site_url: 'http://'+host,
     	port:     3000
     },
     db: {
-    	host:     'mongodb://localhost',
+    	host:     'mongodb://'+host,
     	port:     27017,
     	database: 'sinais',
     	user:     '',
@@ -31,11 +31,11 @@ var config = {
   test: {
     encryption_key: 'Fasdf354Dfva5009f',
     web: {
-    	site_url: 'http://localhost',
+    	site_url: 'http://'+host,
     	port:     3001
     },
     db: {
-    	host:     'mongodb://localhost',
+    	host:     'mongodb://'+host,
     	port:     27017,
     	database: 'sinais',
     	user:     '',
@@ -60,7 +60,7 @@ var config = {
     	port:     3000
     },
     db: {
-    	host:     'mongodb://localhost',
+    	host:     'mongodb://'+host,
     	port:     27017,
     	database: 'sinais',
     	user:     '',
@@ -85,7 +85,7 @@ var config = {
     	port:     3000
     },
     db: {
-    	host:     'mongodb://localhost',
+    	host:     'mongodb://'+host,
     	port:     27017,
     	database: 'sinais',
     	user:     '',

@@ -7,13 +7,13 @@
  * # ophExploreList
  */
 angular.module('openDataHubApp')
-  .directive('ophHeader', function () {
+  .directive('ophExplorerSideNav', function () {
     return {
-      templateUrl: '/js/common/views/header.html',
+      templateUrl: '/js/explorer/views/sideNav.html',
       restrict: 'E',
       replace: true,
-      link: function (scope, element, attrs) {
-          scope.url = "$('#site-url').data('site_url');";
-      }
+      controller: ['$scope', '$mdMedia', function($scope, $mdMedia) {
+
+      }]
     };
   });

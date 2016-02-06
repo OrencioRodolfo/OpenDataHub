@@ -9,7 +9,7 @@
 angular.module('openDataHubApp')
   .directive('ophSubHeader', function () {
     return {
-      templateUrl: '/js/common/views/partials/_subHeader.html',
+      templateUrl: '/js/common/views/subHeader.html',
       restrict: 'E',
       controller: ['$scope', '$mdSidenav', '$mdMedia', function($scope, $mdSidenav, $mdMedia) {
         let site_url          = $('#site-url').data('site_url');

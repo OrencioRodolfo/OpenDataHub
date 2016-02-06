@@ -9,9 +9,10 @@
 angular.module('openDataHubApp')
   .directive('ophList', function () {
     return {
-      templateUrl: 'js/explorer/views/partials/_listItems.html',
+      templateUrl: 'js/explorer/views/listItems.html',
       restrict: 'E',
       link: function postLink(scope, element, attrs) {
+        console.log(scope.data);
         // element.text('this is the ophExploreList directive');
       }
     };

@@ -9,7 +9,7 @@
 angular.module('openDataHubApp')
   .directive('ophFiltersContainer', function () {
     return {
-      templateUrl: 'js/explorer/views/partials/_filtersContainer.html',
+      templateUrl: 'js/explorer/views/filtersContainer.html',
       restrict: 'E',
       controller: ['$scope', '$mdSidenav', function postLink($scope, $mdSidenav) {
         $scope.close = function () {

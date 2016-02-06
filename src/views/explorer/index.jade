@@ -1,17 +1,13 @@
 extends ../template
 
-block main_container
+block main_wrapper
+	div(ng-controller="ExplorerCtrl as explCtrl" class="data-explorer datasets-container-js" flex layout="row")
+		block side_nav
+			oph-explorer-side-nav(flex)
 
-	section(layout="row" flex)
-		oph-filters-container
-
-		md-content(flex)
-			div(class="data-explorer datasets-container-js" ng-controller="ExplorerCtrl" layout="row")
-				// data preview
-				oph-side-nav(flex)
-
-				// data preview
-				oph-list(class="data-preview" flex)
+		block main_container
+		// data preview
+		oph-list(class="data-preview" flex)
 
 block append js
 	script(src="build/explorer-bundle.js")

@@ -315,15 +315,12 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophFiltersContainer', function () {
+angular.module('openDataHubApp').directive('ophExplorerSideNav', function () {
   return {
-    templateUrl: 'js/explorer/views/partials/_filtersContainer.html',
+    templateUrl: '/js/explorer/views/sideNav.html',
     restrict: 'E',
-    controller: ['$scope', '$mdSidenav', function postLink($scope, $mdSidenav) {
-      $scope.close = function () {
-        $mdSidenav('right').close();
-      };
-    }]
+    replace: true,
+    controller: ['$scope', '$mdMedia', function ($scope, $mdMedia) {}]
   };
 });
 
@@ -337,13 +334,15 @@ angular.module('openDataHubApp').directive('ophFiltersContainer', function () {
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophList', function () {
+angular.module('openDataHubApp').directive('ophFiltersContainer', function () {
   return {
-    templateUrl: 'js/explorer/views/partials/_listItems.html',
+    templateUrl: 'js/explorer/views/filtersContainer.html',
     restrict: 'E',
-    link: function postLink(scope, element, attrs) {
-      // element.text('this is the ophExploreList directive');
-    }
+    controller: ['$scope', '$mdSidenav', function postLink($scope, $mdSidenav) {
+      $scope.close = function () {
+        $mdSidenav('right').close();
+      };
+    }]
   };
 });
 
@@ -357,21 +356,14 @@ angular.module('openDataHubApp').directive('ophList', function () {
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophSideNav', function () {
+angular.module('openDataHubApp').directive('ophList', function () {
   return {
-    templateUrl: '/js/explorer/views/partials/_sideNav.html',
+    templateUrl: 'js/explorer/views/listItems.html',
     restrict: 'E',
-    replace: true,
-    controller: ['$scope', '$mdMedia', function ($scope, $mdMedia) {
-      var site_url = $('#site-url').data('site_url');
-      $scope.links = {
-        'explore': site_url + '/datasetExplorer',
-        'download': site_url + '/directDownload',
-        'about': site_url + '/about',
-        'contacts': site_url + '/contacts',
-        'login': site_url + '/user/signin'
-      };
-    }]
+    link: function postLink(scope, element, attrs) {
+      console.log(scope.data);
+      // element.text('this is the ophExploreList directive');
+    }
   };
 });
 

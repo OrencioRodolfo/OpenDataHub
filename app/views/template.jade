@@ -2,7 +2,7 @@ doctype html
 html
 head
 	title= title
-
+	meta(name="viewport" content="width=device-width, initial-scale=1.0")
 	block css
 		// css
 		link(rel="stylesheet", href="/build/vendors/_bower.css")
@@ -23,14 +23,28 @@ head
 		body(ng-app="openDataHubApp")
 			div#site-url(data-site_url="#{config.web.site_url}:#{config.web.port}")
 
+			div(layout="row")
+				div(hide show-xs flex) XS
+				div(hide show-sm flex) SM
+				div(hide show-md flex) MD
+				div(hide show-lg flex) LG
+				div(hide show-xl flex) XL
+
 			// include template/header.jade
 			section(layout="column" flex)
 				oph-header(flex)
 				oph-sub-header
 
-			md-content(layout="row")
+			md-content(layout="row" flex)
 				div(class="main-container" flex)
+					block main_wrapper
+					// Main side nav that will show on small devices
+					block side_nav
+						oph-main-side-nav
+
+					// Main container for dynamic contents
 					block main_container
+
 
 			include template/footer.jade
 
@@ -52,4 +66,4 @@ block js
 	script(src="js/app.js")
 	script(src="build/common-bundle.js")
 	if ENV_DEVELOPMENT
-		script(src="http://localhost:35729/livereload.js")
+		script(src="http://10.2.5.59:35729/livereload.js")

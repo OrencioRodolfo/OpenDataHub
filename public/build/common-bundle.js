@@ -3,18 +3,24 @@
 
 /**
  * @ngdoc directive
- * @name explorerApp.directive:ophExploreList
+ * @name explorerApp.directive:mainNavigation
  * @description
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophHeader', function () {
+angular.module('openDataHubApp').directive('ophMainNavigation', function () {
   return {
-    templateUrl: '/js/common/views/partials/_header.html',
+    templateUrl: '/js/common/views/mainNav.html',
     restrict: 'E',
-    replace: true,
     link: function link(scope, element, attrs) {
-      scope.url = "$('#site-url').data('site_url');";
+      var site_url = $('#site-url').data('site_url');
+      scope.links = {
+        'explore': site_url + '/datasetExplorer',
+        'download': site_url + '/directDownload',
+        'about': site_url + '/about',
+        'contacts': site_url + '/contacts',
+        'login': site_url + '/user/signin'
+      };
     }
   };
 });
@@ -29,9 +35,49 @@ angular.module('openDataHubApp').directive('ophHeader', function () {
  * # ophExploreList
  */
 
+angular.module('openDataHubApp').directive('ophHeader', function () {
+  return {
+    templateUrl: '/js/common/views/header.html',
+    restrict: 'E',
+    replace: true,
+    link: function link(scope, element, attrs) {
+      scope.url = "$('#site-url').data('site_url');";
+    }
+  };
+});
+
+},{}],3:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
+angular.module('openDataHubApp').directive('ophMainSideNav', function () {
+  return {
+    templateUrl: '/js/common/views/sideNav.html',
+    restrict: 'E',
+    replace: true,
+    controller: ['$scope', '$mdMedia', function ($scope, $mdMedia) {}]
+  };
+});
+
+},{}],4:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
 angular.module('openDataHubApp').directive('ophSubHeader', function () {
   return {
-    templateUrl: '/js/common/views/partials/_subHeader.html',
+    templateUrl: '/js/common/views/subHeader.html',
     restrict: 'E',
     controller: ['$scope', '$mdSidenav', '$mdMedia', function ($scope, $mdSidenav, $mdMedia) {
       var site_url = $('#site-url').data('site_url');
@@ -51,7 +97,7 @@ angular.module('openDataHubApp').directive('ophSubHeader', function () {
   };
 });
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var site_url = $('#site-url').data('site_url');
@@ -144,4 +190,4 @@ function successMessages(messages) {
 	$('#success-messages-js').dialog('open');
 }
 
-},{}]},{},[1,2,3]);
+},{}]},{},[1,2,3,4,5]);

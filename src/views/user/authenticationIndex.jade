@@ -7,7 +7,7 @@ block main_container
 			include signIn.jade
 		div(class="btns-container col-xs-12")
 			button(class="btn btn-primary log-in-btn log-in-btn-js") Log In
-		
+
 		// sign up form
 		div(class="sign-up-container sign-up-container-js")
 			include signUp.jade
@@ -19,3 +19,8 @@ block main_container
 			span(class="link pass-recover pass-recover-js") Forgot your password?
 			div(class="pass-recover-form-container pass-recover-form-js")
 				include recoverPassword.jade
+
+// javascript
+block append js
+	script(src="/js/user/signUp.js")
+	script(src="/js/user/user.js")

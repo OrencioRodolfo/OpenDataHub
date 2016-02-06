@@ -1,9 +1,8 @@
 extends ../template
 
 block main_container
-	div.contacts-container
-
-		div.left-container
+	div.contacts-container(layout-gt-sm="row" layout="column")
+		div(flex)
 			ul.address
 				li Madeira Interactive Technologies Institute
 				li Polo Científico e Tecnológico da Madeira, floor -2
@@ -21,7 +20,7 @@ block main_container
 					a(href="mailto:lucas@m-iti.org?subject=SustData%20Online%20Query" target="_blank") lucas@m-iti.org
 
 				p Subject: SustData: Online query
-		div.right-container
+		div(flex)
 			div(class="slider-container carousel slide" data-ride="carousel")
 				// Indicators
 				ol.carousel-indicators

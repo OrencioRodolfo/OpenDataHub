@@ -350,6 +350,34 @@ angular.module('openDataHubApp').directive('ophList', function () {
 },{}],6:[function(require,module,exports){
 'use strict';
 
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
+angular.module('openDataHubApp').directive('ophSideNav', function () {
+  return {
+    templateUrl: '/js/explorer/views/partials/_sideNav.html',
+    restrict: 'E',
+    replace: true,
+    controller: ['$scope', '$mdMedia', function ($scope, $mdMedia) {
+      var site_url = $('#site-url').data('site_url');
+      $scope.links = {
+        'explore': site_url + '/datasetExplorer',
+        'download': site_url + '/directDownload',
+        'about': site_url + '/about',
+        'contacts': site_url + '/contacts',
+        'login': site_url + '/user/signin'
+      };
+    }]
+  };
+});
+
+},{}],7:[function(require,module,exports){
+'use strict';
+
 $('.operation-opts-js .separator-js').show();
 $('.operation-opts-js .download-csv-js').show();
 $('.operation-opts-js .download-js').show();
@@ -387,7 +415,7 @@ $(document).ready(function () {
   });
 });
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 /**
@@ -473,4 +501,4 @@ angular.module('openDataHubApp').service('ExplorerService', ["$http", function (
 //   });
 // }
 
-},{}]},{},[1,2,3,4,5,6,7]);
+},{}]},{},[1,2,3,4,5,6,7,8]);

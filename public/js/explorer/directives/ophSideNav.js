@@ -9,7 +9,7 @@
 angular.module('openDataHubApp')
   .directive('ophSideNav', function () {
     return {
-      templateUrl: '/js/common/views/partials/_sideNav.html',
+      templateUrl: '/js/explorer/views/partials/_sideNav.html',
       restrict: 'E',
       replace: true,
       controller: ['$scope', '$mdMedia', function($scope, $mdMedia) {

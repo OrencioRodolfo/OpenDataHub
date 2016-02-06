@@ -5,41 +5,46 @@
  * # ExplorerctrlCtrl
  * Controller of the openDataHubApp
  */
-angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "ExplorerService", "$http", "$mdToast", function($scope, ExplorerService, $http, $mdToast){
-  /**
-   * Public attributes
-   */
-  $scope.data   = {
-    'headers': [],
-    'rows': []
-  };
-  $scope.search = {
-    'collection': '',
-    'group_by': 'minute',
-    'num_rows': '50',
-    'fields': [],
-    'selected_fields': []
-  };
+angular.module('openDataHubApp').controller('ExplorerCtrl', [
+  "$scope",
+  "ExplorerService",
+  "$http",
+  "$mdToast",
+  function($scope, ExplorerService, $http, $mdToast) {
+    /**
+     * Public attributes
+     */
+    $scope.data   = {
+      'headers': [],
+      'rows': []
+    };
+    $scope.search = {
+      'collection': '',
+      'group_by': 'minute',
+      'num_rows': '50',
+      'fields': [],
+      'selected_fields': []
+    };
 
-  /**
-   * Public methods
-   */
-  $scope.previewDatasetData = function(collection='user_event') {
-    $scope.search.collection = collection;
-    ExplorerService.previewDatasetData($scope.search).then(function(res) {
-      try {
-        if (res.status !== 200) throw res.statusText;
-        $scope.data.headers = res.data.headers;
-        $scope.data.rows    = res.data.rows;
-      } catch (e) {
-        alert(e);
-      };
-    });
-  };
+    /**
+     * Public methods
+     */
+    $scope.previewDatasetData = function(collection='user_event') {
+      $scope.search.collection = collection;
+      ExplorerService.previewDatasetData($scope.search).then(function(res) {
+        try {
+          if (res.status !== 200) throw res.statusText;
+          $scope.data.headers = res.data.headers;
+          $scope.data.rows    = res.data.rows;
+        } catch (e) {
+          alert(e);
+        };
+      });
+    };
 
-  // preview data on page load
-  $scope.previewDatasetData();
-}]);
+    // preview data on page load
+    $scope.previewDatasetData();
+  }]);
 
 // var site_url 	= $('#site-url').data('site_url');
 // /*

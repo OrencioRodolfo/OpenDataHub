@@ -29,34 +29,6 @@ angular.module('openDataHubApp').directive('ophHeader', function () {
  * # ophExploreList
  */
 
-angular.module('openDataHubApp').directive('ophSideNav', function () {
-  return {
-    templateUrl: '/js/common/views/partials/_sideNav.html',
-    restrict: 'E',
-    replace: true,
-    controller: ['$scope', '$mdMedia', function ($scope, $mdMedia) {
-      var site_url = $('#site-url').data('site_url');
-      $scope.links = {
-        'explore': site_url + '/datasetExplorer',
-        'download': site_url + '/directDownload',
-        'about': site_url + '/about',
-        'contacts': site_url + '/contacts',
-        'login': site_url + '/user/signin'
-      };
-    }]
-  };
-});
-
-},{}],3:[function(require,module,exports){
-'use strict';
-
-/**
- * @ngdoc directive
- * @name explorerApp.directive:ophExploreList
- * @description
- * # ophExploreList
- */
-
 angular.module('openDataHubApp').directive('ophSubHeader', function () {
   return {
     templateUrl: '/js/common/views/partials/_subHeader.html',
@@ -79,7 +51,7 @@ angular.module('openDataHubApp').directive('ophSubHeader', function () {
   };
 });
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 var site_url = $('#site-url').data('site_url');
@@ -172,4 +144,4 @@ function successMessages(messages) {
 	$('#success-messages-js').dialog('open');
 }
 
-},{}]},{},[1,2,3,4]);
+},{}]},{},[1,2,3]);

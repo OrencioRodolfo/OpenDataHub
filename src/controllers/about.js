@@ -6,7 +6,7 @@ export default class AboutCtrl {
   loadPage(req, res) {
     let title   = 'About Sinais';
     let session = req.session;
-    console.log(session);
+
     res.render('about/index', {title, session});
   }
 }

@@ -14,6 +14,7 @@ angular.module('openDataHubApp')
       controller: ['$scope', '$mdSidenav', '$mdMedia', 'UserService', function($scope, $mdSidenav, $mdMedia, UserService) {
         let site_url          = $('#site-url').data('site_url');
         $scope.login_url      = `${site_url}/user/signin`;
+        $scope.profile_url    = `${site_url}/user/profile`;
         $scope.sideNavTrigger = !$mdMedia('gt-md');
         $scope.links          = {
           'explore':  `${site_url}/datasetExplorer`,
@@ -36,7 +37,6 @@ angular.module('openDataHubApp')
             try {
               if (res.status !== 200) throw res.statusText;
               $scope.user = res.data;
-              console.log($scope.user);
             } catch (e) {
               alert(e);
             };

@@ -308,9 +308,102 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
 // }
 
 },{}],3:[function(require,module,exports){
-"use strict";
+'use strict';
+
+/**
+ * @ngdoc function
+ * @name openDataHubApp.controller:ExplorerctrlCtrl
+ * @description
+ * # ExplorerctrlCtrl
+ * Controller of the openDataHubApp
+ */
+angular.module('openDataHubApp').controller('FiltersCtrl', ["$scope", "$mdDialog", function ($scope, $mdDialog) {
+  $scope.hide = function () {
+    $mdDialog.hide();
+  };
+  $scope.cancel = function () {
+    $mdDialog.cancel();
+  };
+  $scope.answer = function (answer) {
+    $mdDialog.hide(answer);
+  };
+}]);
 
 },{}],4:[function(require,module,exports){
+"use strict";
+
+},{}],5:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name explorerApp.directive:ophExploreList
+ * @description
+ * # ophExploreList
+ */
+
+angular.module('openDataHubApp').directive('ophFiltersContainer', function () {
+  return {
+    templateUrl: '/js/explorer/views/filters/container.html',
+    restrict: 'E',
+    controller: ["$scope", "$mdDialog", "$mdMedia", function ($scope, $mdDialog, $mdMedia) {
+      $scope.openFromLeft = function () {
+        $mdDialog.show($mdDialog.alert().clickOutsideToClose(true).title('Opening from the left').textContent('Closing to the right!').ariaLabel('Left to right demo').ok('Nice!')
+        // You can specify either sting with query selector
+        .openFrom('#left')
+        // or an element
+        .closeTo(angular.element(document.querySelector('#right'))));
+      };
+      $scope.openOffscreen = function () {
+        $mdDialog.show($mdDialog.alert().clickOutsideToClose(true).title('Opening from offscreen').textContent('Closing to offscreen').ariaLabel('Offscreen Demo').ok('Amazing!')
+        // Or you can specify the rect to do the transition from
+        .openFrom({
+          top: -50,
+          width: 30,
+          height: 80
+        }).closeTo({
+          left: 1500
+        }));
+      };
+
+      $scope.showAdvanced = function (ev) {
+        // var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))  && $scope.customFullscreen;
+        var useFullScreen = !$mdMedia('gt-sm') ? true : false;
+        $mdDialog.show({
+          controller: DialogController,
+          templateUrl: '/js/explorer/views/filters/test.html',
+          parent: angular.element(document.body),
+          targetEvent: ev,
+          clickOutsideToClose: true,
+          fullscreen: true
+        }).then(function (answer) {
+          $scope.status = 'You said the information was "' + answer + '".';
+        }, function () {
+          $scope.status = 'You cancelled the dialog.';
+        });
+        $scope.$watch(function () {
+          return $mdMedia('xs') || $mdMedia('sm');
+        }, function (wantsFullScreen) {
+          $scope.customFullscreen = wantsFullScreen === true;
+        });
+      };
+    }]
+  };
+});
+
+function DialogController($scope, $mdDialog) {
+  $scope.hide = function () {
+    $mdDialog.hide();
+  };
+  $scope.cancel = function () {
+    $mdDialog.cancel();
+  };
+  $scope.answer = function (answer) {
+    $mdDialog.hide(answer);
+  };
+}
+
+},{}],6:[function(require,module,exports){
 'use strict';
 
 /**
@@ -327,7 +420,7 @@ angular.module('openDataHubApp').directive('ophCollectionsNav', function () {
   };
 });
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 /**
@@ -343,18 +436,48 @@ angular.module('openDataHubApp').directive('ophExplorerActions', function () {
     restrict: 'E',
     replace: true,
     controller: ["$scope", "$mdMedia", function ($scope, $mdMedia) {
-      $scope.topDirections = ['left', 'up'];
-      $scope.bottomDirections = ['down', 'right'];
-      $scope.isOpen = false;
-      $scope.availableModes = ['md-fling', 'md-scale'];
-      $scope.selectedMode = 'md-fling';
-      $scope.availableDirections = ['up', 'down', 'left', 'right'];
-      $scope.selectedDirection = 'left';
+      $scope.isOpen = $mdMedia('gt-sm') ? true : false;
+      $scope.selectedMode = 'md-scale';
+      // $scope.selectedMode      = 'md-fling';
+
+      $scope.showAdvanced = function (ev) {
+        // var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))  && $scope.customFullscreen;
+        var useFullScreen = !$mdMedia('gt-sm') ? true : false;
+        $mdDialog.show({
+          controller: DialogController,
+          templateUrl: '/js/explorer/views/filters/test.html',
+          parent: angular.element(document.body),
+          targetEvent: ev,
+          clickOutsideToClose: true,
+          fullscreen: true
+        }).then(function (answer) {
+          $scope.status = 'You said the information was "' + answer + '".';
+        }, function () {
+          $scope.status = 'You cancelled the dialog.';
+        });
+        $scope.$watch(function () {
+          return $mdMedia('xs') || $mdMedia('sm');
+        }, function (wantsFullScreen) {
+          $scope.customFullscreen = wantsFullScreen === true;
+        });
+      };
     }]
   };
 });
 
-},{}],6:[function(require,module,exports){
+function DialogController($scope, $mdDialog) {
+  $scope.hide = function () {
+    $mdDialog.hide();
+  };
+  $scope.cancel = function () {
+    $mdDialog.cancel();
+  };
+  $scope.answer = function (answer) {
+    $mdDialog.hide(answer);
+  };
+}
+
+},{}],8:[function(require,module,exports){
 'use strict';
 
 /**
@@ -372,29 +495,7 @@ angular.module('openDataHubApp').directive('ophExplorerSideNav', function () {
   };
 });
 
-},{}],7:[function(require,module,exports){
-'use strict';
-
-/**
- * @ngdoc directive
- * @name explorerApp.directive:ophExploreList
- * @description
- * # ophExploreList
- */
-
-angular.module('openDataHubApp').directive('ophFiltersContainer', function () {
-  return {
-    templateUrl: 'js/explorer/views/filtersContainer.html',
-    restrict: 'E',
-    controller: ['$scope', '$mdSidenav', function postLink($scope, $mdSidenav) {
-      $scope.close = function () {
-        $mdSidenav('right').close();
-      };
-    }]
-  };
-});
-
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 /**
@@ -414,7 +515,7 @@ angular.module('openDataHubApp').directive('ophList', function () {
   };
 });
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 $('.operation-opts-js .separator-js').show();
@@ -454,7 +555,7 @@ $(document).ready(function () {
   });
 });
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 /**
@@ -540,4 +641,4 @@ angular.module('openDataHubApp').service('ExplorerService', ["$http", function (
 //   });
 // }
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11]);

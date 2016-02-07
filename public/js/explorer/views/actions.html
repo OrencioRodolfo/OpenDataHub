@@ -1,26 +1,31 @@
 <div class="actions-container">
-  <md-content layout="column">
+  <md-content layout="column" ng-cloak>
     <div class="lock-size" layout="row" layout-align="end center">
-      <md-fab-speed-dial md-open="isOpen" md-direction="{{selectedDirection}}" ng-class="selectedMode">
+      <md-fab-speed-dial md-open="isOpen" md-direction="left" ng-class="selectedMode">
         <md-fab-trigger>
           <md-button aria-label="menu" class="md-fab md-primary">
-            <i class="fa" ng-class="{'fa-arrow-left': !isOpen, 'fa-arrow-right': isOpen}"></i>
+            <!-- <i class="fa" ng-class="{'fa-arrow-left': !isOpen, 'fa-arrow-right': isOpen}"></i> -->
+            <i class="fa fa-gears"></i>
           </md-button>
         </md-fab-trigger>
         <md-fab-actions>
           <md-button class="md-fab md-raised md-mini" aria-label="Download CSV">
             <md-tooltip md-direction="bottom">Download CSV</md-tooltip>
-            <i class="fa fa-cloud-download"></i>
+            <i class="fa fa-file-excel-o"></i>
           </md-button>
           <md-button class="md-fab md-raised md-mini" aria-label="Download JS">
-            <md-tooltip md-direction="bottom">Download JS</md-tooltip>
-            <i class="fa fa-cloud-download"></i>
+            <md-tooltip md-direction="bottom">Download JSON</md-tooltip>
+            <i class="fa fa-file-text-o"></i>
           </md-button>
           <md-button class="md-fab md-raised md-mini" aria-label="Raw data">
             <md-tooltip md-direction="bottom">Raw data</md-tooltip>
             <i class="fa fa-list"></i>
           </md-button>
-          <md-button class="md-fab md-raised md-mini" aria-label="Filters" ng-click="toggleFiltersContainer()">
+          <md-button class="md-fab md-raised md-mini" aria-label="Chart">
+            <md-tooltip md-direction="bottom">Chart</md-tooltip>
+            <i class="fa fa-area-chart"></i>
+          </md-button>
+          <md-button class="md-fab md-raised md-mini" aria-label="Filters" ng-click="showAdvanced($event)">
             <md-tooltip md-direction="bottom">Filters</md-tooltip>
             <i class="fa fa-filter"></i>
           </md-button>

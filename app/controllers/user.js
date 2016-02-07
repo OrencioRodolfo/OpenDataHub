@@ -120,7 +120,7 @@ var UserCtrl = function () {
     key: 'logout',
     value: function logout(req, res) {
       req.session.destroy();
-      res.send('success');
+      res.json({ 'success': 'success' });
     }
   }, {
     key: 'profile',
@@ -145,6 +145,14 @@ var UserCtrl = function () {
       var User_m = mongoose.model('user');
       User_m.findOne({ _id: req.session.user_id }).populate('address.country').exec(function (err, user) {
         res.render('user/profile/profileInfo', { user: user });
+      });
+    }
+  }, {
+    key: 'getUser',
+    value: function getUser(req, res) {
+      var User_m = mongoose.model('user');
+      User_m.findOne({ _id: req.session.user_id }).populate('address.country').exec(function (err, user) {
+        res.json(user);
       });
     }
   }, {

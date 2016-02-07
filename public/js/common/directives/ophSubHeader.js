@@ -11,8 +11,9 @@ angular.module('openDataHubApp')
     return {
       templateUrl: '/js/common/views/subHeader.html',
       restrict: 'E',
-      controller: ['$scope', '$mdSidenav', '$mdMedia', function($scope, $mdSidenav, $mdMedia) {
+      controller: ['$scope', '$mdSidenav', '$mdMedia', 'UserService', function($scope, $mdSidenav, $mdMedia, UserService) {
         let site_url          = $('#site-url').data('site_url');
+        $scope.login_url      = `${site_url}/user/signin`;
         $scope.sideNavTrigger = !$mdMedia('gt-md');
         $scope.links          = {
           'explore':  `${site_url}/datasetExplorer`,
@@ -25,6 +26,24 @@ angular.module('openDataHubApp')
         $scope.openLeftNav = function() {
           $mdSidenav('left-nav').toggle();
         };
+
+        $scope.logout = function() {
+          UserService.logout();
+        };
+
+        function getUser() {
+          UserService.getUser().then(function(res) {
+            try {
+              if (res.status !== 200) throw res.statusText;
+              $scope.user = res.data;
+              console.log($scope.user);
+            } catch (e) {
+              alert(e);
+            };
+          });
+        };
+
+        getUser(); // load user details on page load
       }]
     };
   });

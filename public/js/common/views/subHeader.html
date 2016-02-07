@@ -11,10 +11,14 @@
     <span flex></span>
 
     <md-button class="md-icon-button" aria-label="Download CSV">
-      <md-tooltip md-direction="bottom">Profile</md-tooltip>
+      <md-tooltip md-direction="bottom">{{user.first_name}}</md-tooltip>
       <md-icon class="fa fa-user"></md-icon>
     </md-button>
-    <md-button class="md-icon-button" aria-label="Download CSV">
+    <md-button ng-if="!user" class="md-icon-button" aria-label="Login" ng-href="{{login_url}}">
+      <md-tooltip md-direction="bottom">Login</md-tooltip>
+      <md-icon class="fa fa-sign-in"></md-icon>
+    </md-button>
+    <md-button ng-if="user" class="md-icon-button" aria-label="Download CSV" ng-click="logout()">
       <md-tooltip md-direction="bottom">Logout</md-tooltip>
       <md-icon class="fa fa-sign-out"></md-icon>
     </md-button>

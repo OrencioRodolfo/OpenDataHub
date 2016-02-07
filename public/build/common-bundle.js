@@ -79,8 +79,9 @@ angular.module('openDataHubApp').directive('ophSubHeader', function () {
   return {
     templateUrl: '/js/common/views/subHeader.html',
     restrict: 'E',
-    controller: ['$scope', '$mdSidenav', '$mdMedia', function ($scope, $mdSidenav, $mdMedia) {
+    controller: ['$scope', '$mdSidenav', '$mdMedia', 'UserService', function ($scope, $mdSidenav, $mdMedia, UserService) {
       var site_url = $('#site-url').data('site_url');
+      $scope.login_url = site_url + '/user/signin';
       $scope.sideNavTrigger = !$mdMedia('gt-md');
       $scope.links = {
         'explore': site_url + '/datasetExplorer',
@@ -93,11 +94,65 @@ angular.module('openDataHubApp').directive('ophSubHeader', function () {
       $scope.openLeftNav = function () {
         $mdSidenav('left-nav').toggle();
       };
+
+      $scope.logout = function () {
+        UserService.logout();
+      };
+
+      function getUser() {
+        UserService.getUser().then(function (res) {
+          try {
+            if (res.status !== 200) throw res.statusText;
+            $scope.user = res.data;
+            console.log($scope.user);
+          } catch (e) {
+            alert(e);
+          };
+        });
+      };
+
+      getUser(); // load user details on page load
     }]
   };
 });
 
 },{}],5:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc service
+ * @name explorerApp.ExplorerService
+ * @description
+ * # ExplorerService
+ * Service in the explorerApp.
+ */
+angular.module('openDataHubApp').service('UserService', ["$http", function ($http) {
+  var site_url = $('#site-url').data('site_url');
+
+  function getUser() {
+    var url = site_url + '/user/details';
+    return $http.get(url);
+  }
+
+  function logout() {
+    var url = site_url + '/user/logout';
+    $http.get(url).then(function (res) {
+      try {
+        if (res.status !== 200) throw res.statusText;
+        window.location = '' + site_url;
+      } catch (e) {
+        alert(e);
+      };
+    });
+  }
+
+  return {
+    getUser: getUser,
+    logout: logout
+  };
+}]);
+
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var site_url = $('#site-url').data('site_url');
@@ -190,4 +245,4 @@ function successMessages(messages) {
 	$('#success-messages-js').dialog('open');
 }
 
-},{}]},{},[1,2,3,4,5]);
+},{}]},{},[1,2,3,4,5,6]);

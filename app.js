@@ -69,6 +69,14 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.use('/datasetExplorer', function (req, res, next) {
+  if (!req.session.logged_in) {
+    res.redirect('/user/signin');
+  } else {
+    next();
+  }
+});
+
 require('./config/express')(app, config);
 
 /**

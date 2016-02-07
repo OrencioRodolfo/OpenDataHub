@@ -114,7 +114,7 @@ export default class UserCtrl {
 
   logout (req, res) {
     req.session.destroy();
-    res.send('success');
+    res.json({'success': 'success'});
   }
 
   profile (req, res) {
@@ -141,6 +141,16 @@ export default class UserCtrl {
       .populate('address.country')
       .exec(function(err, user){
         res.render('user/profile/profileInfo', {user: user} );
+      });
+  }
+
+  getUser (req, res) {
+    let User_m = mongoose.model('user');
+    User_m
+      .findOne({_id: req.session.user_id})
+      .populate('address.country')
+      .exec(function(err, user){
+        res.json(user);
       });
   }
 

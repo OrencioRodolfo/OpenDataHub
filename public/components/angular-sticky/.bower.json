@@ -1,0 +1,13 @@
+{
+  "name": "angular-sticky",
+  "homepage": "https://github.com/mattosborn/angular-sticky",
+  "_release": "f81358db5f",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "f81358db5f4fb8344d9bf955240554dc306c884c"
+  },
+  "_source": "https://github.com/mattosborn/angular-sticky.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/mattosborn/angular-sticky.git"
+}

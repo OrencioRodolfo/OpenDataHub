@@ -6,8 +6,12 @@ block main_wrapper
 			oph-explorer-side-nav(flex)
 
 		block main_container
-			// data preview
-			oph-list(class="data-preview" flex)
+			div(layout="column" flex)
+				// data actions
+				oph-explorer-actions(sticky)
+
+				// data preview
+				oph-list(class="data-preview")
 
 block append js
 	script(src="build/explorer-bundle.js")

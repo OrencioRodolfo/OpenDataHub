@@ -14361,6 +14361,10 @@ md-tabs-wrapper md-next-button ng-md-icon {
     transform: translate3d(-50%, -50%, 0) rotate(180deg);
 }
 
+.stuck {
+  position: fixed;
+  top: 0;
+}
 /*!
  *  Font Awesome 4.5.0 by @davegandy - http://fontawesome.io - @fontawesome
  *  License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)

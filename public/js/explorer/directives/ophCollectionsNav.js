@@ -7,10 +7,9 @@
  * # ophExploreList
  */
 angular.module('openDataHubApp')
-  .directive('ophExplorerSideNav', function () {
+  .directive('ophCollectionsNav', function () {
     return {
-      templateUrl: '/js/explorer/views/sideNav.html',
-      restrict: 'E',
-      replace: true
+      templateUrl: '/js/explorer/views/collectionsNav.html',
+      restrict: 'E'
     };
   });

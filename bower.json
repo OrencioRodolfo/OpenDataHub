@@ -18,6 +18,7 @@
     "angular": "~1.4.9",
     "angular-material": "~1.0.3",
     "angular-material-data-table": "^0.9.9",
-    "components-font-awesome": "^4.5.0"
+    "components-font-awesome": "^4.5.0",
+    "angular-sticky": "https://github.com/mattosborn/angular-sticky.git"
   }
 }

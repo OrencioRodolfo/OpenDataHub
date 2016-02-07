@@ -5,21 +5,15 @@
       <oph-main-navigation></oph-main-navigation>
     </section>
 
+    <section hide-gt-sm>
+      <md-divider></md-divider>
+      <h6 class="text-center">Collections</h6>
+      <md-divider></md-divider>
+    </section>
+
     <!-- navigation between the collections -->
-    <md-button aria-label="Energy Consumption" class="md-primary" ng-click="previewDatasetData('power_sample')">
-      Energy Consumption
-    </md-button>
-    <md-button aria-label="Power event" class="md-primary" ng-click="previewDatasetData('power_event')">
-      Power event
-    </md-button>
-    <md-button aria-label="User event" class="md-primary" ng-click="previewDatasetData('user_event')">
-      User event
-    </md-button>
-    <md-button aria-label="Electricity Production" class="md-primary" ng-click="previewDatasetData('electric_production')">
-      Electricity Production
-    </md-button>
-    <md-button aria-label="Environmental" class="md-primary" ng-click="previewDatasetData('environmental')">
-      Environmental
-    </md-button>
+    <section>
+      <oph-collections-nav></oph-collections-nav>
+    </section>
   </div>
 </md-sidenav>

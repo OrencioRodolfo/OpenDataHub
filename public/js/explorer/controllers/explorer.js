@@ -10,7 +10,8 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
   "ExplorerService",
   "$http",
   "$mdToast",
-  function($scope, ExplorerService, $http, $mdToast) {
+  "$mdSidenav",
+  function($scope, ExplorerService, $http, $mdToast, $mdSidenav) {
     /**
      * Public attributes
      */
@@ -39,8 +40,13 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
         } catch (e) {
           alert(e);
         };
+        hideExplorerSideNav();
       });
     };
+
+    function hideExplorerSideNav() {
+      $mdSidenav('left-nav').close();
+    }
 
     // preview data on page load
     $scope.previewDatasetData();

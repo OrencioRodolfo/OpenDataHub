@@ -12,7 +12,6 @@ angular.module('openDataHubApp')
       templateUrl: 'js/explorer/views/listItems.html',
       restrict: 'E',
       link: function postLink(scope, element, attrs) {
-        console.log(scope.data);
         // element.text('this is the ophExploreList directive');
       }
     };

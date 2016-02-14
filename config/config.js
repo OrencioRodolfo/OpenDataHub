@@ -1,7 +1,8 @@
 var path     = require('path'),
     rootPath = path.normalize(__dirname + '/..'),
     env      = process.env.NODE_ENV || 'development';
-    host     = '192.168.1.119';
+    // host     = '192.168.1.119';
+    host     = 'localhost';
 var config = {
   development: {
     root: rootPath,

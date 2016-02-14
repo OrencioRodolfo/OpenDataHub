@@ -12,7 +12,7 @@ angular.module('openDataHubApp')
       templateUrl: '/js/explorer/views/actions.html',
       restrict: 'E',
       replace: true,
-      controller: ["$scope", "$mdMedia", function($scope, $mdMedia) {
+      controller: ["$scope", "$mdMedia", "$mdDialog", function($scope, $mdMedia, $mdDialog) {
         $scope.isOpen       = $mdMedia('gt-sm') ? true: false;
         $scope.selectedMode = 'md-scale';
         // $scope.selectedMode      = 'md-fling';
@@ -22,7 +22,7 @@ angular.module('openDataHubApp')
           var useFullScreen = !$mdMedia('gt-sm') ? true : false;
           $mdDialog.show({
             controller: DialogController,
-            templateUrl: '/js/explorer/views/filters/test.html',
+            templateUrl: '/js/explorer/views/filters/container.html',
             parent: angular.element(document.body),
             targetEvent: ev,
             clickOutsideToClose:true,
@@ -33,6 +33,7 @@ angular.module('openDataHubApp')
           }, function() {
             $scope.status = 'You cancelled the dialog.';
           });
+
           $scope.$watch(function() {
             return $mdMedia('xs') || $mdMedia('sm');
           }, function(wantsFullScreen) {

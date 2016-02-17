@@ -1,7 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
-},{}],2:[function(require,module,exports){
 'use strict';
 
 /**
@@ -307,7 +304,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
 // 	buildGraph: buildGraph
 // }
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 'use strict';
 
 /**
@@ -329,10 +326,7 @@ angular.module('openDataHubApp').controller('FiltersCtrl', ["$scope", "$mdDialog
   };
 }]);
 
-},{}],4:[function(require,module,exports){
-"use strict";
-
-},{}],5:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 /**
@@ -349,7 +343,7 @@ angular.module('openDataHubApp').directive('ophCollectionsNav', function () {
   };
 });
 
-},{}],6:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 'use strict';
 
 /**
@@ -407,7 +401,7 @@ function DialogController($scope, $mdDialog) {
   };
 }
 
-},{}],7:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 /**
@@ -425,7 +419,7 @@ angular.module('openDataHubApp').directive('ophExplorerSideNav', function () {
   };
 });
 
-},{}],8:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 /**
@@ -445,47 +439,7 @@ angular.module('openDataHubApp').directive('ophList', function () {
   };
 });
 
-},{}],9:[function(require,module,exports){
-'use strict';
-
-$('.operation-opts-js .separator-js').show();
-$('.operation-opts-js .download-csv-js').show();
-$('.operation-opts-js .download-js').show();
-
-$(document).ready(function () {
-  var loading = false; //to prevents multiple ajax loads
-  var site_url = $('#site-url').data('site_url');
-  var element = $('.main-container .content .list-records-js');
-  var page = element.data('page');
-
-  $(window).scroll(function () {
-    //detect page scroll
-    if ($(window).scrollTop() + $(window).height() == $(document).height()) {
-      //user scrolled to bottom of the page?
-      if (loading == false) {
-        //there's more data to load
-        loading = true; //prevent further ajax loading
-        $('.animation-image').show(); //show loading image
-        var data = serializeSearchDatasetForm();
-        data.page = page;
-        element.data('page', ++page);
-        $.ajax({
-          type: 'POST',
-          contentType: "application/json; charset=utf-8",
-          data: JSON.stringify(data),
-          url: site_url + '/datasetExplorer/searchDatasetData',
-          global: false,
-          success: function success(response) {
-            $('.main-container .content .list-records-js tbody').append(response);
-            $('.animation-image').hide(); //hide loading image
-          }
-        });
-      }
-    }
-  });
-});
-
-},{}],10:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 /**
@@ -571,4 +525,4 @@ angular.module('openDataHubApp').service('ExplorerService', ["$http", function (
 //   });
 // }
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10]);
+},{}]},{},[1,2,3,4,5,6,7]);

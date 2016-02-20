@@ -7,7 +7,7 @@ module.exports = function (app) {
   app.use('/directDownload', router);
 };
 
-import DirectDownloadCtrl from '../controllers/direct-download';
+import DirectDownloadCtrl from '../controllers/directDownload';
 let directDownloadCtrl = new DirectDownloadCtrl();
 
 router.get(['/'], function (req, res) {

@@ -15,16 +15,11 @@ angular.module('openDataHubApp')
       controller: ["$scope", "$mdMedia", "$mdDialog", function($scope, $mdMedia, $mdDialog) {
         $scope.isOpen       = $mdMedia('gt-sm') ? true: false;
         $scope.selectedMode = 'md-scale';
-        // $scope.selectedMode      = 'md-fling';
 
-        $scope.showAdvanced = function(ev) {
-          // var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))  && $scope.customFullscreen;
-          var useFullScreen = !$mdMedia('gt-sm') ? true : false;
+        $scope.showFiltersForm = function() {
           $mdDialog.show({
-            controller: DialogController,
+            controller: 'FiltersController',
             templateUrl: '/js/explorer/views/filters/container.html',
-            parent: angular.element(document.body),
-            targetEvent: ev,
             clickOutsideToClose:true,
             fullscreen: true
           })
@@ -33,25 +28,9 @@ angular.module('openDataHubApp')
           }, function() {
             $scope.status = 'You cancelled the dialog.';
           });
-
-          $scope.$watch(function() {
-            return $mdMedia('xs') || $mdMedia('sm');
-          }, function(wantsFullScreen) {
-            $scope.customFullscreen = (wantsFullScreen === true);
-          });
         };
+        // @TODO remove me
+        $scope.showFiltersForm();
       }]
     };
   });
-
-  function DialogController($scope, $mdDialog) {
-    $scope.hide = function() {
-      $mdDialog.hide();
-    };
-    $scope.cancel = function() {
-      $mdDialog.cancel();
-    };
-    $scope.answer = function(answer) {
-      $mdDialog.hide(answer);
-    };
-  }

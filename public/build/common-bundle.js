@@ -15,9 +15,6 @@ angular.module('openDataHubApp').directive('ophAccordion', ['$timeout', function
     scope: {
       items: "=?"
     },
-    controller: ['$scope', function ($scope) {
-      $scope.items = [{ 'header': 'Header', 'contentTmpl': 'js/common/views/test.html' }, { 'header': 'Header', 'contentTmpl': 'js/common/views/test.html' }, { 'header': 'Header', 'contentTmpl': 'js/common/views/test.html' }, { 'header': 'Header', 'contentTmpl': 'js/common/views/test.html' }, { 'header': 'Header', 'contentTmpl': 'js/common/views/test.html' }];
-    }],
     link: function link(scope, element, attrs) {
       $timeout(function () {
         // guarantee that the DOM is ready so we can bind the click

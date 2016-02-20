@@ -1,6 +1,6 @@
 'use strict';
 
-var _directDownload = require('../controllers/direct-download');
+var _directDownload = require('../controllers/directDownload');
 
 var _directDownload2 = _interopRequireDefault(_directDownload);
 

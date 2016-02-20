@@ -1,6 +1,6 @@
 'use strict';
 
-var _datasetExplorer = require('../controllers/dataset-explorer');
+var _datasetExplorer = require('../controllers/datasetExplorer');
 
 var _datasetExplorer2 = _interopRequireDefault(_datasetExplorer);
 
@@ -16,21 +16,23 @@ module.exports = function (app) {
 var explorerCtrl = new _datasetExplorer2.default();
 
 router.get('/', function (req, res) {
-  explorerCtrl.loadPage(req, res);
+  return explorerCtrl.loadPage(req, res);
 });
 
 router.post('/queryData', function (req, res) {
-  explorerCtrl.queryData(req, res);
+  return explorerCtrl.queryData(req, res);
 });
 
 router.post('/addFilter', function (req, res) {
-  explorerCtrl.addFilter(req, res);
+  return explorerCtrl.addFilter(req, res);
 });
 
 router.post('/searchDatasetData', function (req, res) {
-  explorerCtrl.searchDatasetData(req, res);
+  return explorerCtrl.searchDatasetData(req, res);
 });
 
-// router.get('/downloadDatasetFile', function(req, res){
-//   explorerCtrl.downloadDatasetFile(req, res);
-// });
+router.get('/metadata/:collection', function (req, res) {
+  return explorerCtrl.getMetadata(req, res);
+});
+
+// router.get('/downloadDatasetFile', (req, res) => explorerCtrl.downloadDatasetFile(req, res));

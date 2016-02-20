@@ -8,25 +8,55 @@ Object.defineProperty(exports, "__esModule", {
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * @class ExplorerCtrl
+ * @description Responsible for all the logic processing relative to the data explorer module
+ * @author ogoncalves
+ * @date 2016-02-17
+ */
+
 var ExplorerCtrl = function () {
   function ExplorerCtrl() {
     _classCallCheck(this, ExplorerCtrl);
-
-    this.password_hash = require('password-hash');
-    // this.moment     = require('moment');
-    // this.exec          = require('child_process').exec;
   }
+
+  /**
+   * @description Responsible for loading the index page of the Data Explorer module
+   * @param  {object} req NodeJS request obj
+   * @param  {object} res NodeJS request obj
+   * @return {html} the rendered index page
+   */
 
   _createClass(ExplorerCtrl, [{
     key: 'loadPage',
     value: function loadPage(req, res) {
       var title = 'Data Explorer';
       var session = req.session;
-
       res.render('explorer/index', { title: title, session: session });
+    }
+
+    /**
+     * @description Responsible for loading the metadata from MongoFB for a certain collection
+     * @param  {object} req NodeJS request obj
+     * @param  {object} res NodeJS request obj
+     * @return {json} the collection metadata, identifying its fields, descriptions and so on
+     */
+
+  }, {
+    key: 'getMetadata',
+    value: function getMetadata(req, res) {
+      var Metadata_m = mongoose.model('metadata');
+      var params = req.params;
+      Metadata_m.findOne({ 'collection': params.collection }).exec(function (err, doc) {
+        console.log(doc);
+        res.json({ doc: doc });
+      });
     }
   }, {
     key: 'queryData',
+
+    // @TODO deprecated
+
     value: function queryData(req, res) {
       var data = this.queryDataset(req);
       res.render('explorer/formDataConsult', data);

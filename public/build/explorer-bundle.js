@@ -308,13 +308,51 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
 'use strict';
 
 /**
- * @ngdoc function
- * @name openDataHubApp.controller:ExplorerctrlCtrl
- * @description
- * # ExplorerctrlCtrl
- * Controller of the openDataHubApp
+ * @name openDataHubApp.controller:FiltersController
+ * @description Responsible for the handle all the logic for the data filtering
+ * @author ogoncalves
+ * @date 2016-02-17
  */
-angular.module('openDataHubApp').controller('FiltersCtrl', ["$scope", "$mdDialog", function ($scope, $mdDialog) {
+angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$mdDialog", "FiltersService", function ($scope, $mdDialog, FiltersService) {
+  /**
+   * @property {Array} filterItems - sustains all the fields that are possible to filter for a specific data collection
+   */
+  $scope.filterItems = [];
+
+  /**
+   * [description]
+   * @param  {[type]} function getMetadata(  [description]
+   * @return {[type]}          [description]
+   */
+  (function getMetadata() {
+    FiltersService.getMetadata('environmental').then(function (res) {
+      try {
+        if (res.status !== 200) throw res.statusText;
+        setFilterItems(res.data.doc.fields);
+      } catch (e) {
+        console.log(e);
+      };
+    });
+  })();
+
+  /**
+   * Responsible for setting up the accordion for the filters apply
+   * Receives the collection's fields and builds an object
+   * Evaluates the field type and loads the respective filter template
+   * @example an Integer field will have a template with 2 numeric inputs (for min and max values)
+   * @param {json} fields the data collection fields
+   */
+  function setFilterItems(fields) {
+    for (var i = 0; i < fields.length; i++) {
+      var field = fields[i];
+      var json = {
+        'header': field.description,
+        'contentTmpl': 'js/explorer/views/filters/templates/' + field.type + '.html'
+      };
+      $scope.filterItems.push(json);
+    }
+  }
+
   $scope.hide = function () {
     $mdDialog.hide();
   };
@@ -361,16 +399,11 @@ angular.module('openDataHubApp').directive('ophExplorerActions', function () {
     controller: ["$scope", "$mdMedia", "$mdDialog", function ($scope, $mdMedia, $mdDialog) {
       $scope.isOpen = $mdMedia('gt-sm') ? true : false;
       $scope.selectedMode = 'md-scale';
-      // $scope.selectedMode      = 'md-fling';
 
-      $scope.showAdvanced = function (ev) {
-        // var useFullScreen = ($mdMedia('sm') || $mdMedia('xs'))  && $scope.customFullscreen;
-        var useFullScreen = !$mdMedia('gt-sm') ? true : false;
+      $scope.showFiltersForm = function () {
         $mdDialog.show({
-          controller: DialogController,
+          controller: 'FiltersController',
           templateUrl: '/js/explorer/views/filters/container.html',
-          parent: angular.element(document.body),
-          targetEvent: ev,
           clickOutsideToClose: true,
           fullscreen: true
         }).then(function (answer) {
@@ -378,28 +411,12 @@ angular.module('openDataHubApp').directive('ophExplorerActions', function () {
         }, function () {
           $scope.status = 'You cancelled the dialog.';
         });
-
-        $scope.$watch(function () {
-          return $mdMedia('xs') || $mdMedia('sm');
-        }, function (wantsFullScreen) {
-          $scope.customFullscreen = wantsFullScreen === true;
-        });
       };
+      // @TODO remove me
+      $scope.showFiltersForm();
     }]
   };
 });
-
-function DialogController($scope, $mdDialog) {
-  $scope.hide = function () {
-    $mdDialog.hide();
-  };
-  $scope.cancel = function () {
-    $mdDialog.cancel();
-  };
-  $scope.answer = function (answer) {
-    $mdDialog.hide(answer);
-  };
-}
 
 },{}],5:[function(require,module,exports){
 'use strict';
@@ -525,4 +542,27 @@ angular.module('openDataHubApp').service('ExplorerService', ["$http", function (
 //   });
 // }
 
-},{}]},{},[1,2,3,4,5,6,7]);
+},{}],8:[function(require,module,exports){
+'use strict';
+
+/**
+ * @ngdoc service
+ * @name explorerApp.ExplorerService
+ * @description
+ * # FiltersService
+ * Service in the explorerApp.
+ */
+angular.module('openDataHubApp').service('FiltersService', ["$http", function ($http) {
+  var site_url = $('#site-url').data('site_url');
+
+  function getMetadata(collection) {
+    var url = site_url + '/datasetExplorer/metadata/' + collection;
+    return $http.get(url);
+  }
+
+  return {
+    getMetadata: getMetadata
+  };
+}]);
+
+},{}]},{},[1,2,3,4,5,6,7,8]);

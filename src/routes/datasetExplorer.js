@@ -7,25 +7,17 @@ module.exports = function (app) {
   app.use('/datasetExplorer', router);
 };
 
-import ExplorerCtrl from '../controllers/dataset-explorer';
+import ExplorerCtrl from '../controllers/datasetExplorer';
 let explorerCtrl = new ExplorerCtrl();
 
-router.get('/', function(req, res){
-  explorerCtrl.loadPage(req, res);
-});
+router.get('/', (req, res) => explorerCtrl.loadPage(req, res));
 
-router.post('/queryData', function(req, res){
-  explorerCtrl.queryData(req, res);
-});
+router.post('/queryData', (req, res) => explorerCtrl.queryData(req, res));
 
-router.post('/addFilter', function(req, res){
-  explorerCtrl.addFilter(req, res);
-});
+router.post('/addFilter', (req, res) => explorerCtrl.addFilter(req, res));
 
-router.post('/searchDatasetData', function(req, res){
-  explorerCtrl.searchDatasetData(req, res);
-});
+router.post('/searchDatasetData', (req, res) => explorerCtrl.searchDatasetData(req, res));
 
-// router.get('/downloadDatasetFile', function(req, res){
-//   explorerCtrl.downloadDatasetFile(req, res);
-// });
+router.get('/metadata/:collection', (req, res) => explorerCtrl.getMetadata(req, res));
+
+// router.get('/downloadDatasetFile', (req, res) => explorerCtrl.downloadDatasetFile(req, res));

@@ -1,16 +1,46 @@
+/**
+ * @class ExplorerCtrl
+ * @description Responsible for all the logic processing relative to the data explorer module
+ * @author ogoncalves
+ * @date 2016-02-17
+ */
 export default class ExplorerCtrl {
   constructor() {
-    this.password_hash = require('password-hash');
-    // this.moment     = require('moment');
-    // this.exec          = require('child_process').exec;
   }
 
+  /**
+   * @description Responsible for loading the index page of the Data Explorer module
+   * @param  {object} req NodeJS request obj
+   * @param  {object} res NodeJS request obj
+   * @return {html} the rendered index page
+   */
   loadPage (req, res) {
     let title   = 'Data Explorer';
     let session = req.session;
-
     res.render('explorer/index', {title, session});
   }
+
+  /**
+   * @description Responsible for loading the metadata from MongoFB for a certain collection
+   * @param  {object} req NodeJS request obj
+   * @param  {object} res NodeJS request obj
+   * @return {json} the collection metadata, identifying its fields, descriptions and so on
+   */
+  getMetadata(req, res) {
+    const Metadata_m = mongoose.model('metadata');
+    const params     = req.params;
+    Metadata_m
+      .findOne({'collection': params.collection})
+      .exec(function(err, doc) {
+        console.log(doc);
+        res.json({doc});
+      });
+  };
+
+
+
+
+  // @TODO deprecated
 
   queryData (req, res) {
     let data = this.queryDataset(req);

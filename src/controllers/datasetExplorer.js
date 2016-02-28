@@ -32,16 +32,11 @@ export default class ExplorerCtrl {
     Metadata_m
       .findOne({'collection': params.collection})
       .exec(function(err, doc) {
-        console.log(doc);
         res.json({doc});
       });
   };
 
-
-
-
   // @TODO deprecated
-
   queryData (req, res) {
     let data = this.queryDataset(req);
     res.render('explorer/formDataConsult', data);

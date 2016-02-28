@@ -8,19 +8,32 @@ angular.module('openDataHubApp').controller('FiltersController', [
   "$scope",
   "$mdDialog",
   "FiltersService",
-  function($scope, $mdDialog, FiltersService) {
+  "collection",
+  function($scope, $mdDialog, FiltersService, collection) {
+    /**
+     * @property {json} search - sustains all the filters for data query
+     */
+    $scope.search = {
+      'collection': '',
+      'groupBy': 'minute',
+      'numRows': '50',
+      'fields': [],
+      'filters': []
+    };
+
+
     /**
      * @property {Array} filterItems - sustains all the fields that are possible to filter for a specific data collection
      */
     $scope.filterItems = [];
-
+    
     /**
      * [description]
      * @param  {[type]} function getMetadata(  [description]
      * @return {[type]}          [description]
      */
     (function getMetadata() {
-      FiltersService.getMetadata('environmental').then(function (res) {
+      FiltersService.getMetadata(collection).then(function (res) {
         try {
           if (res.status !== 200) throw res.statusText;
           setFilterItems(res.data.doc.fields);
@@ -42,12 +55,13 @@ angular.module('openDataHubApp').controller('FiltersController', [
         let field = fields[i];
         let json  = {
           'header': field.description,
-          'contentTmpl': `js/explorer/views/filters/templates/${field.type}.html`
+          'contentTmpl': `js/explorer/views/filters/templates/${field.type}.html`,
+          'inputValue': null,
+          'visible': true
         };
         $scope.filterItems.push(json);
       }
     }
-
 
     $scope.hide = function() {
       $mdDialog.hide();

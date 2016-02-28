@@ -48,7 +48,6 @@ var ExplorerCtrl = function () {
       var Metadata_m = mongoose.model('metadata');
       var params = req.params;
       Metadata_m.findOne({ 'collection': params.collection }).exec(function (err, doc) {
-        console.log(doc);
         res.json({ doc: doc });
       });
     }
@@ -56,7 +55,6 @@ var ExplorerCtrl = function () {
     key: 'queryData',
 
     // @TODO deprecated
-
     value: function queryData(req, res) {
       var data = this.queryDataset(req);
       res.render('explorer/formDataConsult', data);

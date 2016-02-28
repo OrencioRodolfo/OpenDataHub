@@ -16,12 +16,10 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
     'headers': [],
     'rows': []
   };
+
+  // reset search filters
   $scope.search = {
-    'collection': '',
-    'group_by': 'minute',
-    'num_rows': '50',
-    'fields': [],
-    'selected_fields': []
+    'collection': ''
   };
 
   /**
@@ -313,7 +311,18 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', ["$scope", "Explorer
  * @author ogoncalves
  * @date 2016-02-17
  */
-angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$mdDialog", "FiltersService", function ($scope, $mdDialog, FiltersService) {
+angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$mdDialog", "FiltersService", "collection", function ($scope, $mdDialog, FiltersService, collection) {
+  /**
+   * @property {json} search - sustains all the filters for data query
+   */
+  $scope.search = {
+    'collection': '',
+    'groupBy': 'minute',
+    'numRows': '50',
+    'fields': [],
+    'filters': []
+  };
+
   /**
    * @property {Array} filterItems - sustains all the fields that are possible to filter for a specific data collection
    */
@@ -325,7 +334,7 @@ angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$md
    * @return {[type]}          [description]
    */
   (function getMetadata() {
-    FiltersService.getMetadata('environmental').then(function (res) {
+    FiltersService.getMetadata(collection).then(function (res) {
       try {
         if (res.status !== 200) throw res.statusText;
         setFilterItems(res.data.doc.fields);
@@ -347,7 +356,9 @@ angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$md
       var field = fields[i];
       var json = {
         'header': field.description,
-        'contentTmpl': 'js/explorer/views/filters/templates/' + field.type + '.html'
+        'contentTmpl': 'js/explorer/views/filters/templates/' + field.type + '.html',
+        'inputValue': null,
+        'visible': true
       };
       $scope.filterItems.push(json);
     }
@@ -400,13 +411,23 @@ angular.module('openDataHubApp').directive('ophExplorerActions', function () {
       $scope.isOpen = $mdMedia('gt-sm') ? true : false;
       $scope.selectedMode = 'md-scale';
 
+      /**
+       * @description Responsible for opening the filters dialog, attatching to it the
+       * FiltersController
+       * It provides the collection that shall be queried
+       * @return {[type]} [description]
+       */
       $scope.showFiltersForm = function () {
         $mdDialog.show({
           controller: 'FiltersController',
           templateUrl: '/js/explorer/views/filters/container.html',
-          clickOutsideToClose: true,
-          fullscreen: true
-        }).then(function (answer) {
+          // clickOutsideToClose: true,
+          fullscreen: true,
+          locals: {
+            collection: $scope.search.collection
+          }
+        }).then(function (search) {
+          console.log("the search object");
           $scope.status = 'You said the information was "' + answer + '".';
         }, function () {
           $scope.status = 'You cancelled the dialog.';
@@ -467,80 +488,33 @@ angular.module('openDataHubApp').directive('ophList', function () {
  * Service in the explorerApp.
  */
 angular.module('openDataHubApp').service('ExplorerService', ["$http", function ($http) {
-  function serializeSearchDatasetForm() {
-    var form = $('#data-consult-form');
-    var data = { collection: $("#collection").val(), fields: [], selected_fields: [] };
-    var element = null;
-    $('.field-filters-js').each(function () {
-      var filters = [];
-      $(this).find(':input').each(function () {
-        filters.push({ name: $(this).attr('name'), value: $(this).val() });
-      });
-      element = { field: $(this).data('field'), type: $(this).data('data_type'), filters: filters };
-      data.fields.push(element);
-    });
 
-    // get selected fields to show on results
-    data.selected_fields = getFieldsForDisplay();
-    data.group_by = $('.field-group-js .group-by-js').val();
-    data.num_rows = $('.field-num-results-js .num-results-js').val();
-
-    return data;
-  }
-
-  function getFieldsForDisplay() {
-    var selected_fields = [];
-    var parent = null;
-    $('.fields-select-js .selector-js:checked').each(function () {
-      parent = $(this).closest('.option-js');
-
-      selected_fields.push({ field: parent.data('field'), description: parent.data('description') });
-    });
-    return selected_fields;
-  }
-
+  /**
+   * @description Responsible for making http request for retreiving data from a collection,
+   * having in account the specified filters
+   * @param {json} search all the filters applied for the collection's query
+   * @return Promise An promise for handeling the http response
+   */
   function previewDatasetData(search) {
-    var site_url = $('#site-url').data('site_url');
-    var url = site_url + '/datasetExplorer/searchDatasetData';
-    return $http.post(url, search);
+    var defaultSearch = {
+      'collection': '',
+      'group_by': 'minute',
+      'num_rows': '50',
+      'fields': [],
+      'selected_fields': []
+    };
+
+    var reqObj = Object.assign({}, defaultSearch, search);
+    var siteUrl = $('#site-url').data('site_url');
+    var url = siteUrl + '/datasetExplorer/searchDatasetData';
+
+    return $http.post(url, reqObj);
   }
 
   return {
     previewDatasetData: previewDatasetData
   };
 }]);
-
-// function previewDatasetData(target) {
-//   var site_url    = $('#site-url').data('site_url');
-//   // var data        = serializeSearchDatasetForm();
-//   // data.collection = target;
-//   // data.context    = $('.datasets-container-js').data('context');
-//   var data = {
-//     collection: "user_event",
-//     group_by: "minute",
-//     num_rows: "50",
-//     fields: [],
-//     selected_fields: [
-//       {field: "iid", description: "Monitored home unique identifier"},
-//       {field: "tmstp", description: "Date and time of the measurement"},
-//       {field: "deploy", description: "Deployment"},
-//       {field: "type_id", description: "Identifier of the type of interactions"},
-//       {field: "type_name", description: "Type of interaction"},
-//       {field: "view_id", description: "Identifier of the visualized screen"},
-//       {field: "view_name", description: "Name of visualized screen"},
-//     ]
-//   };
-//
-//   $.ajax({
-//     type: 'POST',
-//     contentType: "application/json; charset=utf-8",
-//     data: JSON.stringify(data),
-//     url: site_url+'/datasetExplorer/searchDatasetData',
-//     success: function(response){
-//       $('.main-container .content').html( response );
-//     }
-//   });
-// }
 
 },{}],8:[function(require,module,exports){
 'use strict';

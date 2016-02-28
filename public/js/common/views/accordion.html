@@ -1,12 +1,12 @@
-<div class="accordion-item-js" ng-repeat="item in items">
+<div class="accordion-item accordion-item-js" ng-repeat="item in items">
   <div class="header">
     <!-- <i class="fa fa-eye"></i> -->
-    <i class="fa fa-eye-slash"></i>
+    <i class="fa fa-eye-slash" ng-click="item.visible = !item.visible"></i>
     <span class="fa-stack fa-lg expand-js">
       <i class="fa fa-filter fa-stack-1x"></i>
       <i class="fa fa-ban fa-stack-1x text-danger"></i>
     </span>
     {{ item.header }}
   </div>
-  <div class="body-js" ng-include="item.contentTmpl"></div>
+  <div class="body body-js" ng-include="item.contentTmpl"></div>
 </div>

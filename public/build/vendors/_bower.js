@@ -29925,8 +29925,8 @@ var tooltip = $.widget( "ui.tooltip", {
 
 }).call(this);
 /**
- * @license AngularJS v1.4.9
- * (c) 2010-2015 Google, Inc. http://angularjs.org
+ * @license AngularJS v1.5.0
+ * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  */
 (function(window, document, undefined) {'use strict';
@@ -29983,7 +29983,7 @@ function minErr(module, ErrorConstructor) {
       return match;
     });
 
-    message += '\nhttp://errors.angularjs.org/1.4.9/' +
+    message += '\nhttp://errors.angularjs.org/1.5.0/' +
       (module ? module + '/' : '') + code;
 
     for (i = SKIP_INDEXES, paramPrefix = '?'; i < templateArgs.length; i++, paramPrefix = '&') {
@@ -30114,29 +30114,9 @@ var REGEX_STRING_REGEXP = /^\/(.+)\/([a-z]*)$/;
 // This is used so that it's possible for internal tests to create mock ValidityStates.
 var VALIDITY_STATE_PROPERTY = 'validity';
 
-/**
- * @ngdoc function
- * @name angular.lowercase
- * @module ng
- * @kind function
- *
- * @description Converts the specified string to lowercase.
- * @param {string} string String to be converted to lowercase.
- * @returns {string} Lowercased string.
- */
-var lowercase = function(string) {return isString(string) ? string.toLowerCase() : string;};
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-/**
- * @ngdoc function
- * @name angular.uppercase
- * @module ng
- * @kind function
- *
- * @description Converts the specified string to uppercase.
- * @param {string} string String to be converted to uppercase.
- * @returns {string} Uppercased string.
- */
+var lowercase = function(string) {return isString(string) ? string.toLowerCase() : string;};
 var uppercase = function(string) {return isString(string) ? string.toUpperCase() : string;};
 
 
@@ -30156,7 +30136,7 @@ var manualUppercase = function(s) {
 
 // String#toLowerCase and String#toUpperCase don't produce correct results in browsers with Turkish
 // locale, for this reason we need to detect this case and redefine lowercase/uppercase methods
-// with correct but slower alternatives.
+// with correct but slower alternatives. See https://github.com/angular/angular.js/issues/11387
 if ('i' !== 'I'.toLowerCase()) {
   lowercase = manualLowercase;
   uppercase = manualUppercase;
@@ -30199,7 +30179,7 @@ function isArrayLike(obj) {
 
   // arrays, strings and jQuery/jqLite objects are array like
   // * jqLite is either the jQuery or jqLite constructor function
-  // * we have to check the existance of jqLite first as this method is called
+  // * we have to check the existence of jqLite first as this method is called
   //   via the forEach method when constructing the jqLite object in the first place
   if (isArray(obj) || isString(obj) || (jqLite && obj instanceof jqLite)) return true;
 
@@ -30308,7 +30288,7 @@ function forEachSorted(obj, iterator, context) {
  * @returns {function(*, string)}
  */
 function reverseParams(iteratorFn) {
-  return function(value, key) { iteratorFn(key, value); };
+  return function(value, key) {iteratorFn(key, value);};
 }
 
 /**
@@ -30679,6 +30659,10 @@ function isTypedArray(value) {
   return value && isNumber(value.length) && TYPED_ARRAY_REGEXP.test(toString.call(value));
 }
 
+function isArrayBuffer(obj) {
+  return toString.call(obj) === '[object ArrayBuffer]';
+}
+
 
 var trim = function(value) {
   return isString(value) ? value.trim() : value;
@@ -30716,7 +30700,7 @@ function isElement(node) {
  * @returns {object} in the form of {key1:true, key2:true, ...}
  */
 function makeMap(str) {
-  var obj = {}, items = str.split(","), i;
+  var obj = {}, items = str.split(','), i;
   for (i = 0; i < items.length; i++) {
     obj[items[i]] = true;
   }
@@ -30803,7 +30787,7 @@ function copy(source, destination) {
   var stackDest = [];
 
   if (destination) {
-    if (isTypedArray(destination)) {
+    if (isTypedArray(destination) || isArrayBuffer(destination)) {
       throw ngMinErr('cpta', "Can't copy! TypedArray destination cannot be mutated.");
     }
     if (source === destination) {
@@ -30877,22 +30861,10 @@ function copy(source, destination) {
     }
 
     var needsRecurse = false;
-    var destination;
+    var destination = copyType(source);
 
-    if (isArray(source)) {
-      destination = [];
-      needsRecurse = true;
-    } else if (isTypedArray(source)) {
-      destination = new source.constructor(source);
-    } else if (isDate(source)) {
-      destination = new Date(source.getTime());
-    } else if (isRegExp(source)) {
-      destination = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
-      destination.lastIndex = source.lastIndex;
-    } else if (isFunction(source.cloneNode)) {
-        destination = source.cloneNode(true);
-    } else {
-      destination = Object.create(getPrototypeOf(source));
+    if (destination === undefined) {
+      destination = isArray(source) ? [] : Object.create(getPrototypeOf(source));
       needsRecurse = true;
     }
 
@@ -30902,6 +30874,45 @@ function copy(source, destination) {
     return needsRecurse
       ? copyRecurse(source, destination)
       : destination;
+  }
+
+  function copyType(source) {
+    switch (toString.call(source)) {
+      case '[object Int8Array]':
+      case '[object Int16Array]':
+      case '[object Int32Array]':
+      case '[object Float32Array]':
+      case '[object Float64Array]':
+      case '[object Uint8Array]':
+      case '[object Uint8ClampedArray]':
+      case '[object Uint16Array]':
+      case '[object Uint32Array]':
+        return new source.constructor(copyElement(source.buffer));
+
+      case '[object ArrayBuffer]':
+        //Support: IE10
+        if (!source.slice) {
+          var copied = new ArrayBuffer(source.byteLength);
+          new Uint8Array(copied).set(new Uint8Array(source));
+          return copied;
+        }
+        return source.slice(0);
+
+      case '[object Boolean]':
+      case '[object Number]':
+      case '[object String]':
+      case '[object Date]':
+        return new source.constructor(source.valueOf());
+
+      case '[object RegExp]':
+        var re = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
+        re.lastIndex = source.lastIndex;
+        return re;
+    }
+
+    if (isFunction(source.cloneNode)) {
+      return source.cloneNode(true);
+    }
   }
 }
 
@@ -30965,38 +30976,37 @@ function equals(o1, o2) {
   if (o1 === null || o2 === null) return false;
   if (o1 !== o1 && o2 !== o2) return true; // NaN === NaN
   var t1 = typeof o1, t2 = typeof o2, length, key, keySet;
-  if (t1 == t2) {
-    if (t1 == 'object') {
-      if (isArray(o1)) {
-        if (!isArray(o2)) return false;
-        if ((length = o1.length) == o2.length) {
-          for (key = 0; key < length; key++) {
-            if (!equals(o1[key], o2[key])) return false;
-          }
-          return true;
-        }
-      } else if (isDate(o1)) {
-        if (!isDate(o2)) return false;
-        return equals(o1.getTime(), o2.getTime());
-      } else if (isRegExp(o1)) {
-        return isRegExp(o2) ? o1.toString() == o2.toString() : false;
-      } else {
-        if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) ||
-          isArray(o2) || isDate(o2) || isRegExp(o2)) return false;
-        keySet = createMap();
-        for (key in o1) {
-          if (key.charAt(0) === '$' || isFunction(o1[key])) continue;
+  if (t1 == t2 && t1 == 'object') {
+    if (isArray(o1)) {
+      if (!isArray(o2)) return false;
+      if ((length = o1.length) == o2.length) {
+        for (key = 0; key < length; key++) {
           if (!equals(o1[key], o2[key])) return false;
-          keySet[key] = true;
-        }
-        for (key in o2) {
-          if (!(key in keySet) &&
-              key.charAt(0) !== '$' &&
-              isDefined(o2[key]) &&
-              !isFunction(o2[key])) return false;
         }
         return true;
       }
+    } else if (isDate(o1)) {
+      if (!isDate(o2)) return false;
+      return equals(o1.getTime(), o2.getTime());
+    } else if (isRegExp(o1)) {
+      if (!isRegExp(o2)) return false;
+      return o1.toString() == o2.toString();
+    } else {
+      if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) ||
+        isArray(o2) || isDate(o2) || isRegExp(o2)) return false;
+      keySet = createMap();
+      for (key in o1) {
+        if (key.charAt(0) === '$' || isFunction(o1[key])) continue;
+        if (!equals(o1[key], o2[key])) return false;
+        keySet[key] = true;
+      }
+      for (key in o2) {
+        if (!(key in keySet) &&
+            key.charAt(0) !== '$' &&
+            isDefined(o2[key]) &&
+            !isFunction(o2[key])) return false;
+      }
+      return true;
     }
   }
   return false;
@@ -31173,7 +31183,7 @@ function toJsonReplacer(key, value) {
  * @returns {string|undefined} JSON-ified string representing `obj`.
  */
 function toJson(obj, pretty) {
-  if (typeof obj === 'undefined') return undefined;
+  if (isUndefined(obj)) return undefined;
   if (!isNumber(pretty)) {
     pretty = pretty ? 2 : null;
   }
@@ -31200,7 +31210,10 @@ function fromJson(json) {
 }
 
 
+var ALL_COLONS = /:/g;
 function timezoneToOffset(timezone, fallback) {
+  // IE/Edge do not "understand" colon (`:`) in timezone
+  timezone = timezone.replace(ALL_COLONS, '');
   var requestedTimezoneOffset = Date.parse('Jan 01, 1970 00:00:00 ' + timezone) / 60000;
   return isNaN(requestedTimezoneOffset) ? fallback : requestedTimezoneOffset;
 }
@@ -31215,8 +31228,9 @@ function addDateMinutes(date, minutes) {
 
 function convertTimezoneToLocal(date, timezone, reverse) {
   reverse = reverse ? -1 : 1;
-  var timezoneOffset = timezoneToOffset(timezone, date.getTimezoneOffset());
-  return addDateMinutes(date, reverse * (timezoneOffset - date.getTimezoneOffset()));
+  var dateTimezoneOffset = date.getTimezoneOffset();
+  var timezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
+  return addDateMinutes(date, reverse * (timezoneOffset - dateTimezoneOffset));
 }
 
 
@@ -31235,7 +31249,7 @@ function startingTag(element) {
     return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) :
         elemHtml.
           match(/^(<[^>]+>)/)[1].
-          replace(/^<([\w\-]+)/, function(match, nodeName) { return '<' + lowercase(nodeName); });
+          replace(/^<([\w\-]+)/, function(match, nodeName) {return '<' + lowercase(nodeName);});
   } catch (e) {
     return lowercase(elemHtml);
   }
@@ -31678,7 +31692,6 @@ function snake_case(name, separator) {
 }
 
 var bindJQueryFired = false;
-var skipDestroyOnNextJQueryCleanData;
 function bindJQuery() {
   var originalCleanData;
 
@@ -31712,15 +31725,11 @@ function bindJQuery() {
     originalCleanData = jQuery.cleanData;
     jQuery.cleanData = function(elems) {
       var events;
-      if (!skipDestroyOnNextJQueryCleanData) {
-        for (var i = 0, elem; (elem = elems[i]) != null; i++) {
-          events = jQuery._data(elem, "events");
-          if (events && events.$destroy) {
-            jQuery(elem).triggerHandler('$destroy');
-          }
+      for (var i = 0, elem; (elem = elems[i]) != null; i++) {
+        events = jQuery._data(elem, "events");
+        if (events && events.$destroy) {
+          jQuery(elem).triggerHandler('$destroy');
         }
-      } else {
-        skipDestroyOnNextJQueryCleanData = false;
       }
       originalCleanData(elems);
     };
@@ -32122,6 +32131,19 @@ function setupModuleLoader(window) {
 
           /**
            * @ngdoc method
+           * @name angular.Module#component
+           * @module ng
+           * @param {string} name Name of the component in camel-case (i.e. myComp which will match as my-comp)
+           * @param {Object} options Component definition object (a simplified
+           *    {@link ng.$compile#directive-definition-object directive definition object})
+           *
+           * @description
+           * See {@link ng.$compileProvider#component $compileProvider.component()}.
+           */
+          component: invokeLaterAndSetModuleName('$compileProvider', 'component'),
+
+          /**
+           * @ngdoc method
            * @name angular.Module#config
            * @module ng
            * @param {Function} configFn Execute this function on module load. Useful for service
@@ -32278,6 +32300,7 @@ function toDebugString(obj) {
   $BrowserProvider,
   $CacheFactoryProvider,
   $ControllerProvider,
+  $DateProvider,
   $DocumentProvider,
   $ExceptionHandlerProvider,
   $FilterProvider,
@@ -32327,11 +32350,11 @@ function toDebugString(obj) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.4.9',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.5.0',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
-  minor: 4,
-  dot: 9,
-  codeName: 'implicit-superannuation'
+  minor: 5,
+  dot: 0,
+  codeName: 'ennoblement-facilitation'
 };
 
 
@@ -32670,6 +32693,12 @@ function jqLiteHasData(node) {
   return false;
 }
 
+function jqLiteCleanData(nodes) {
+  for (var i = 0, ii = nodes.length; i < ii; i++) {
+    jqLiteRemoveData(nodes[i]);
+  }
+}
+
 function jqLiteBuildFragment(html, context) {
   var tmp, tag, wrap,
       fragment = context.createDocumentFragment(),
@@ -32720,6 +32749,16 @@ function jqLiteParseHTML(html, context) {
   }
 
   return [];
+}
+
+function jqLiteWrapNode(node, wrapper) {
+  var parent = node.parentNode;
+
+  if (parent) {
+    parent.replaceChild(wrapper, node);
+  }
+
+  wrapper.appendChild(node);
 }
 
 
@@ -32972,7 +33011,7 @@ function jqLiteRemove(element, keepData) {
 function jqLiteDocumentLoaded(action, win) {
   win = win || window;
   if (win.document.readyState === 'complete') {
-    // Force the action to be run async for consistent behaviour
+    // Force the action to be run async for consistent behavior
     // from the action's point of view
     // i.e. it will definitely not be in a $apply
     win.setTimeout(action);
@@ -33058,7 +33097,8 @@ function getAliasedAttrName(name) {
 forEach({
   data: jqLiteData,
   removeData: jqLiteRemoveData,
-  hasData: jqLiteHasData
+  hasData: jqLiteHasData,
+  cleanData: jqLiteCleanData
 }, function(fn, name) {
   JQLite[name] = fn;
 });
@@ -33413,12 +33453,7 @@ forEach({
   },
 
   wrap: function(element, wrapNode) {
-    wrapNode = jqLite(wrapNode).eq(0).clone()[0];
-    var parent = element.parentNode;
-    if (parent) {
-      parent.replaceChild(wrapNode, element);
-    }
-    wrapNode.appendChild(element);
+    jqLiteWrapNode(element, jqLite(wrapNode).eq(0).clone()[0]);
   },
 
   remove: jqLiteRemove,
@@ -33696,17 +33731,23 @@ var $$HashMapProvider = [function() {
  * Implicit module which gets automatically added to each {@link auto.$injector $injector}.
  */
 
+var ARROW_ARG = /^([^\(]+?)=>/;
 var FN_ARGS = /^[^\(]*\(\s*([^\)]*)\)/m;
 var FN_ARG_SPLIT = /,/;
 var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var $injectorMinErr = minErr('$injector');
 
+function extractArgs(fn) {
+  var fnText = fn.toString().replace(STRIP_COMMENTS, ''),
+      args = fnText.match(ARROW_ARG) || fnText.match(FN_ARGS);
+  return args;
+}
+
 function anonFn(fn) {
   // For anonymous functions, showing at the very least the function signature can help in
   // debugging.
-  var fnText = fn.toString().replace(STRIP_COMMENTS, ''),
-      args = fnText.match(FN_ARGS);
+  var args = extractArgs(fn);
   if (args) {
     return 'function(' + (args[1] || '').replace(/[\s\r\n]+/, ' ') + ')';
   }
@@ -33715,7 +33756,6 @@ function anonFn(fn) {
 
 function annotate(fn, strictDi, name) {
   var $inject,
-      fnText,
       argDecl,
       last;
 
@@ -33730,8 +33770,7 @@ function annotate(fn, strictDi, name) {
           throw $injectorMinErr('strictdi',
             '{0} is not using explicit annotation and cannot be invoked in strict mode', name);
         }
-        fnText = fn.toString().replace(STRIP_COMMENTS, '');
-        argDecl = fnText.match(FN_ARGS);
+        argDecl = extractArgs(fn);
         forEach(argDecl[1].split(FN_ARG_SPLIT), function(arg) {
           arg.replace(FN_ARG, function(all, underscore, name) {
             $inject.push(name);
@@ -34121,8 +34160,20 @@ function annotate(fn, strictDi, name) {
  *
  * Register a **service constructor**, which will be invoked with `new` to create the service
  * instance.
- * This is short for registering a service where its provider's `$get` property is the service
- * constructor function that will be used to instantiate the service instance.
+ * This is short for registering a service where its provider's `$get` property is a factory
+ * function that returns an instance instantiated by the injector from the service constructor
+ * function.
+ *
+ * Internally it looks a bit like this:
+ *
+ * ```
+ * {
+ *   $get: function() {
+ *     return $injector.instantiate(constructor);
+ *   }
+ * }
+ * ```
+ *
  *
  * You should use {@link auto.$provide#service $provide.service(class)} if you define your service
  * as a type/class.
@@ -34272,14 +34323,19 @@ function createInjector(modulesToLoad, strictDi) {
             throw $injectorMinErr('unpr', "Unknown provider: {0}", path.join(' <- '));
           })),
       instanceCache = {},
-      instanceInjector = (instanceCache.$injector =
+      protoInstanceInjector =
           createInternalInjector(instanceCache, function(serviceName, caller) {
             var provider = providerInjector.get(serviceName + providerSuffix, caller);
-            return instanceInjector.invoke(provider.$get, provider, undefined, serviceName);
-          }));
+            return instanceInjector.invoke(
+                provider.$get, provider, undefined, serviceName);
+          }),
+      instanceInjector = protoInstanceInjector;
 
-
-  forEach(loadModules(modulesToLoad), function(fn) { if (fn) instanceInjector.invoke(fn); });
+  providerCache['$injector' + providerSuffix] = { $get: valueFn(protoInstanceInjector) };
+  var runBlocks = loadModules(modulesToLoad);
+  instanceInjector = protoInstanceInjector.get('$injector');
+  instanceInjector.strictDi = strictDi;
+  forEach(runBlocks, function(fn) { if (fn) instanceInjector.invoke(fn); });
 
   return instanceInjector;
 
@@ -34429,47 +34485,66 @@ function createInjector(modulesToLoad, strictDi) {
       }
     }
 
+
+    function injectionArgs(fn, locals, serviceName) {
+      var args = [],
+          $inject = createInjector.$$annotate(fn, strictDi, serviceName);
+
+      for (var i = 0, length = $inject.length; i < length; i++) {
+        var key = $inject[i];
+        if (typeof key !== 'string') {
+          throw $injectorMinErr('itkn',
+                  'Incorrect injection token! Expected service name as string, got {0}', key);
+        }
+        args.push(locals && locals.hasOwnProperty(key) ? locals[key] :
+                                                         getService(key, serviceName));
+      }
+      return args;
+    }
+
+    function isClass(func) {
+      // IE 9-11 do not support classes and IE9 leaks with the code below.
+      if (msie <= 11) {
+        return false;
+      }
+      // Workaround for MS Edge.
+      // Check https://connect.microsoft.com/IE/Feedback/Details/2211653
+      return typeof func === 'function'
+        && /^(?:class\s|constructor\()/.test(Function.prototype.toString.call(func));
+    }
+
     function invoke(fn, self, locals, serviceName) {
       if (typeof locals === 'string') {
         serviceName = locals;
         locals = null;
       }
 
-      var args = [],
-          $inject = createInjector.$$annotate(fn, strictDi, serviceName),
-          length, i,
-          key;
-
-      for (i = 0, length = $inject.length; i < length; i++) {
-        key = $inject[i];
-        if (typeof key !== 'string') {
-          throw $injectorMinErr('itkn',
-                  'Incorrect injection token! Expected service name as string, got {0}', key);
-        }
-        args.push(
-          locals && locals.hasOwnProperty(key)
-          ? locals[key]
-          : getService(key, serviceName)
-        );
-      }
+      var args = injectionArgs(fn, locals, serviceName);
       if (isArray(fn)) {
-        fn = fn[length];
+        fn = fn[fn.length - 1];
       }
 
-      // http://jsperf.com/angularjs-invoke-apply-vs-switch
-      // #5388
-      return fn.apply(self, args);
+      if (!isClass(fn)) {
+        // http://jsperf.com/angularjs-invoke-apply-vs-switch
+        // #5388
+        return fn.apply(self, args);
+      } else {
+        args.unshift(null);
+        return new (Function.prototype.bind.apply(fn, args))();
+      }
     }
+
 
     function instantiate(Type, locals, serviceName) {
       // Check if Type is annotated and use just the given function at n-1 as parameter
       // e.g. someModule.factory('greeter', ['$window', function(renamed$window) {}]);
-      // Object creation: http://jsperf.com/create-constructor/2
-      var instance = Object.create((isArray(Type) ? Type[Type.length - 1] : Type).prototype || null);
-      var returnedValue = invoke(Type, instance, locals, serviceName);
-
-      return isObject(returnedValue) || isFunction(returnedValue) ? returnedValue : instance;
+      var ctor = (isArray(Type) ? Type[Type.length - 1] : Type);
+      var args = injectionArgs(Type, locals, serviceName);
+      // Empty object at position 0 is ignored for invocation with `new`, but required.
+      args.unshift(null);
+      return new (Function.prototype.bind.apply(ctor, args))();
     }
+
 
     return {
       invoke: invoke,
@@ -35085,8 +35160,8 @@ var $AnimateProvider = ['$provide', function($provide) {
        * // remove all the animation event listeners listening for `enter` on the given element and its children
        * $animate.off('enter', container);
        *
-       * // remove the event listener function provided by `listenerFn` that is set
-       * // to listen for `enter` on the given `element` as well as its children
+       * // remove the event listener function provided by `callback` that is set
+       * // to listen for `enter` on the given `container` as well as its children
        * $animate.off('enter', container, callback);
        * ```
        *
@@ -35309,7 +35384,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        *
        * @description Performs an inline animation on the element which applies the provided to and from CSS styles to the element.
        * If any detected CSS transition, keyframe or JavaScript matches the provided className value, then the animation will take
-       * on the provided styles. For example, if a transition animation is set for the given className, then the provided `from` and
+       * on the provided styles. For example, if a transition animation is set for the given classNamem, then the provided `from` and
        * `to` styles will be applied alongside the given transition. If the CSS style provided in `from` does not have a corresponding
        * style in `to`, the style in `from` is applied immediately, and no animation is run.
        * If a JavaScript animation is detected then the provided styles will be given in as function parameters into the `animate`
@@ -35331,7 +35406,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        * @param {object} to the to (destination) CSS styles that will be applied to the element and across the animation.
        * @param {string=} className an optional CSS class that will be applied to the element for the duration of the animation. If
        *    this value is left as empty then a CSS class of `ng-inline-animate` will be applied to the element.
-       *    (Note that if no animation is detected then this value will not be appplied to the element.)
+       *    (Note that if no animation is detected then this value will not be applied to the element.)
        * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
@@ -35569,7 +35644,7 @@ var $CoreAnimateCssProvider = function() {
         options.from = null;
       }
 
-      /* jshint newcap: false*/
+      /* jshint newcap: false */
       var closed, runner = new $$AnimateRunner();
       return {
         start: run,
@@ -36495,7 +36570,7 @@ function $TemplateCacheProvider() {
  * When this property is set to true, the HTML compiler will collect DOM nodes between
  * nodes with the attributes `directive-name-start` and `directive-name-end`, and group them
  * together as the directive elements. It is recommended that this feature be used on directives
- * which are not strictly behavioural (such as {@link ngClick}), and which
+ * which are not strictly behavioral (such as {@link ngClick}), and which
  * do not manipulate or replace child nodes (such as {@link ngInclude}).
  *
  * #### `priority`
@@ -36533,35 +36608,62 @@ function $TemplateCacheProvider() {
  * is bound to the parent scope, via matching attributes on the directive's element:
  *
  * * `@` or `@attr` - bind a local scope property to the value of DOM attribute. The result is
- *   always a string since DOM attributes are strings. If no `attr` name is specified  then the
- *   attribute name is assumed to be the same as the local name.
- *   Given `<widget my-attr="hello {{name}}">` and widget definition
- *   of `scope: { localName:'@myAttr' }`, then widget scope property `localName` will reflect
- *   the interpolated value of `hello {{name}}`. As the `name` attribute changes so will the
- *   `localName` property on the widget scope. The `name` is read from the parent scope (not
- *   component scope).
+ *   always a string since DOM attributes are strings. If no `attr` name is specified then the
+ *   attribute name is assumed to be the same as the local name. Given `<my-component
+ *   my-attr="hello {{name}}">` and the isolate scope definition `scope: { localName:'@myAttr' }`,
+ *   the directive's scope property `localName` will reflect the interpolated value of `hello
+ *   {{name}}`. As the `name` attribute changes so will the `localName` property on the directive's
+ *   scope. The `name` is read from the parent scope (not the directive's scope).
  *
- * * `=` or `=attr` - set up bi-directional binding between a local scope property and the
- *   parent scope property of name defined via the value of the `attr` attribute. If no `attr`
- *   name is specified then the attribute name is assumed to be the same as the local name.
- *   Given `<widget my-attr="parentModel">` and widget definition of
- *   `scope: { localModel:'=myAttr' }`, then widget scope property `localModel` will reflect the
+ * * `=` or `=attr` - set up a bidirectional binding between a local scope property and an expression
+ *   passed via the attribute `attr`. The expression is evaluated in the context of the parent scope.
+ *   If no `attr` name is specified then the attribute name is assumed to be the same as the local
+ *   name. Given `<my-component my-attr="parentModel">` and the isolate scope definition `scope: {
+ *   localModel: '=myAttr' }`, the property `localModel` on the directive's scope will reflect the
+ *   value of `parentModel` on the parent scope. Changes to `parentModel` will be reflected in
+ *   `localModel` and vice versa. Optional attributes should be marked as such with a question mark:
+ *   `=?` or `=?attr`. If the binding expression is non-assignable, or if the attribute isn't
+ *   optional and doesn't exist, an exception ({@link error/$compile/nonassign `$compile:nonassign`})
+ *   will be thrown upon discovering changes to the local value, since it will be impossible to sync
+ *   them back to the parent scope. By default, the {@link ng.$rootScope.Scope#$watch `$watch`}
+ *   method is used for tracking changes, and the equality check is based on object identity.
+ *   However, if an object literal or an array literal is passed as the binding expression, the
+ *   equality check is done by value (using the {@link angular.equals} function). It's also possible
+ *   to watch the evaluated value shallowly with {@link ng.$rootScope.Scope#$watchCollection
+ *   `$watchCollection`}: use `=*` or `=*attr` (`=*?` or `=*?attr` if the attribute is optional).
+ *
+  * * `<` or `<attr` - set up a one-way (one-directional) binding between a local scope property and an
+ *   expression passed via the attribute `attr`. The expression is evaluated in the context of the
+ *   parent scope. If no `attr` name is specified then the attribute name is assumed to be the same as the
+ *   local name. You can also make the binding optional by adding `?`: `<?` or `<?attr`.
+ *
+ *   For example, given `<my-component my-attr="parentModel">` and directive definition of
+ *   `scope: { localModel:'<myAttr' }`, then the isolated scope property `localModel` will reflect the
  *   value of `parentModel` on the parent scope. Any changes to `parentModel` will be reflected
- *   in `localModel` and any changes in `localModel` will reflect in `parentModel`. If the parent
- *   scope property doesn't exist, it will throw a NON_ASSIGNABLE_MODEL_EXPRESSION exception. You
- *   can avoid this behavior using `=?` or `=?attr` in order to flag the property as optional. If
- *   you want to shallow watch for changes (i.e. $watchCollection instead of $watch) you can use
- *   `=*` or `=*attr` (`=*?` or `=*?attr` if the property is optional).
+ *   in `localModel`, but changes in `localModel` will not reflect in `parentModel`. There are however
+ *   two caveats:
+ *     1. one-way binding does not copy the value from the parent to the isolate scope, it simply
+ *     sets the same value. That means if your bound value is an object, changes to its properties
+ *     in the isolated scope will be reflected in the parent scope (because both reference the same object).
+ *     2. one-way binding watches changes to the **identity** of the parent value. That means the
+ *     {@link ng.$rootScope.Scope#$watch `$watch`} on the parent value only fires if the reference
+ *     to the value has changed. In most cases, this should not be of concern, but can be important
+ *     to know if you one-way bind to an object, and then replace that object in the isolated scope.
+ *     If you now change a property of the object in your parent scope, the change will not be
+ *     propagated to the isolated scope, because the identity of the object on the parent scope
+ *     has not changed. Instead you must assign a new object.
  *
- * * `&` or `&attr` - provides a way to execute an expression in the context of the parent scope.
- *   If no `attr` name is specified then the attribute name is assumed to be the same as the
- *   local name. Given `<widget my-attr="count = count + value">` and widget definition of
- *   `scope: { localFn:'&myAttr' }`, then isolate scope property `localFn` will point to
- *   a function wrapper for the `count = count + value` expression. Often it's desirable to
- *   pass data from the isolated scope via an expression to the parent scope, this can be
- *   done by passing a map of local variable names and values into the expression wrapper fn.
- *   For example, if the expression is `increment(amount)` then we can specify the amount value
- *   by calling the `localFn` as `localFn({amount: 22})`.
+ *   One-way binding is useful if you do not plan to propagate changes to your isolated scope bindings
+ *   back to the parent. However, it does not make this completely impossible.
+ *
+ * * `&` or `&attr` - provides a way to execute an expression in the context of the parent scope. If
+ *   no `attr` name is specified then the attribute name is assumed to be the same as the local name.
+ *   Given `<my-component my-attr="count = count + value">` and the isolate scope definition `scope: {
+ *   localFn:'&myAttr' }`, the isolate scope property `localFn` will point to a function wrapper for
+ *   the `count = count + value` expression. Often it's desirable to pass data from the isolated scope
+ *   via an expression to the parent scope. This can be done by passing a map of local variable names
+ *   and values into the expression wrapper fn. For example, if the expression is `increment(amount)`
+ *   then we can specify the amount value by calling the `localFn` as `localFn({amount: 22})`.
  *
  * In general it's possible to apply more than one directive to one element, but there might be limitations
  * depending on the type of scope required by the directives. The following points will help explain these limitations.
@@ -36585,8 +36687,18 @@ function $TemplateCacheProvider() {
  * definition: `controller: 'myCtrl as myAlias'`.
  *
  * When an isolate scope is used for a directive (see above), `bindToController: true` will
- * allow a component to have its properties bound to the controller, rather than to scope. When the controller
- * is instantiated, the initial values of the isolate scope bindings are already available.
+ * allow a component to have its properties bound to the controller, rather than to scope.
+ *
+ * After the controller is instantiated, the initial values of the isolate scope bindings will be bound to the controller
+ * properties. You can access these bindings once they have been initialized by providing a controller method called
+ * `$onInit`, which is called after all the controllers on an element have been constructed and had their bindings
+ * initialized.
+ *
+ * <div class="alert alert-warning">
+ * **Deprecation warning:** although bindings for non-ES6 class controllers are currently
+ * bound to `this` before the controller constructor is called, this use is now deprecated. Please place initialization
+ * code that relies upon bindings inside a `$onInit` method on the controller, instead.
+ * </div>
  *
  * It is also possible to set `bindToController` to an object hash with the same format as the `scope` property.
  * This will set up the scope bindings to the controller directly. Note that `scope` can still be used
@@ -36606,10 +36718,10 @@ function $TemplateCacheProvider() {
  * * `$element` - Current element
  * * `$attrs` - Current attributes object for the element
  * * `$transclude` - A transclude linking function pre-bound to the correct transclusion scope:
- *   `function([scope], cloneLinkingFn, futureParentElement)`.
- *    * `scope`: optional argument to override the scope.
- *    * `cloneLinkingFn`: optional argument to create clones of the original transcluded content.
- *    * `futureParentElement`:
+ *   `function([scope], cloneLinkingFn, futureParentElement, slotName)`:
+ *    * `scope`: (optional) override the scope.
+ *    * `cloneLinkingFn`: (optional) argument to create clones of the original transcluded content.
+ *    * `futureParentElement` (optional):
  *        * defines the parent to which the `cloneLinkingFn` will add the cloned elements.
  *        * default: `$element.parent()` resp. `$element` for `transclude:'element'` resp. `transclude:true`.
  *        * only needed for transcludes that are allowed to contain non html elements (e.g. SVG elements)
@@ -36617,14 +36729,34 @@ function $TemplateCacheProvider() {
  *          as those elements need to created and cloned in a special way when they are defined outside their
  *          usual containers (e.g. like `<svg>`).
  *        * See also the `directive.templateNamespace` property.
+ *    * `slotName`: (optional) the name of the slot to transclude. If falsy (e.g. `null`, `undefined` or `''`)
+ *      then the default translusion is provided.
+ *    The `$transclude` function also has a method on it, `$transclude.isSlotFilled(slotName)`, which returns
+ *    `true` if the specified slot contains content (i.e. one or more DOM nodes).
  *
+ * The controller can provide the following methods that act as life-cycle hooks:
+ * * `$onInit` - Called on each controller after all the controllers on an element have been constructed and
+ *   had their bindings initialized (and before the pre &amp; post linking functions for the directives on
+ *   this element). This is a good place to put initialization code for your controller.
  *
  * #### `require`
  * Require another directive and inject its controller as the fourth argument to the linking function. The
- * `require` takes a string name (or array of strings) of the directive(s) to pass in. If an array is used, the
- * injected argument will be an array in corresponding order. If no such directive can be
- * found, or if the directive does not have a controller, then an error is raised (unless no link function
- * is specified, in which case error checking is skipped). The name can be prefixed with:
+ * `require` property can be a string, an array or an object:
+ * * a **string** containing the name of the directive to pass to the linking function
+ * * an **array** containing the names of directives to pass to the linking function. The argument passed to the
+ * linking function will be an array of controllers in the same order as the names in the `require` property
+ * * an **object** whose property values are the names of the directives to pass to the linking function. The argument
+ * passed to the linking function will also be an object with matching keys, whose values will hold the corresponding
+ * controllers.
+ *
+ * If the `require` property is an object and `bindToController` is truthy, then the required controllers are
+ * bound to the controller using the keys of the `require` property. This binding occurs after all the controllers
+ * have been constructed but before `$onInit` is called.
+ * See the {@link $compileProvider#component} helper for an example of how this can be used.
+ *
+ * If no such required directive(s) can be found, or if the directive does not have a controller, then an error is
+ * raised (unless no link function is specified and the required controllers are not being bound to the directive
+ * controller, in which case error checking is skipped). The name can be prefixed with:
  *
  * * (no prefix) - Locate the required controller on the current element. Throw an error if not found.
  * * `?` - Attempt to locate the required controller or pass `null` to the `link` fn if not found.
@@ -36717,14 +36849,6 @@ function $TemplateCacheProvider() {
  * The contents are compiled and provided to the directive as a **transclusion function**. See the
  * {@link $compile#transclusion Transclusion} section below.
  *
- * There are two kinds of transclusion depending upon whether you want to transclude just the contents of the
- * directive's element or the entire element:
- *
- * * `true` - transclude the content (i.e. the child nodes) of the directive's element.
- * * `'element'` - transclude the whole of the directive's element including any directives on this
- *   element that defined at a lower priority than this directive. When used, the `template`
- *   property is ignored.
- *
  *
  * #### `compile`
  *
@@ -36752,7 +36876,7 @@ function $TemplateCacheProvider() {
 
  * <div class="alert alert-warning">
  * **Note:** The compile function cannot handle directives that recursively use themselves in their
- * own templates or compile functions. Compiling these directives results in an infinite loop and a
+ * own templates or compile functions. Compiling these directives results in an infinite loop and
  * stack overflow errors.
  *
  * This can be avoided by manually using $compile in the postLink function to imperatively compile
@@ -36854,6 +36978,34 @@ function $TemplateCacheProvider() {
  * Testing Transclusion Directives}.
  * </div>
  *
+ * There are three kinds of transclusion depending upon whether you want to transclude just the contents of the
+ * directive's element, the entire element or multiple parts of the element contents:
+ *
+ * * `true` - transclude the content (i.e. the child nodes) of the directive's element.
+ * * `'element'` - transclude the whole of the directive's element including any directives on this
+ *   element that defined at a lower priority than this directive. When used, the `template`
+ *   property is ignored.
+ * * **`{...}` (an object hash):** - map elements of the content onto transclusion "slots" in the template.
+ *
+ * **Mult-slot transclusion** is declared by providing an object for the `transclude` property.
+ *
+ * This object is a map where the keys are the name of the slot to fill and the value is an element selector
+ * used to match the HTML to the slot. The element selector should be in normalized form (e.g. `myElement`)
+ * and will match the standard element variants (e.g. `my-element`, `my:element`, `data-my-element`, etc).
+ *
+ * For further information check out the guide on {@link guide/directive#matching-directives Matching Directives}
+ *
+ * If the element selector is prefixed with a `?` then that slot is optional.
+ *
+ * For example, the transclude object `{ slotA: '?myCustomElement' }` maps `<my-custom-element>` elements to
+ * the `slotA` slot, which can be accessed via the `$transclude` function or via the {@link ngTransclude} directive.
+ *
+ * Slots that are not marked as optional (`?`) will trigger a compile time error if there are no matching elements
+ * in the transclude content. If you wish to know if an optional slot was filled with content, then you can call
+ * `$transclude.isSlotFilled(slotName)` on the transclude function passed to the directive's link function and
+ * injectable into the directive's controller.
+ *
+ *
  * #### Transclusion Functions
  *
  * When a directive requests transclusion, the compiler extracts its contents and provides a **transclusion
@@ -36874,7 +37026,7 @@ function $TemplateCacheProvider() {
  * content and the `scope` is the newly created transclusion scope, to which the clone is bound.
  *
  * <div class="alert alert-info">
- * **Best Practice**: Always provide a `cloneFn` (clone attach function) when you call a translude function
+ * **Best Practice**: Always provide a `cloneFn` (clone attach function) when you call a transclude function
  * since you then get a fresh clone of the original DOM and also have access to the new transclusion scope.
  * </div>
  *
@@ -36906,7 +37058,7 @@ function $TemplateCacheProvider() {
  * </div>
  *
  * The built-in DOM manipulation directives, such as {@link ngIf}, {@link ngSwitch} and {@link ngRepeat}
- * automatically destroy their transluded clones as necessary so you do not need to worry about this if
+ * automatically destroy their transcluded clones as necessary so you do not need to worry about this if
  * you are simply using {@link ngTransclude} to inject the transclusion into your directive.
  *
  *
@@ -36951,10 +37103,9 @@ function $TemplateCacheProvider() {
  * The {@link ng.$compile.directive.Attributes Attributes} object - passed as a parameter in the
  * `link()` or `compile()` functions. It has a variety of uses.
  *
- * accessing *Normalized attribute names:*
- * Directives like 'ngBind' can be expressed in many ways: 'ng:bind', `data-ng-bind`, or 'x-ng-bind'.
- * the attributes object allows for normalized access to
- *   the attributes.
+ * * *Accessing normalized attribute names:* Directives like 'ngBind' can be expressed in many ways:
+ *   'ng:bind', `data-ng-bind`, or 'x-ng-bind'. The attributes object allows for normalized access
+ *   to the attributes.
  *
  * * *Directive inter-communication:* All directives share the same instance of the attributes
  *   object which allows the directives to use the attributes object as inter directive
@@ -37144,7 +37295,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
   var EVENT_HANDLER_ATTR_REGEXP = /^(on[a-z]+|formaction)$/;
 
   function parseIsolateBindings(scope, directiveName, isController) {
-    var LOCAL_REGEXP = /^\s*([@&]|=(\*?))(\??)\s*(\w*)\s*$/;
+    var LOCAL_REGEXP = /^\s*([@&<]|=(\*?))(\??)\s*(\w*)\s*$/;
 
     var bindings = {};
 
@@ -37231,8 +37382,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    * @param {string|Object} name Name of the directive in camel-case (i.e. <code>ngBind</code> which
    *    will match as <code>ng-bind</code>), or an object map of directives where the keys are the
    *    names and the values are the factories.
-   * @param {Function|Array} directiveFactory An injectable directive factory function. See
-   *    {@link guide/directive} for more info.
+   * @param {Function|Array} directiveFactory An injectable directive factory function. See the
+   *    {@link guide/directive directive guide} and the {@link $compile compile API} for more info.
    * @returns {ng.$compileProvider} Self for chaining.
    */
    this.directive = function registerDirective(name, directiveFactory) {
@@ -37277,6 +37428,128 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       forEach(name, reverseParams(registerDirective));
     }
     return this;
+  };
+
+  /**
+   * @ngdoc method
+   * @name $compileProvider#component
+   * @module ng
+   * @param {string} name Name of the component in camelCase (i.e. `myComp` which will match `<my-comp>`)
+   * @param {Object} options Component definition object (a simplified
+   *    {@link ng.$compile#directive-definition-object directive definition object}),
+   *    with the following properties (all optional):
+   *
+   *    - `controller` – `{(string|function()=}` – controller constructor function that should be
+   *      associated with newly created scope or the name of a {@link ng.$compile#-controller-
+   *      registered controller} if passed as a string. An empty `noop` function by default.
+   *    - `controllerAs` – `{string=}` – identifier name for to reference the controller in the component's scope.
+   *      If present, the controller will be published to scope under the `controllerAs` name.
+   *      If not present, this will default to be `$ctrl`.
+   *    - `template` – `{string=|function()=}` – html template as a string or a function that
+   *      returns an html template as a string which should be used as the contents of this component.
+   *      Empty string by default.
+   *
+   *      If `template` is a function, then it is {@link auto.$injector#invoke injected} with
+   *      the following locals:
+   *
+   *      - `$element` - Current element
+   *      - `$attrs` - Current attributes object for the element
+   *
+   *    - `templateUrl` – `{string=|function()=}` – path or function that returns a path to an html
+   *      template that should be used  as the contents of this component.
+   *
+   *      If `templateUrl` is a function, then it is {@link auto.$injector#invoke injected} with
+   *      the following locals:
+   *
+   *      - `$element` - Current element
+   *      - `$attrs` - Current attributes object for the element
+   *
+   *    - `bindings` – `{object=}` – defines bindings between DOM attributes and component properties.
+   *      Component properties are always bound to the component controller and not to the scope.
+   *      See {@link ng.$compile#-bindtocontroller- `bindToController`}.
+   *    - `transclude` – `{boolean=}` – whether {@link $compile#transclusion content transclusion} is enabled.
+   *      Disabled by default.
+   *    - `$...` – `{function()=}` – additional annotations to provide to the directive factory function.
+   *
+   * @returns {ng.$compileProvider} the compile provider itself, for chaining of function calls.
+   * @description
+   * Register a **component definition** with the compiler. This is a shorthand for registering a special
+   * type of directive, which represents a self-contained UI component in your application. Such components
+   * are always isolated (i.e. `scope: {}`) and are always restricted to elements (i.e. `restrict: 'E'`).
+   *
+   * Component definitions are very simple and do not require as much configuration as defining general
+   * directives. Component definitions usually consist only of a template and a controller backing it.
+   *
+   * In order to make the definition easier, components enforce best practices like use of `controllerAs`,
+   * `bindToController`. They always have **isolate scope** and are restricted to elements.
+   *
+   * Here are a few examples of how you would usually define components:
+   *
+   * ```js
+   *   var myMod = angular.module(...);
+   *   myMod.component('myComp', {
+   *     template: '<div>My name is {{$ctrl.name}}</div>',
+   *     controller: function() {
+   *       this.name = 'shahar';
+   *     }
+   *   });
+   *
+   *   myMod.component('myComp', {
+   *     template: '<div>My name is {{$ctrl.name}}</div>',
+   *     bindings: {name: '@'}
+   *   });
+   *
+   *   myMod.component('myComp', {
+   *     templateUrl: 'views/my-comp.html',
+   *     controller: 'MyCtrl as ctrl',
+   *     bindings: {name: '@'}
+   *   });
+   *
+   * ```
+   * For more examples, and an in-depth guide, see the {@link guide/component component guide}.
+   *
+   * <br />
+   * See also {@link ng.$compileProvider#directive $compileProvider.directive()}.
+   */
+  this.component = function registerComponent(name, options) {
+    var controller = options.controller || function() {};
+
+    function factory($injector) {
+      function makeInjectable(fn) {
+        if (isFunction(fn) || isArray(fn)) {
+          return function(tElement, tAttrs) {
+            return $injector.invoke(fn, this, {$element: tElement, $attrs: tAttrs});
+          };
+        } else {
+          return fn;
+        }
+      }
+
+      var template = (!options.template && !options.templateUrl ? '' : options.template);
+      return {
+        controller: controller,
+        controllerAs: identifierForController(options.controller) || options.controllerAs || '$ctrl',
+        template: makeInjectable(template),
+        templateUrl: makeInjectable(options.templateUrl),
+        transclude: options.transclude,
+        scope: {},
+        bindToController: options.bindings || {},
+        restrict: 'E',
+        require: options.require
+      };
+    }
+
+    // Copy any annotation properties (starting with $) over to the factory function
+    // These could be used by libraries such as the new component router
+    forEach(options, function(val, key) {
+      if (key.charAt(0) === '$') {
+        factory[key] = val;
+      }
+    });
+
+    factory.$inject = ['$injector'];
+
+    return this.directive(name, factory);
   };
 
 
@@ -37376,6 +37649,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     function($injector,   $interpolate,   $exceptionHandler,   $templateRequest,   $parse,
              $controller,   $rootScope,   $sce,   $animate,   $$sanitizeUri) {
 
+    var SIMPLE_ATTR_NAME = /^\w/;
+    var specialAttrHolder = document.createElement('div');
     var Attributes = function(element, attributesToCopy) {
       if (attributesToCopy) {
         var keys = Object.keys(attributesToCopy);
@@ -37511,7 +37786,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         nodeName = nodeName_(this.$$element);
 
-        if ((nodeName === 'a' && key === 'href') ||
+        if ((nodeName === 'a' && (key === 'href' || key === 'xlinkHref')) ||
             (nodeName === 'img' && key === 'src')) {
           // sanitize a[href] and img[src] values
           this[key] = value = $$sanitizeUri(value, key === 'src');
@@ -37555,7 +37830,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           if (value === null || isUndefined(value)) {
             this.$$element.removeAttr(attrName);
           } else {
-            this.$$element.attr(attrName, value);
+            if (SIMPLE_ATTR_NAME.test(attrName)) {
+              this.$$element.attr(attrName, value);
+            } else {
+              setSpecialAttr(this.$$element[0], attrName, value);
+            }
           }
         }
 
@@ -37609,6 +37888,18 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
     };
 
+    function setSpecialAttr(element, attrName, value) {
+      // Attributes names that do not start with letters (such as `(click)`) cannot be set using `setAttribute`
+      // so we have to jump through some hoops to get such an attribute
+      // https://github.com/angular/angular.js/pull/13318
+      specialAttrHolder.innerHTML = "<span " + attrName + ">";
+      var attributes = specialAttrHolder.firstChild.attributes;
+      var attribute = attributes[0];
+      // We have to remove the attribute from its container element before we can add it to the destination element
+      attributes.removeNamedItem(attribute.name);
+      attribute.value = value;
+      element.attributes.setNamedItem(attribute);
+    }
 
     function safeAddClass($element, className) {
       try {
@@ -37622,7 +37913,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
     var startSymbol = $interpolate.startSymbol(),
         endSymbol = $interpolate.endSymbol(),
-        denormalizeTemplate = (startSymbol == '{{' || endSymbol  == '}}')
+        denormalizeTemplate = (startSymbol == '{{' && endSymbol  == '}}')
             ? identity
             : function denormalizeTemplate(template) {
               return template.replace(/\{\{/g, startSymbol).replace(/}}/g, endSymbol);
@@ -37666,13 +37957,19 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         // modify it.
         $compileNodes = jqLite($compileNodes);
       }
+
+      var NOT_EMPTY = /\S+/;
+
       // We can not compile top level text elements since text nodes can be merged and we will
       // not be able to attach scope data to them, so we will wrap them in <span>
-      forEach($compileNodes, function(node, index) {
-        if (node.nodeType == NODE_TYPE_TEXT && node.nodeValue.match(/\S+/) /* non-empty */ ) {
-          $compileNodes[index] = jqLite(node).wrap('<span></span>').parent()[0];
+      for (var i = 0, len = $compileNodes.length; i < len; i++) {
+        var domNode = $compileNodes[i];
+
+        if (domNode.nodeType === NODE_TYPE_TEXT && domNode.nodeValue.match(NOT_EMPTY) /* non-empty */) {
+          jqLiteWrapNode(domNode, $compileNodes[i] = document.createElement('span'));
         }
-      });
+      }
+
       var compositeLinkFn =
               compileNodes($compileNodes, transcludeFn, $compileNodes,
                            maxPriority, ignoreDirective, previousCompileContext);
@@ -37743,7 +38040,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       if (!node) {
         return 'html';
       } else {
-        return nodeName_(node) !== 'foreignobject' && node.toString().match(/SVG/) ? 'svg' : 'html';
+        return nodeName_(node) !== 'foreignobject' && toString.call(node).match(/SVG/) ? 'svg' : 'html';
       }
     }
 
@@ -37876,6 +38173,17 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           futureParentElement: futureParentElement
         });
       };
+
+      // We need  to attach the transclusion slots onto the `boundTranscludeFn`
+      // so that they are available inside the `controllersBoundTransclude` function
+      var boundSlots = boundTranscludeFn.$$slots = createMap();
+      for (var slotName in transcludeFn.$$slots) {
+        if (transcludeFn.$$slots[slotName]) {
+          boundSlots[slotName] = createBoundTranscludeFn(scope, transcludeFn.$$slots[slotName], previousBoundTranscludeFn);
+        } else {
+          boundSlots[slotName] = null;
+        }
+      }
 
       return boundTranscludeFn;
     }
@@ -38036,6 +38344,37 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     }
 
     /**
+     * A function generator that is used to support both eager and lazy compilation
+     * linking function.
+     * @param eager
+     * @param $compileNodes
+     * @param transcludeFn
+     * @param maxPriority
+     * @param ignoreDirective
+     * @param previousCompileContext
+     * @returns {Function}
+     */
+    function compilationGenerator(eager, $compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext) {
+        if (eager) {
+            return compile($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext);
+        }
+
+        var compiled;
+
+        return function() {
+            if (!compiled) {
+                compiled = compile($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext);
+
+                // Null out all of these references in order to make them eligible for garbage collection
+                // since this is a potentially long lived closure
+                $compileNodes = transcludeFn = previousCompileContext = null;
+            }
+
+            return compiled.apply(this, arguments);
+        };
+    }
+
+    /**
      * Once the directives have been collected, their compile functions are executed. This method
      * is responsible for inlining directive templates as well as terminating the application
      * of the directives if the terminal directive has been reached.
@@ -38079,6 +38418,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           replaceDirective = originalReplaceDirective,
           childTranscludeFn = transcludeFn,
           linkFn,
+          didScanForMultipleTransclusion = false,
+          mightHaveMultipleTransclusionError = false,
           directiveValue;
 
       // executes all directives on the current element
@@ -38121,6 +38462,27 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         directiveName = directive.name;
 
+        // If we encounter a condition that can result in transclusion on the directive,
+        // then scan ahead in the remaining directives for others that may cause a multiple
+        // transclusion error to be thrown during the compilation process.  If a matching directive
+        // is found, then we know that when we encounter a transcluded directive, we need to eagerly
+        // compile the `transclude` function rather than doing it lazily in order to throw
+        // exceptions at the correct time
+        if (!didScanForMultipleTransclusion && ((directive.replace && (directive.templateUrl || directive.template))
+            || (directive.transclude && !directive.$$tlb))) {
+                var candidateDirective;
+
+                for (var scanningIndex = i + 1; candidateDirective = directives[scanningIndex++];) {
+                    if ((candidateDirective.transclude && !candidateDirective.$$tlb)
+                        || (candidateDirective.replace && (candidateDirective.templateUrl || candidateDirective.template))) {
+                        mightHaveMultipleTransclusionError = true;
+                        break;
+                    }
+                }
+
+                didScanForMultipleTransclusion = true;
+        }
+
         if (!directive.templateUrl && directive.controller) {
           directiveValue = directive.controller;
           controllerDirectives = controllerDirectives || createMap();
@@ -38150,7 +38512,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             compileNode = $compileNode[0];
             replaceWith(jqCollection, sliceArgs($template), compileNode);
 
-            childTranscludeFn = compile($template, transcludeFn, terminalPriority,
+            childTranscludeFn = compilationGenerator(mightHaveMultipleTransclusionError, $template, transcludeFn, terminalPriority,
                                         replaceDirective && replaceDirective.name, {
                                           // Don't pass in:
                                           // - controllerDirectives - otherwise we'll create duplicates controllers
@@ -38162,10 +38524,69 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                                           nonTlbTranscludeDirective: nonTlbTranscludeDirective
                                         });
           } else {
+
+            var slots = createMap();
+
             $template = jqLite(jqLiteClone(compileNode)).contents();
+
+            if (isObject(directiveValue)) {
+
+              // We have transclusion slots,
+              // collect them up, compile them and store their transclusion functions
+              $template = [];
+
+              var slotMap = createMap();
+              var filledSlots = createMap();
+
+              // Parse the element selectors
+              forEach(directiveValue, function(elementSelector, slotName) {
+                // If an element selector starts with a ? then it is optional
+                var optional = (elementSelector.charAt(0) === '?');
+                elementSelector = optional ? elementSelector.substring(1) : elementSelector;
+
+                slotMap[elementSelector] = slotName;
+
+                // We explicitly assign `null` since this implies that a slot was defined but not filled.
+                // Later when calling boundTransclusion functions with a slot name we only error if the
+                // slot is `undefined`
+                slots[slotName] = null;
+
+                // filledSlots contains `true` for all slots that are either optional or have been
+                // filled. This is used to check that we have not missed any required slots
+                filledSlots[slotName] = optional;
+              });
+
+              // Add the matching elements into their slot
+              forEach($compileNode.contents(), function(node) {
+                var slotName = slotMap[directiveNormalize(nodeName_(node))];
+                if (slotName) {
+                  filledSlots[slotName] = true;
+                  slots[slotName] = slots[slotName] || [];
+                  slots[slotName].push(node);
+                } else {
+                  $template.push(node);
+                }
+              });
+
+              // Check for required slots that were not filled
+              forEach(filledSlots, function(filled, slotName) {
+                if (!filled) {
+                  throw $compileMinErr('reqslot', 'Required transclusion slot `{0}` was not filled.', slotName);
+                }
+              });
+
+              for (var slotName in slots) {
+                if (slots[slotName]) {
+                  // Only define a transclusion function if the slot was filled
+                  slots[slotName] = compilationGenerator(mightHaveMultipleTransclusionError, slots[slotName], transcludeFn);
+                }
+              }
+            }
+
             $compileNode.empty(); // clear contents
-            childTranscludeFn = compile($template, transcludeFn, undefined,
+            childTranscludeFn = compilationGenerator(mightHaveMultipleTransclusionError, $template, transcludeFn, undefined,
                 undefined, { needsNewScope: directive.$$isolateScope || directive.$$newScope});
+            childTranscludeFn.$$slots = slots;
           }
         }
 
@@ -38328,6 +38749,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           for (var i = 0, ii = require.length; i < ii; i++) {
             value[i] = getControllers(directiveName, require[i], $element, elementControllers);
           }
+        } else if (isObject(require)) {
+          value = {};
+          forEach(require, function(controller, property) {
+            value[property] = getControllers(directiveName, controller, $element, elementControllers);
+          });
         }
 
         return value || null;
@@ -38365,7 +38791,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
 
       function nodeLinkFn(childLinkFn, scope, linkNode, $rootElement, boundTranscludeFn) {
-        var linkFn, isolateScope, controllerScope, elementControllers, transcludeFn, $element,
+        var i, ii, linkFn, isolateScope, controllerScope, elementControllers, transcludeFn, $element,
             attrs, removeScopeBindingWatches, removeControllerBindingWatches;
 
         if (compileNode === linkNode) {
@@ -38388,6 +38814,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           // is later passed as `parentBoundTranscludeFn` to `publicLinkFn`
           transcludeFn = controllersBoundTransclude;
           transcludeFn.$$boundTransclude = boundTranscludeFn;
+          // expose the slots on the `$transclude` function
+          transcludeFn.isSlotFilled = function(slotName) {
+            return !!boundTranscludeFn.$$slots[slotName];
+          };
         }
 
         if (controllerDirectives) {
@@ -38432,6 +38862,21 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           }
         }
 
+        // Bind the required controllers to the controller, if `require` is an object and `bindToController` is truthy
+        forEach(controllerDirectives, function(controllerDirective, name) {
+          var require = controllerDirective.require;
+          if (controllerDirective.bindToController && !isArray(require) && isObject(require)) {
+            extend(elementControllers[name].instance, getControllers(name, require, $element, elementControllers));
+          }
+        });
+
+        // Trigger the `$onInit` method on all controllers that have one
+        forEach(elementControllers, function(controller) {
+          if (isFunction(controller.instance.$onInit)) {
+            controller.instance.$onInit();
+          }
+        });
+
         // PRELINKING
         for (i = 0, ii = preLinkFns.length; i < ii; i++) {
           linkFn = preLinkFns[i];
@@ -38467,11 +38912,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         // This is the function that is injected as `$transclude`.
         // Note: all arguments are optional!
-        function controllersBoundTransclude(scope, cloneAttachFn, futureParentElement) {
+        function controllersBoundTransclude(scope, cloneAttachFn, futureParentElement, slotName) {
           var transcludeControllers;
-
           // No scope passed in:
           if (!isScope(scope)) {
+            slotName = futureParentElement;
             futureParentElement = cloneAttachFn;
             cloneAttachFn = scope;
             scope = undefined;
@@ -38483,7 +38928,23 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           if (!futureParentElement) {
             futureParentElement = hasElementTranscludeDirective ? $element.parent() : $element;
           }
-          return boundTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
+          if (slotName) {
+            // slotTranscludeFn can be one of three things:
+            //  * a transclude function - a filled slot
+            //  * `null` - an optional slot that was not filled
+            //  * `undefined` - a slot that was not declared (i.e. invalid)
+            var slotTranscludeFn = boundTranscludeFn.$$slots[slotName];
+            if (slotTranscludeFn) {
+              return slotTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
+            } else if (isUndefined(slotTranscludeFn)) {
+              throw $compileMinErr('noslot',
+               'No parent directive that requires a transclusion with slot name "{0}". ' +
+               'Element: {1}',
+               slotName, startingTag($element));
+            }
+          } else {
+            return boundTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
+          }
         }
       }
     }
@@ -38915,9 +39376,14 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         parent.replaceChild(newNode, firstElementToRemove);
       }
 
-      // TODO(perf): what's this document fragment for? is it needed? can we at least reuse it?
+      // Append all the `elementsToRemove` to a fragment. This will...
+      // - remove them from the DOM
+      // - allow them to still be traversed with .nextSibling
+      // - allow a single fragment.qSA to fetch all elements being removed
       var fragment = document.createDocumentFragment();
-      fragment.appendChild(firstElementToRemove);
+      for (i = 0; i < removeCount; i++) {
+        fragment.appendChild(elementsToRemove[i]);
+      }
 
       if (jqLite.hasData(firstElementToRemove)) {
         // Copy over user data (that includes Angular's $scope etc.). Don't copy private
@@ -38925,31 +39391,18 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         // event listeners (which is the main use of private data) wouldn't work anyway.
         jqLite.data(newNode, jqLite.data(firstElementToRemove));
 
-        // Remove data of the replaced element. We cannot just call .remove()
-        // on the element it since that would deallocate scope that is needed
-        // for the new node. Instead, remove the data "manually".
-        if (!jQuery) {
-          delete jqLite.cache[firstElementToRemove[jqLite.expando]];
-        } else {
-          // jQuery 2.x doesn't expose the data storage. Use jQuery.cleanData to clean up after
-          // the replaced element. The cleanData version monkey-patched by Angular would cause
-          // the scope to be trashed and we do need the very same scope to work with the new
-          // element. However, we cannot just cache the non-patched version and use it here as
-          // that would break if another library patches the method after Angular does (one
-          // example is jQuery UI). Instead, set a flag indicating scope destroying should be
-          // skipped this one time.
-          skipDestroyOnNextJQueryCleanData = true;
-          jQuery.cleanData([firstElementToRemove]);
-        }
+        // Remove $destroy event listeners from `firstElementToRemove`
+        jqLite(firstElementToRemove).off('$destroy');
       }
 
-      for (var k = 1, kk = elementsToRemove.length; k < kk; k++) {
-        var element = elementsToRemove[k];
-        jqLite(element).remove(); // must do this way to clean up expando
-        fragment.appendChild(element);
-        delete elementsToRemove[k];
-      }
+      // Cleanup any data/listeners on the elements and children.
+      // This includes invoking the $destroy event on any elements with listeners.
+      jqLite.cleanData(fragment.querySelectorAll('*'));
 
+      // Update the jqLite collection to only contain the `newNode`
+      for (i = 1; i < removeCount; i++) {
+        delete elementsToRemove[i];
+      }
       elementsToRemove[0] = newNode;
       elementsToRemove.length = 1;
     }
@@ -38978,7 +39431,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         optional = definition.optional,
         mode = definition.mode, // @, =, or &
         lastValue,
-        parentGet, parentSet, compare;
+        parentGet, parentSet, compare, removeWatch;
 
         switch (mode) {
 
@@ -38992,10 +39445,15 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               }
             });
             attrs.$$observers[attrName].$$scope = scope;
-            if (isString(attrs[attrName])) {
+            lastValue = attrs[attrName];
+            if (isString(lastValue)) {
               // If the attribute has been provided then we trigger an interpolation to ensure
               // the value is there for use in the link fn
-              destination[scopeName] = $interpolate(attrs[attrName])(scope);
+              destination[scopeName] = $interpolate(lastValue)(scope);
+            } else if (isBoolean(lastValue)) {
+              // If the attributes is one of the BOOLEAN_ATTR then Angular will have converted
+              // the value to boolean rather than a string, so we special case this situation
+              destination[scopeName] = lastValue;
             }
             break;
 
@@ -39016,8 +39474,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               // reset the change, or we will throw this exception on every $digest
               lastValue = destination[scopeName] = parentGet(scope);
               throw $compileMinErr('nonassign',
-                  "Expression '{0}' used with directive '{1}' is non-assignable!",
-                  attrs[attrName], directive.name);
+                  "Expression '{0}' in attribute '{1}' used with directive '{2}' is non-assignable!",
+                  attrs[attrName], attrName, directive.name);
             };
             lastValue = destination[scopeName] = parentGet(scope);
             var parentValueWatch = function parentValueWatch(parentValue) {
@@ -39034,12 +39492,29 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               return lastValue = parentValue;
             };
             parentValueWatch.$stateful = true;
-            var removeWatch;
             if (definition.collection) {
               removeWatch = scope.$watchCollection(attrs[attrName], parentValueWatch);
             } else {
               removeWatch = scope.$watch($parse(attrs[attrName], parentValueWatch), null, parentGet.literal);
             }
+            removeWatchCollection.push(removeWatch);
+            break;
+
+          case '<':
+            if (!hasOwnProperty.call(attrs, attrName)) {
+              if (optional) break;
+              attrs[attrName] = void 0;
+            }
+            if (optional && !attrs[attrName]) break;
+
+            parentGet = $parse(attrs[attrName]);
+
+            destination[scopeName] = parentGet(scope);
+
+            removeWatch = scope.$watch(parentGet, function parentValueWatchAction(newParentValue) {
+              destination[scopeName] = newParentValue;
+            }, parentGet.literal);
+
             removeWatchCollection.push(removeWatch);
             break;
 
@@ -39962,7 +40437,7 @@ function $HttpProvider() {
      *
      * ```
      * module.run(function($http) {
-     *   $http.defaults.headers.common.Authorization = 'Basic YmVlcDpib29w'
+     *   $http.defaults.headers.common.Authorization = 'Basic YmVlcDpib29w';
      * });
      * ```
      *
@@ -40190,13 +40665,13 @@ function $HttpProvider() {
      *
      * ### Cross Site Request Forgery (XSRF) Protection
      *
-     * [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery) is a technique by which
-     * an unauthorized site can gain your user's private data. Angular provides a mechanism
-     * to counter XSRF. When performing XHR requests, the $http service reads a token from a cookie
-     * (by default, `XSRF-TOKEN`) and sets it as an HTTP header (`X-XSRF-TOKEN`). Since only
-     * JavaScript that runs on your domain could read the cookie, your server can be assured that
-     * the XHR came from JavaScript running on your domain. The header will not be set for
-     * cross-domain requests.
+     * [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery) is an attack technique by
+     * which the attacker can trick an authenticated user into unknowingly executing actions on your
+     * website. Angular provides a mechanism to counter XSRF. When performing XHR requests, the
+     * $http service reads a token from a cookie (by default, `XSRF-TOKEN`) and sets it as an HTTP
+     * header (`X-XSRF-TOKEN`). Since only JavaScript that runs on your domain could read the
+     * cookie, your server can be assured that the XHR came from JavaScript running on your domain.
+     * The header will not be set for cross-domain requests.
      *
      * To take advantage of this, your server needs to set a token in a JavaScript readable session
      * cookie called `XSRF-TOKEN` on the first HTTP GET request. On subsequent XHR requests the
@@ -40355,7 +40830,7 @@ function $HttpProvider() {
      */
     function $http(requestConfig) {
 
-      if (!angular.isObject(requestConfig)) {
+      if (!isObject(requestConfig)) {
         throw minErr('$http')('badreq', 'Http request configuration must be an object.  Received: {0}', requestConfig);
       }
 
@@ -40475,7 +40950,7 @@ function $HttpProvider() {
 
         defHeaders = extend({}, defHeaders.common, defHeaders[lowercase(config.method)]);
 
-        // using for-in instead of forEach to avoid unecessary iteration after header has been found
+        // using for-in instead of forEach to avoid unnecessary iteration after header has been found
         defaultHeadersIteration:
         for (defHeaderName in defHeaders) {
           lowercaseDefHeaderName = lowercase(defHeaderName);
@@ -40974,6 +41449,14 @@ $interpolateMinErr.interr = function(text, err) {
  *
  * Used for configuring the interpolation markup. Defaults to `{{` and `}}`.
  *
+ * <div class="alert alert-danger">
+ * This feature is sometimes used to mix different markup languages, e.g. to wrap an Angular
+ * template within a Python Jinja template (or any other template language). Mixing templating
+ * languages is **very dangerous**. The embedding template language will not safely escape Angular
+ * expressions, so any user-controlled values in the template will cause Cross Site Scripting (XSS)
+ * security bugs!
+ * </div>
+ *
  * @example
 <example name="custom-interpolation-markup" module="customInterpolationApp">
 <file name="index.html">
@@ -41074,6 +41557,15 @@ function $InterpolateProvider() {
       return value;
     }
 
+    //TODO: this is the same as the constantWatchDelegate in parse.js
+    function constantWatchDelegate(scope, listener, objectEquality, constantInterp) {
+      var unwatch;
+      return unwatch = scope.$watch(function constantInterpolateWatch(scope) {
+        unwatch();
+        return constantInterp(scope);
+      }, listener, objectEquality);
+    }
+
     /**
      * @ngdoc service
      * @name $interpolate
@@ -41169,6 +41661,19 @@ function $InterpolateProvider() {
      * - `context`: evaluation context for all expressions embedded in the interpolated text
      */
     function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {
+      // Provide a quick exit and simplified result function for text with no interpolation
+      if (!text.length || text.indexOf(startSymbol) === -1) {
+        var constantInterp;
+        if (!mustHaveExpression) {
+          var unescapedText = unescapeText(text);
+          constantInterp = valueFn(unescapedText);
+          constantInterp.exp = text;
+          constantInterp.expressions = [];
+          constantInterp.$$watchDelegate = constantWatchDelegate;
+        }
+        return constantInterp;
+      }
+
       allOrNothing = !!allOrNothing;
       var startIndex,
           endIndex,
@@ -41305,8 +41810,8 @@ function $InterpolateProvider() {
 }
 
 function $IntervalProvider() {
-  this.$get = ['$rootScope', '$window', '$q', '$$q',
-       function($rootScope,   $window,   $q,   $$q) {
+  this.$get = ['$rootScope', '$window', '$q', '$$q', '$browser',
+       function($rootScope,   $window,   $q,   $$q,   $browser) {
     var intervals = {};
 
 
@@ -41447,11 +41952,12 @@ function $IntervalProvider() {
 
       count = isDefined(count) ? count : 0;
 
-      promise.then(null, null, (!hasParams) ? fn : function() {
-        fn.apply(null, args);
-      });
-
       promise.$$intervalId = setInterval(function tick() {
+        if (skipApply) {
+          $browser.defer(callback);
+        } else {
+          $rootScope.$evalAsync(callback);
+        }
         deferred.notify(iteration++);
 
         if (count > 0 && iteration >= count) {
@@ -41467,6 +41973,14 @@ function $IntervalProvider() {
       intervals[promise.$$intervalId] = deferred;
 
       return promise;
+
+      function callback() {
+        if (!hasParams) {
+          fn(iteration);
+        } else {
+          fn.apply(null, args);
+        }
+      }
     }
 
 
@@ -42706,23 +43220,22 @@ function ensureSafeMemberName(name, fullExpression) {
   return name;
 }
 
-function getStringValue(name, fullExpression) {
-  // From the JavaScript docs:
+function getStringValue(name) {
   // Property names must be strings. This means that non-string objects cannot be used
   // as keys in an object. Any non-string object, including a number, is typecasted
   // into a string via the toString method.
+  // -- MDN, https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Operators/Property_accessors#Property_names
   //
-  // So, to ensure that we are checking the same `name` that JavaScript would use,
-  // we cast it to a string, if possible.
-  // Doing `name + ''` can cause a repl error if the result to `toString` is not a string,
-  // this is, this will handle objects that misbehave.
-  name = name + '';
-  if (!isString(name)) {
-    throw $parseMinErr('iseccst',
-        'Cannot convert object to primitive value! '
-        + 'Expression: {0}', fullExpression);
-  }
-  return name;
+  // So, to ensure that we are checking the same `name` that JavaScript would use, we cast it
+  // to a string. It's not always possible. If `name` is an object and its `toString` method is
+  // 'broken' (doesn't return a string, isn't a function, etc.), an error will be thrown:
+  //
+  // TypeError: Cannot convert object to primitive value
+  //
+  // For performance reasons, we don't catch this error here and allow it to propagate up the call
+  // stack. Note that you'll get the same error in JavaScript if you try to access a property using
+  // such a 'broken' object as a key.
+  return name + '';
 }
 
 function ensureSafeObject(obj, fullExpression) {
@@ -42983,6 +43496,7 @@ AST.ArrayExpression = 'ArrayExpression';
 AST.Property = 'Property';
 AST.ObjectExpression = 'ObjectExpression';
 AST.ThisExpression = 'ThisExpression';
+AST.LocalsExpression = 'LocalsExpression';
 
 // Internal use only
 AST.NGValueParameter = 'NGValueParameter';
@@ -43283,7 +43797,8 @@ AST.prototype = {
     'false': { type: AST.Literal, value: false },
     'null': { type: AST.Literal, value: null },
     'undefined': {type: AST.Literal, value: undefined },
-    'this': {type: AST.ThisExpression }
+    'this': {type: AST.ThisExpression },
+    '$locals': {type: AST.LocalsExpression }
   }
 };
 
@@ -43400,6 +43915,10 @@ function findConstantAndWatchExpressions(ast, $filter) {
     ast.toWatch = argsToWatch;
     break;
   case AST.ThisExpression:
+    ast.constant = false;
+    ast.toWatch = [];
+    break;
+  case AST.LocalsExpression:
     ast.constant = false;
     ast.toWatch = [];
     break;
@@ -43646,6 +44165,9 @@ ASTCompiler.prototype = {
       intoId = intoId || this.nextId();
       self.recurse(ast.object, left, undefined, function() {
         self.if_(self.notNull(left), function() {
+          if (create && create !== 1) {
+            self.addEnsureSafeAssignContext(left);
+          }
           if (ast.computed) {
             right = self.nextId();
             self.recurse(ast.property, right);
@@ -43769,6 +44291,10 @@ ASTCompiler.prototype = {
       this.assign(intoId, 's');
       recursionFn('s');
       break;
+    case AST.LocalsExpression:
+      this.assign(intoId, 'l');
+      recursionFn('l');
+      break;
     case AST.NGValueParameter:
       this.assign(intoId, 'v');
       recursionFn('v');
@@ -43876,7 +44402,7 @@ ASTCompiler.prototype = {
   },
 
   getStringValue: function(item) {
-    this.assign(item, 'getStringValue(' + item + ',text)');
+    this.assign(item, 'getStringValue(' + item + ')');
   },
 
   ensureSafeAssignContext: function(item) {
@@ -44096,6 +44622,10 @@ ASTInterpreter.prototype = {
       return function(scope) {
         return context ? {value: scope} : scope;
       };
+    case AST.LocalsExpression:
+      return function(scope, locals) {
+        return context ? {value: locals} : locals;
+      };
     case AST.NGValueParameter:
       return function(scope, locals, assign, inputs) {
         return context ? {value: assign} : assign;
@@ -44260,8 +44790,11 @@ ASTInterpreter.prototype = {
         rhs = right(scope, locals, assign, inputs);
         rhs = getStringValue(rhs);
         ensureSafeMemberName(rhs, expression);
-        if (create && create !== 1 && lhs && !(lhs[rhs])) {
-          lhs[rhs] = {};
+        if (create && create !== 1) {
+          ensureSafeAssignContext(lhs);
+          if (lhs && !(lhs[rhs])) {
+            lhs[rhs] = {};
+          }
         }
         value = lhs[rhs];
         ensureSafeObject(value, expression);
@@ -44276,8 +44809,11 @@ ASTInterpreter.prototype = {
   nonComputedMember: function(left, right, expensiveChecks, context, create, expression) {
     return function(scope, locals, assign, inputs) {
       var lhs = left(scope, locals, assign, inputs);
-      if (create && create !== 1 && lhs && !(lhs[right])) {
-        lhs[right] = {};
+      if (create && create !== 1) {
+        ensureSafeAssignContext(lhs);
+        if (lhs && !(lhs[right])) {
+          lhs[right] = {};
+        }
       }
       var value = lhs != null ? lhs[right] : undefined;
       if (expensiveChecks || isPossiblyDangerousMemberName(right)) {
@@ -44393,9 +44929,18 @@ function $ParseProvider() {
           csp: noUnsafeEval,
           expensiveChecks: true
         };
+    var runningChecksEnabled = false;
 
-    return function $parse(exp, interceptorFn, expensiveChecks) {
+    $parse.$$runningExpensiveChecks = function() {
+      return runningChecksEnabled;
+    };
+
+    return $parse;
+
+    function $parse(exp, interceptorFn, expensiveChecks) {
       var parsedExpression, oneTime, cacheKey;
+
+      expensiveChecks = expensiveChecks || runningChecksEnabled;
 
       switch (typeof exp) {
         case 'string':
@@ -44422,6 +44967,9 @@ function $ParseProvider() {
             } else if (parsedExpression.inputs) {
               parsedExpression.$$watchDelegate = inputsWatchDelegate;
             }
+            if (expensiveChecks) {
+              parsedExpression = expensiveChecksInterceptor(parsedExpression);
+            }
             cache[cacheKey] = parsedExpression;
           }
           return addInterceptor(parsedExpression, interceptorFn);
@@ -44432,7 +44980,31 @@ function $ParseProvider() {
         default:
           return addInterceptor(noop, interceptorFn);
       }
-    };
+    }
+
+    function expensiveChecksInterceptor(fn) {
+      if (!fn) return fn;
+      expensiveCheckFn.$$watchDelegate = fn.$$watchDelegate;
+      expensiveCheckFn.assign = expensiveChecksInterceptor(fn.assign);
+      expensiveCheckFn.constant = fn.constant;
+      expensiveCheckFn.literal = fn.literal;
+      for (var i = 0; fn.inputs && i < fn.inputs.length; ++i) {
+        fn.inputs[i] = expensiveChecksInterceptor(fn.inputs[i]);
+      }
+      expensiveCheckFn.inputs = fn.inputs;
+
+      return expensiveCheckFn;
+
+      function expensiveCheckFn(scope, locals, assign, inputs) {
+        var expensiveCheckOldValue = runningChecksEnabled;
+        runningChecksEnabled = true;
+        try {
+          return fn(scope, locals, assign, inputs);
+        } finally {
+          runningChecksEnabled = expensiveCheckOldValue;
+        }
+      }
+    }
 
     function expressionInputDirtyCheck(newValue, oldValueOfValue) {
 
@@ -44549,13 +45121,9 @@ function $ParseProvider() {
     function constantWatchDelegate(scope, listener, objectEquality, parsedExpression) {
       var unwatch;
       return unwatch = scope.$watch(function constantWatch(scope) {
-        return parsedExpression(scope);
-      }, function constantListener(value, old, scope) {
-        if (isFunction(listener)) {
-          listener.apply(this, arguments);
-        }
         unwatch();
-      }, objectEquality);
+        return parsedExpression(scope);
+      }, listener, objectEquality);
     }
 
     function addInterceptor(parsedExpression, interceptorFn) {
@@ -44648,7 +45216,7 @@ function $ParseProvider() {
  *
  * Note: progress/notify callbacks are not currently supported via the ES6-style interface.
  *
- * Note: unlike ES6 behaviour, an exception thrown in the constructor function will NOT implicitly reject the promise.
+ * Note: unlike ES6 behavior, an exception thrown in the constructor function will NOT implicitly reject the promise.
  *
  * However, the more traditional CommonJS-style usage is still available, and documented below.
  *
@@ -44838,18 +45406,6 @@ function $$QProvider() {
  */
 function qFactory(nextTick, exceptionHandler) {
   var $qMinErr = minErr('$q', TypeError);
-  function callOnce(self, resolveFn, rejectFn) {
-    var called = false;
-    function wrap(fn) {
-      return function(value) {
-        if (called) return;
-        called = true;
-        fn.call(self, value);
-      };
-    }
-
-    return [wrap(resolveFn), wrap(rejectFn)];
-  }
 
   /**
    * @ngdoc method
@@ -44862,7 +45418,12 @@ function qFactory(nextTick, exceptionHandler) {
    * @returns {Deferred} Returns a new instance of deferred.
    */
   var defer = function() {
-    return new Deferred();
+    var d = new Deferred();
+    //Necessary to support unbound execution :/
+    d.resolve = simpleBind(d, d.resolve);
+    d.reject = simpleBind(d, d.reject);
+    d.notify = simpleBind(d, d.notify);
+    return d;
   };
 
   function Promise() {
@@ -44935,10 +45496,6 @@ function qFactory(nextTick, exceptionHandler) {
 
   function Deferred() {
     this.promise = new Promise();
-    //Necessary to support unbound execution :/
-    this.resolve = simpleBind(this, this.resolve);
-    this.reject = simpleBind(this, this.reject);
-    this.notify = simpleBind(this, this.notify);
   }
 
   extend(Deferred.prototype, {
@@ -44956,22 +45513,33 @@ function qFactory(nextTick, exceptionHandler) {
     },
 
     $$resolve: function(val) {
-      var then, fns;
-
-      fns = callOnce(this, this.$$resolve, this.$$reject);
+      var then;
+      var that = this;
+      var done = false;
       try {
         if ((isObject(val) || isFunction(val))) then = val && val.then;
         if (isFunction(then)) {
           this.promise.$$state.status = -1;
-          then.call(val, fns[0], fns[1], this.notify);
+          then.call(val, resolvePromise, rejectPromise, simpleBind(this, this.notify));
         } else {
           this.promise.$$state.value = val;
           this.promise.$$state.status = 1;
           scheduleProcessQueue(this.promise.$$state);
         }
       } catch (e) {
-        fns[1](e);
+        rejectPromise(e);
         exceptionHandler(e);
+      }
+
+      function resolvePromise(val) {
+        if (done) return;
+        done = true;
+        that.$$resolve(val);
+      }
+      function rejectPromise(val) {
+        if (done) return;
+        done = true;
+        that.$$reject(val);
       }
     },
 
@@ -45161,11 +45729,6 @@ function qFactory(nextTick, exceptionHandler) {
       throw $qMinErr('norslvr', "Expected resolverFn, got '{0}'", resolver);
     }
 
-    if (!(this instanceof Q)) {
-      // More useful when $Q is the Promise itself.
-      return new Q(resolver);
-    }
-
     var deferred = new Deferred();
 
     function resolveFn(value) {
@@ -45180,6 +45743,10 @@ function qFactory(nextTick, exceptionHandler) {
 
     return deferred.promise;
   };
+
+  // Let's make the instanceof operator work for promises, so that
+  // `new $q(fn) instanceof $q` would evaluate to true.
+  $Q.prototype = Promise.prototype;
 
   $Q.defer = defer;
   $Q.reject = reject;
@@ -45314,8 +45881,8 @@ function $RootScopeProvider() {
     return ChildScope;
   }
 
-  this.$get = ['$injector', '$exceptionHandler', '$parse', '$browser',
-      function($injector, $exceptionHandler, $parse, $browser) {
+  this.$get = ['$exceptionHandler', '$parse', '$browser',
+      function($exceptionHandler, $parse, $browser) {
 
     function destroyChildScope($event) {
         $event.currentScope.$$destroyed = true;
@@ -45599,7 +46166,7 @@ function $RootScopeProvider() {
        *    - `newVal` contains the current value of the `watchExpression`
        *    - `oldVal` contains the previous value of the `watchExpression`
        *    - `scope` refers to the current scope
-       * @param {boolean=} objectEquality Compare for object equality using {@link angular.equals} instead of
+       * @param {boolean=} [objectEquality=false] Compare for object equality using {@link angular.equals} instead of
        *     comparing for reference equality.
        * @returns {function()} Returns a deregistration function for this listener.
        */
@@ -45964,7 +46531,7 @@ function $RootScopeProvider() {
        *
        */
       $digest: function() {
-        var watch, value, last,
+        var watch, value, last, fn, get,
             watchers,
             length,
             dirty, ttl = TTL,
@@ -46010,7 +46577,8 @@ function $RootScopeProvider() {
                   // Most common watches are on primitives, in which case we can short
                   // circuit it with === operator, only when === fails do we use .equals
                   if (watch) {
-                    if ((value = watch.get(current)) !== (last = watch.last) &&
+                    get = watch.get;
+                    if ((value = get(current)) !== (last = watch.last) &&
                         !(watch.eq
                             ? equals(value, last)
                             : (typeof value === 'number' && typeof last === 'number'
@@ -46018,7 +46586,8 @@ function $RootScopeProvider() {
                       dirty = true;
                       lastDirtyWatch = watch;
                       watch.last = watch.eq ? copy(value, null) : value;
-                      watch.fn(value, ((last === initWatchVal) ? value : last), current);
+                      fn = watch.fn;
+                      fn(value, ((last === initWatchVal) ? value : last), current);
                       if (ttl < 5) {
                         logIdx = 4 - ttl;
                         if (!watchLog[logIdx]) watchLog[logIdx] = [];
@@ -46218,7 +46787,7 @@ function $RootScopeProvider() {
           });
         }
 
-        asyncQueue.push({scope: this, expression: expr, locals: locals});
+        asyncQueue.push({scope: this, expression: $parse(expr), locals: locals});
       },
 
       $$postDigest: function(fn) {
@@ -46310,6 +46879,7 @@ function $RootScopeProvider() {
       $applyAsync: function(expr) {
         var scope = this;
         expr && applyAsyncQueue.push($applyAsyncExpression);
+        expr = $parse(expr);
         scheduleApplyAsync();
 
         function $applyAsyncExpression() {
@@ -46813,13 +47383,15 @@ function $SceDelegateProvider() {
    * @kind function
    *
    * @param {Array=} whitelist When provided, replaces the resourceUrlWhitelist with the value
-   *     provided.  This must be an array or null.  A snapshot of this array is used so further
-   *     changes to the array are ignored.
+   *    provided.  This must be an array or null.  A snapshot of this array is used so further
+   *    changes to the array are ignored.
    *
-   *     Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
-   *     allowed in this array.
+   *    Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
+   *    allowed in this array.
    *
-   *     Note: **an empty whitelist array will block all URLs**!
+   *    <div class="alert alert-warning">
+   *    **Note:** an empty whitelist array will block all URLs!
+   *    </div>
    *
    * @return {Array} the currently set whitelist array.
    *
@@ -46842,17 +47414,17 @@ function $SceDelegateProvider() {
    * @kind function
    *
    * @param {Array=} blacklist When provided, replaces the resourceUrlBlacklist with the value
-   *     provided.  This must be an array or null.  A snapshot of this array is used so further
-   *     changes to the array are ignored.
+   *    provided.  This must be an array or null.  A snapshot of this array is used so further
+   *    changes to the array are ignored.
    *
-   *     Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
-   *     allowed in this array.
+   *    Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
+   *    allowed in this array.
    *
-   *     The typical usage for the blacklist is to **block
-   *     [open redirects](http://cwe.mitre.org/data/definitions/601.html)** served by your domain as
-   *     these would otherwise be trusted but actually return content from the redirected domain.
+   *    The typical usage for the blacklist is to **block
+   *    [open redirects](http://cwe.mitre.org/data/definitions/601.html)** served by your domain as
+   *    these would otherwise be trusted but actually return content from the redirected domain.
    *
-   *     Finally, **the blacklist overrides the whitelist** and has the final say.
+   *    Finally, **the blacklist overrides the whitelist** and has the final say.
    *
    * @return {Array} the currently set blacklist array.
    *
@@ -47010,6 +47582,11 @@ function $SceDelegateProvider() {
      * Takes the result of a {@link ng.$sceDelegate#trustAs `$sceDelegate.trustAs`} call and
      * returns the originally supplied value if the queried context type is a supertype of the
      * created type.  If this condition isn't satisfied, throws an exception.
+     *
+     * <div class="alert alert-danger">
+     * Disabling auto-escaping is extremely dangerous, it usually creates a Cross Site Scripting
+     * (XSS) vulnerability in your application.
+     * </div>
      *
      * @param {string} type The kind of context in which this value is to be used.
      * @param {*} maybeTrusted The result of a prior {@link ng.$sceDelegate#trustAs
@@ -47818,26 +48395,63 @@ function $SnifferProvider() {
 var $compileMinErr = minErr('$compile');
 
 /**
- * @ngdoc service
- * @name $templateRequest
- *
+ * @ngdoc provider
+ * @name $templateRequestProvider
  * @description
- * The `$templateRequest` service runs security checks then downloads the provided template using
- * `$http` and, upon success, stores the contents inside of `$templateCache`. If the HTTP request
- * fails or the response data of the HTTP request is empty, a `$compile` error will be thrown (the
- * exception can be thwarted by setting the 2nd parameter of the function to true). Note that the
- * contents of `$templateCache` are trusted, so the call to `$sce.getTrustedUrl(tpl)` is omitted
- * when `tpl` is of type string and `$templateCache` has the matching entry.
+ * Used to configure the options passed to the {@link $http} service when making a template request.
  *
- * @param {string|TrustedResourceUrl} tpl The HTTP request template URL
- * @param {boolean=} ignoreRequestError Whether or not to ignore the exception when the request fails or the template is empty
- *
- * @return {Promise} a promise for the HTTP response data of the given URL.
- *
- * @property {number} totalPendingRequests total amount of pending template requests being downloaded.
+ * For example, it can be used for specifying the "Accept" header that is sent to the server, when
+ * requesting a template.
  */
 function $TemplateRequestProvider() {
+
+  var httpOptions;
+
+  /**
+   * @ngdoc method
+   * @name $templateRequestProvider#httpOptions
+   * @description
+   * The options to be passed to the {@link $http} service when making the request.
+   * You can use this to override options such as the "Accept" header for template requests.
+   *
+   * The {@link $templateRequest} will set the `cache` and the `transformResponse` properties of the
+   * options if not overridden here.
+   *
+   * @param {string=} value new value for the {@link $http} options.
+   * @returns {string|self} Returns the {@link $http} options when used as getter and self if used as setter.
+   */
+  this.httpOptions = function(val) {
+    if (val) {
+      httpOptions = val;
+      return this;
+    }
+    return httpOptions;
+  };
+
+  /**
+   * @ngdoc service
+   * @name $templateRequest
+   *
+   * @description
+   * The `$templateRequest` service runs security checks then downloads the provided template using
+   * `$http` and, upon success, stores the contents inside of `$templateCache`. If the HTTP request
+   * fails or the response data of the HTTP request is empty, a `$compile` error will be thrown (the
+   * exception can be thwarted by setting the 2nd parameter of the function to true). Note that the
+   * contents of `$templateCache` are trusted, so the call to `$sce.getTrustedUrl(tpl)` is omitted
+   * when `tpl` is of type string and `$templateCache` has the matching entry.
+   *
+   * If you want to pass custom options to the `$http` service, such as setting the Accept header you
+   * can configure this via {@link $templateRequestProvider#httpOptions}.
+   *
+   * @param {string|TrustedResourceUrl} tpl The HTTP request template URL
+   * @param {boolean=} ignoreRequestError Whether or not to ignore the exception when the request fails or the template is empty
+   *
+   * @return {Promise} a promise for the HTTP response data of the given URL.
+   *
+   * @property {number} totalPendingRequests total amount of pending template requests being downloaded.
+   */
   this.$get = ['$templateCache', '$http', '$q', '$sce', function($templateCache, $http, $q, $sce) {
+
     function handleRequestFn(tpl, ignoreRequestError) {
       handleRequestFn.totalPendingRequests++;
 
@@ -47860,12 +48474,10 @@ function $TemplateRequestProvider() {
         transformResponse = null;
       }
 
-      var httpOptions = {
-        cache: $templateCache,
-        transformResponse: transformResponse
-      };
-
-      return $http.get(tpl, httpOptions)
+      return $http.get(tpl, extend({
+          cache: $templateCache,
+          transformResponse: transformResponse
+        }, httpOptions))
         ['finally'](function() {
           handleRequestFn.totalPendingRequests--;
         })
@@ -49320,13 +49932,13 @@ function dateFilter($locale) {
 
     var dateTimezoneOffset = date.getTimezoneOffset();
     if (timezone) {
-      dateTimezoneOffset = timezoneToOffset(timezone, date.getTimezoneOffset());
+      dateTimezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
       date = convertTimezoneToLocal(date, timezone, true);
     }
     forEach(parts, function(value) {
       fn = DATE_FORMATS[value];
       text += fn ? fn(date, $locale.DATETIME_FORMATS, dateTimezoneOffset)
-                 : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
+                 : value === "''" ? "'" : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
     });
 
     return text;
@@ -49530,8 +50142,9 @@ function limitToFilter() {
  * Orders a specified `array` by the `expression` predicate. It is ordered alphabetically
  * for strings and numerically for numbers. Note: if you notice numbers are not being sorted
  * as expected, make sure they are actually being saved as numbers and not strings.
+ * Array-like values (e.g. NodeLists, jQuery objects, TypedArrays, Strings, etc) are also supported.
  *
- * @param {Array} array The array to sort.
+ * @param {Array} array The array (or array-like object) to sort.
  * @param {function(*)|string|Array.<(function(*)|string)>=} expression A predicate to be
  *    used by the comparator to determine the order of elements.
  *
@@ -49718,7 +50331,10 @@ orderByFilter.$inject = ['$parse'];
 function orderByFilter($parse) {
   return function(array, sortPredicate, reverseOrder) {
 
-    if (!(isArrayLike(array))) return array;
+    if (array == null) return array;
+    if (!isArrayLike(array)) {
+      throw minErr('orderBy')('notarray', 'Expected array but received: {0}', array);
+    }
 
     if (!isArray(sortPredicate)) { sortPredicate = [sortPredicate]; }
     if (sortPredicate.length === 0) { sortPredicate = ['+']; }
@@ -50428,7 +51044,7 @@ function FormController(element, attrs, $scope, $animate, $interpolate) {
    *
    * However, if the method is used programmatically, for example by adding dynamically created controls,
    * or controls that have been previously removed without destroying their corresponding DOM element,
-   * it's the developers responsiblity to make sure the current state propagates to the parent form.
+   * it's the developers responsibility to make sure the current state propagates to the parent form.
    *
    * For example, if an input control is added that is already `$dirty` and has `$error` properties,
    * calling `$setDirty()` and `$validate()` afterwards will propagate the state to the parent form.
@@ -50905,8 +51521,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
-   *    a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
+   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -51193,7 +51809,7 @@ var inputType = {
    *
    * @description
    * Input with time validation and transformation. In browsers that do not yet support
-   * the HTML5 date input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
+   * the HTML5 time input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
    * local time format (HH:mm:ss), for example: `14:57:00`. Model must be a Date object. This binding will always output a
    * Date object to the model of January 1, 1970, or local date `new Date(1970, 0, 1, HH, mm, ss)`.
    *
@@ -51540,8 +52156,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
-   *    a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
+   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -51638,8 +52254,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
-   *    a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
+   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -51737,8 +52353,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
-   *    a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
+   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -52198,11 +52814,7 @@ function badInputChecker(scope, element, attr, ctrl) {
   if (nativeValidation) {
     ctrl.$parsers.push(function(value) {
       var validity = element.prop(VALIDITY_STATE_PROPERTY) || {};
-      // Detect bug in FF35 for input[email] (https://bugzilla.mozilla.org/show_bug.cgi?id=1064430):
-      // - also sets validity.badInput (should only be validity.typeMismatch).
-      // - see http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#e-mail-state-(type=email)
-      // - can ignore this case as we can still read out the erroneous email...
-      return validity.badInput && !validity.typeMismatch ? undefined : value;
+      return validity.badInput || validity.typeMismatch ? undefined : value;
     });
   }
 }
@@ -52374,8 +52986,8 @@ function checkboxInputType(scope, element, attr, ctrl, $sniffer, $browser, $filt
  * @param {number=} ngMaxlength Sets `maxlength` validation error key if the value is longer than
  *    maxlength. Setting the attribute to a negative or non-numeric value, allows view values of any
  *    length.
- * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
- *    a RegExp found by evaluating the Angular expression given in the attribute value.
+ * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
+ *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
  *    If the expression evaluates to a RegExp object, then this is used directly.
  *    If the expression evaluates to a string, then it will be converted to a RegExp
  *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -52413,8 +53025,8 @@ function checkboxInputType(scope, element, attr, ctrl, $sniffer, $browser, $filt
  * @param {number=} ngMaxlength Sets `maxlength` validation error key if the value is longer than
  *    maxlength. Setting the attribute to a negative or non-numeric value, allows view values of any
  *    length.
- * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
- *    a RegExp found by evaluating the Angular expression given in the attribute value.
+ * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
+ *    value does not match a RegExp found by evaluating the Angular expression given in the attribute value.
  *    If the expression evaluates to a RegExp object, then this is used directly.
  *    If the expression evaluates to a string, then it will be converted to a RegExp
  *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -53640,7 +54252,7 @@ var ngControllerDirective = [function() {
  *
  * * no-inline-style: this stops Angular from injecting CSS styles into the DOM
  *
- * * no-unsafe-eval: this stops Angular from optimising $parse with unsafe eval of strings
+ * * no-unsafe-eval: this stops Angular from optimizing $parse with unsafe eval of strings
  *
  * You can use these values in the following combinations:
  *
@@ -53657,7 +54269,7 @@ var ngControllerDirective = [function() {
  * inline styles. E.g. `<body ng-csp="no-unsafe-eval">`.
  *
  * * Specifying only `no-inline-style` tells Angular that we must not inject styles, but that we can
- * run eval - no automcatic check for unsafe eval will occur. E.g. `<body ng-csp="no-inline-style">`
+ * run eval - no automatic check for unsafe eval will occur. E.g. `<body ng-csp="no-inline-style">`
  *
  * * Specifying both `no-unsafe-eval` and `no-inline-style` tells Angular that we must not inject
  * styles nor use eval, which is the same as an empty: ng-csp.
@@ -54689,7 +55301,7 @@ var ngIncludeFillContentDirective = ['$compile',
       priority: -400,
       require: 'ngInclude',
       link: function(scope, $element, $attr, ctrl) {
-        if (/SVG/.test($element[0].toString())) {
+        if (toString.call($element[0]).match(/SVG/)) {
           // WebKit: https://bugs.webkit.org/show_bug.cgi?id=135698 --- SVG elements do not
           // support innerHTML, so detect this here and try to generate the contents
           // specially.
@@ -54918,7 +55530,9 @@ var VALID_CLASS = 'ng-valid',
     DIRTY_CLASS = 'ng-dirty',
     UNTOUCHED_CLASS = 'ng-untouched',
     TOUCHED_CLASS = 'ng-touched',
-    PENDING_CLASS = 'ng-pending';
+    PENDING_CLASS = 'ng-pending',
+    EMPTY_CLASS = 'ng-empty',
+    NOT_EMPTY_CLASS = 'ng-not-empty';
 
 var ngModelMinErr = minErr('ngModel');
 
@@ -55221,6 +55835,17 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
   this.$isEmpty = function(value) {
     return isUndefined(value) || value === '' || value === null || value !== value;
   };
+
+  this.$$updateEmptyClasses = function(value) {
+    if (ctrl.$isEmpty(value)) {
+      $animate.removeClass($element, NOT_EMPTY_CLASS);
+      $animate.addClass($element, EMPTY_CLASS);
+    } else {
+      $animate.removeClass($element, EMPTY_CLASS);
+      $animate.addClass($element, NOT_EMPTY_CLASS);
+    }
+  };
+
 
   var currentValidationRunId = 0;
 
@@ -55585,6 +56210,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
     if (ctrl.$$lastCommittedViewValue === viewValue && (viewValue !== '' || !ctrl.$$hasNativeValidators)) {
       return;
     }
+    ctrl.$$updateEmptyClasses(viewValue);
     ctrl.$$lastCommittedViewValue = viewValue;
 
     // change to dirty
@@ -55683,7 +56309,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
    * However, custom controls might also pass objects to this method. In this case, we should make
    * a copy of the object before passing it to `$setViewValue`. This is because `ngModel` does not
    * perform a deep watch of objects, it only looks for a change of identity. If you only change
-   * the property of the object then ngModel will not realise that the object has changed and
+   * the property of the object then ngModel will not realize that the object has changed and
    * will not invoke the `$parsers` and `$validators` pipelines. For this reason, you should
    * not change properties of the copy once it has been passed to `$setViewValue`.
    * Otherwise you may cause the model value on the scope to change incorrectly.
@@ -55767,6 +56393,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
         viewValue = formatters[idx](viewValue);
       }
       if (ctrl.$viewValue !== viewValue) {
+        ctrl.$$updateEmptyClasses(viewValue);
         ctrl.$viewValue = ctrl.$$lastCommittedViewValue = viewValue;
         ctrl.$render();
 
@@ -55797,7 +56424,8 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *   require.
  * - Providing validation behavior (i.e. required, number, email, url).
  * - Keeping the state of the control (valid/invalid, dirty/pristine, touched/untouched, validation errors).
- * - Setting related css classes on the element (`ng-valid`, `ng-invalid`, `ng-dirty`, `ng-pristine`, `ng-touched`, `ng-untouched`) including animations.
+ * - Setting related css classes on the element (`ng-valid`, `ng-invalid`, `ng-dirty`, `ng-pristine`, `ng-touched`,
+ *   `ng-untouched`, `ng-empty`, `ng-not-empty`) including animations.
  * - Registering the control with its parent {@link ng.directive:form form}.
  *
  * Note: `ngModel` will try to bind to the property given by evaluating the expression on the
@@ -55825,6 +56453,22 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *  - {@link ng.directive:select select}
  *  - {@link ng.directive:textarea textarea}
  *
+ * # Complex Models (objects or collections)
+ *
+ * By default, `ngModel` watches the model by reference, not value. This is important to know when
+ * binding inputs to models that are objects (e.g. `Date`) or collections (e.g. arrays). If only properties of the
+ * object or collection change, `ngModel` will not be notified and so the input will not be  re-rendered.
+ *
+ * The model must be assigned an entirely new object or collection before a re-rendering will occur.
+ *
+ * Some directives have options that will cause them to use a custom `$watchCollection` on the model expression
+ * - for example, `ngOptions` will do so when a `track by` clause is included in the comprehension expression or
+ * if the select is given the `multiple` attribute.
+ *
+ * The `$watchCollection()` method only does a shallow comparison, meaning that changing properties deeper than the
+ * first level of the object (or only changing the properties of an item in the collection if it's an array) will still
+ * not trigger a re-rendering of the model.
+ *
  * # CSS classes
  * The following CSS classes are added and removed on the associated input/select/textarea element
  * depending on the validity of the model.
@@ -55838,13 +56482,16 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *  - `ng-touched`: the control has been blurred
  *  - `ng-untouched`: the control hasn't been blurred
  *  - `ng-pending`: any `$asyncValidators` are unfulfilled
+ *  - `ng-empty`: the view does not contain a value or the value is deemed "empty", as defined
+ *     by the {@link ngModel.NgModelController#$isEmpty} method
+ *  - `ng-not-empty`: the view contains a non-empty value
  *
  * Keep in mind that ngAnimate can detect each of these classes when added and removed.
  *
  * ## Animation Hooks
  *
  * Animations within models are triggered when any of the associated CSS classes are added and removed
- * on the input element which is attached to the model. These classes are: `.ng-pristine`, `.ng-dirty`,
+ * on the input element which is attached to the model. These classes include: `.ng-pristine`, `.ng-dirty`,
  * `.ng-invalid` and `.ng-valid` as well as any other validations that are performed on the model itself.
  * The animations that are triggered within ngModel are similar to how they work in ngClass and
  * animations can be hooked into using CSS transitions, keyframes as well as JS animations.
@@ -56737,14 +57384,10 @@ var ngOptionsDirective = ['$compile', '$parse', function($compile, $parse) {
   var optionTemplate = document.createElement('option'),
       optGroupTemplate = document.createElement('optgroup');
 
-
     function ngOptionsPostLink(scope, selectElement, attr, ctrls) {
 
-      // if ngModel is not defined, we don't need to do anything
-      var ngModelCtrl = ctrls[1];
-      if (!ngModelCtrl) return;
-
       var selectCtrl = ctrls[0];
+      var ngModelCtrl = ctrls[1];
       var multiple = attr.multiple;
 
       // The emptyOption allows the application developer to provide their own custom "empty"
@@ -57004,7 +57647,7 @@ var ngOptionsDirective = ['$compile', '$parse', function($compile, $parse) {
           var groupElement;
           var optionElement;
 
-          if (option.group) {
+          if (isDefined(option.group)) {
 
             // This option is to live in a group
             // See if we have already created this group
@@ -57078,7 +57721,7 @@ var ngOptionsDirective = ['$compile', '$parse', function($compile, $parse) {
   return {
     restrict: 'A',
     terminal: true,
-    require: ['select', '?ngModel'],
+    require: ['select', 'ngModel'],
     link: {
       pre: function ngOptionsPreLink(scope, selectElement, attr, ctrls) {
         // Deactivate the SelectController.register method to prevent
@@ -57306,7 +57949,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
         }
 
         // If both `count` and `lastCount` are NaN, we don't need to re-register a watch.
-        // In JS `NaN !== NaN`, so we have to exlicitly check.
+        // In JS `NaN !== NaN`, so we have to explicitly check.
         if ((count !== lastCount) && !(countIsNaN && isNumber(lastCount) && isNaN(lastCount))) {
           watchRemover();
           var whenExpFn = whensExpFns[count];
@@ -57423,7 +58066,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
  * by the identifier instead of the whole object. Should you reload your data later, `ngRepeat`
  * will not have to rebuild the DOM elements for items it has already rendered, even if the
  * JavaScript objects in the collection have been substituted for new ones. For large collections,
- * this signifincantly improves rendering performance. If you don't have a unique identifier,
+ * this significantly improves rendering performance. If you don't have a unique identifier,
  * `track by $index` can also provide a performance boost.
  * </div>
  * ```html
@@ -57500,6 +58143,8 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
  *
  * **.move** - when an adjacent item is filtered out causing a reorder or when the item contents are reordered
  *
+ * See the example below for defining CSS animations with ngRepeat.
+ *
  * @element ANY
  * @scope
  * @priority 1000
@@ -57552,22 +58197,11 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
  *     For example: `item in items | filter : x | orderBy : order | limitTo : limit as results` .
  *
  * @example
- * This example initializes the scope to a list of names and
- * then uses `ngRepeat` to display every person:
-  <example module="ngAnimate" deps="angular-animate.js" animations="true">
+ * This example uses `ngRepeat` to display a list of people. A filter is used to restrict the displayed
+ * results by name. New (entering) and removed (leaving) items are animated.
+  <example module="ngRepeat" name="ngRepeat" deps="angular-animate.js" animations="true">
     <file name="index.html">
-      <div ng-init="friends = [
-        {name:'John', age:25, gender:'boy'},
-        {name:'Jessie', age:30, gender:'girl'},
-        {name:'Johanna', age:28, gender:'girl'},
-        {name:'Joy', age:15, gender:'girl'},
-        {name:'Mary', age:28, gender:'girl'},
-        {name:'Peter', age:95, gender:'boy'},
-        {name:'Sebastian', age:50, gender:'boy'},
-        {name:'Erika', age:27, gender:'girl'},
-        {name:'Patrick', age:40, gender:'boy'},
-        {name:'Samantha', age:60, gender:'girl'}
-      ]">
+      <div ng-controller="repeatController">
         I have {{friends.length}} friends. They are:
         <input type="search" ng-model="q" placeholder="filter friends..." aria-label="filter friends" />
         <ul class="example-animate-container">
@@ -57580,6 +58214,22 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
         </ul>
       </div>
     </file>
+    <file name="script.js">
+      angular.module('ngRepeat', ['ngAnimate']).controller('repeatController', function($scope) {
+        $scope.friends = [
+          {name:'John', age:25, gender:'boy'},
+          {name:'Jessie', age:30, gender:'girl'},
+          {name:'Johanna', age:28, gender:'girl'},
+          {name:'Joy', age:15, gender:'girl'},
+          {name:'Mary', age:28, gender:'girl'},
+          {name:'Peter', age:95, gender:'boy'},
+          {name:'Sebastian', age:50, gender:'boy'},
+          {name:'Erika', age:27, gender:'girl'},
+          {name:'Patrick', age:40, gender:'boy'},
+          {name:'Samantha', age:60, gender:'girl'}
+        ];
+      });
+    </file>
     <file name="animations.css">
       .example-animate-container {
         background:white;
@@ -57590,7 +58240,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
       }
 
       .animate-repeat {
-        line-height:40px;
+        line-height:30px;
         list-style:none;
         box-sizing:border-box;
       }
@@ -57612,7 +58262,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
       .animate-repeat.ng-move.ng-move-active,
       .animate-repeat.ng-enter.ng-enter-active {
         opacity:1;
-        max-height:40px;
+        max-height:30px;
       }
     </file>
     <file name="protractor.js" type="protractor">
@@ -58469,67 +59119,186 @@ var ngSwitchDefaultDirective = ngDirective({
  * @description
  * Directive that marks the insertion point for the transcluded DOM of the nearest parent directive that uses transclusion.
  *
- * Any existing content of the element that this directive is placed on will be removed before the transcluded content is inserted.
+ * You can specify that you want to insert a named transclusion slot, instead of the default slot, by providing the slot name
+ * as the value of the `ng-transclude` or `ng-transclude-slot` attribute.
+ *
+ * If the transcluded content is not empty (i.e. contains one or more DOM nodes, including whitespace text nodes), any existing
+ * content of this element will be removed before the transcluded content is inserted.
+ * If the transcluded content is empty, the existing content is left intact. This lets you provide fallback content in the case
+ * that no transcluded content is provided.
  *
  * @element ANY
  *
- * @example
-   <example module="transcludeExample">
-     <file name="index.html">
-       <script>
-         angular.module('transcludeExample', [])
-          .directive('pane', function(){
-             return {
-               restrict: 'E',
-               transclude: true,
-               scope: { title:'@' },
-               template: '<div style="border: 1px solid black;">' +
-                           '<div style="background-color: gray">{{title}}</div>' +
-                           '<ng-transclude></ng-transclude>' +
-                         '</div>'
-             };
-         })
-         .controller('ExampleController', ['$scope', function($scope) {
-           $scope.title = 'Lorem Ipsum';
-           $scope.text = 'Neque porro quisquam est qui dolorem ipsum quia dolor...';
-         }]);
-       </script>
-       <div ng-controller="ExampleController">
-         <input ng-model="title" aria-label="title"> <br/>
-         <textarea ng-model="text" aria-label="text"></textarea> <br/>
-         <pane title="{{title}}">{{text}}</pane>
-       </div>
-     </file>
-     <file name="protractor.js" type="protractor">
-        it('should have transcluded', function() {
-          var titleElement = element(by.model('title'));
-          titleElement.clear();
-          titleElement.sendKeys('TITLE');
-          var textElement = element(by.model('text'));
-          textElement.clear();
-          textElement.sendKeys('TEXT');
-          expect(element(by.binding('title')).getText()).toEqual('TITLE');
-          expect(element(by.binding('text')).getText()).toEqual('TEXT');
-        });
-     </file>
-   </example>
+ * @param {string} ngTransclude|ngTranscludeSlot the name of the slot to insert at this point. If this is not provided, is empty
+ *                                               or its value is the same as the name of the attribute then the default slot is used.
  *
+ * @example
+ * ### Basic transclusion
+ * This example demonstrates basic transclusion of content into a component directive.
+ * <example name="simpleTranscludeExample" module="transcludeExample">
+ *   <file name="index.html">
+ *     <script>
+ *       angular.module('transcludeExample', [])
+ *        .directive('pane', function(){
+ *           return {
+ *             restrict: 'E',
+ *             transclude: true,
+ *             scope: { title:'@' },
+ *             template: '<div style="border: 1px solid black;">' +
+ *                         '<div style="background-color: gray">{{title}}</div>' +
+ *                         '<ng-transclude></ng-transclude>' +
+ *                       '</div>'
+ *           };
+ *       })
+ *       .controller('ExampleController', ['$scope', function($scope) {
+ *         $scope.title = 'Lorem Ipsum';
+ *         $scope.text = 'Neque porro quisquam est qui dolorem ipsum quia dolor...';
+ *       }]);
+ *     </script>
+ *     <div ng-controller="ExampleController">
+ *       <input ng-model="title" aria-label="title"> <br/>
+ *       <textarea ng-model="text" aria-label="text"></textarea> <br/>
+ *       <pane title="{{title}}">{{text}}</pane>
+ *     </div>
+ *   </file>
+ *   <file name="protractor.js" type="protractor">
+ *      it('should have transcluded', function() {
+ *        var titleElement = element(by.model('title'));
+ *        titleElement.clear();
+ *        titleElement.sendKeys('TITLE');
+ *        var textElement = element(by.model('text'));
+ *        textElement.clear();
+ *        textElement.sendKeys('TEXT');
+ *        expect(element(by.binding('title')).getText()).toEqual('TITLE');
+ *        expect(element(by.binding('text')).getText()).toEqual('TEXT');
+ *      });
+ *   </file>
+ * </example>
+ *
+ * @example
+ * ### Transclude fallback content
+ * This example shows how to use `NgTransclude` with fallback content, that
+ * is displayed if no transcluded content is provided.
+ *
+ * <example module="transcludeFallbackContentExample">
+ * <file name="index.html">
+ * <script>
+ * angular.module('transcludeFallbackContentExample', [])
+ * .directive('myButton', function(){
+ *             return {
+ *               restrict: 'E',
+ *               transclude: true,
+ *               scope: true,
+ *               template: '<button style="cursor: pointer;">' +
+ *                           '<ng-transclude>' +
+ *                             '<b style="color: red;">Button1</b>' +
+ *                           '</ng-transclude>' +
+ *                         '</button>'
+ *             };
+ *         });
+ * </script>
+ * <!-- fallback button content -->
+ * <my-button id="fallback"></my-button>
+ * <!-- modified button content -->
+ * <my-button id="modified">
+ *   <i style="color: green;">Button2</i>
+ * </my-button>
+ * </file>
+ * <file name="protractor.js" type="protractor">
+ * it('should have different transclude element content', function() {
+ *          expect(element(by.id('fallback')).getText()).toBe('Button1');
+ *          expect(element(by.id('modified')).getText()).toBe('Button2');
+ *        });
+ * </file>
+ * </example>
+ *
+ * @example
+ * ### Multi-slot transclusion
+ * This example demonstrates using multi-slot transclusion in a component directive.
+ * <example name="multiSlotTranscludeExample" module="multiSlotTranscludeExample">
+ *   <file name="index.html">
+ *    <style>
+ *      .title, .footer {
+ *        background-color: gray
+ *      }
+ *    </style>
+ *    <div ng-controller="ExampleController">
+ *      <input ng-model="title" aria-label="title"> <br/>
+ *      <textarea ng-model="text" aria-label="text"></textarea> <br/>
+ *      <pane>
+ *        <pane-title><a ng-href="{{link}}">{{title}}</a></pane-title>
+ *        <pane-body><p>{{text}}</p></pane-body>
+ *      </pane>
+ *    </div>
+ *   </file>
+ *   <file name="app.js">
+ *    angular.module('multiSlotTranscludeExample', [])
+ *     .directive('pane', function(){
+ *        return {
+ *          restrict: 'E',
+ *          transclude: {
+ *            'title': '?paneTitle',
+ *            'body': 'paneBody',
+ *            'footer': '?paneFooter'
+ *          },
+ *          template: '<div style="border: 1px solid black;">' +
+ *                      '<div class="title" ng-transclude="title">Fallback Title</div>' +
+ *                      '<div ng-transclude="body"></div>' +
+ *                      '<div class="footer" ng-transclude="footer">Fallback Footer</div>' +
+ *                    '</div>'
+ *        };
+ *    })
+ *    .controller('ExampleController', ['$scope', function($scope) {
+ *      $scope.title = 'Lorem Ipsum';
+ *      $scope.link = "https://google.com";
+ *      $scope.text = 'Neque porro quisquam est qui dolorem ipsum quia dolor...';
+ *    }]);
+ *   </file>
+ *   <file name="protractor.js" type="protractor">
+ *      it('should have transcluded the title and the body', function() {
+ *        var titleElement = element(by.model('title'));
+ *        titleElement.clear();
+ *        titleElement.sendKeys('TITLE');
+ *        var textElement = element(by.model('text'));
+ *        textElement.clear();
+ *        textElement.sendKeys('TEXT');
+ *        expect(element(by.css('.title')).getText()).toEqual('TITLE');
+ *        expect(element(by.binding('text')).getText()).toEqual('TEXT');
+ *        expect(element(by.css('.footer')).getText()).toEqual('Fallback Footer');
+ *      });
+ *   </file>
+ * </example>
  */
+var ngTranscludeMinErr = minErr('ngTransclude');
 var ngTranscludeDirective = ngDirective({
   restrict: 'EAC',
   link: function($scope, $element, $attrs, controller, $transclude) {
+
+    if ($attrs.ngTransclude === $attrs.$attr.ngTransclude) {
+      // If the attribute is of the form: `ng-transclude="ng-transclude"`
+      // then treat it like the default
+      $attrs.ngTransclude = '';
+    }
+
+    function ngTranscludeCloneAttachFn(clone) {
+      if (clone.length) {
+        $element.empty();
+        $element.append(clone);
+      }
+    }
+
     if (!$transclude) {
-      throw minErr('ngTransclude')('orphan',
+      throw ngTranscludeMinErr('orphan',
        'Illegal use of ngTransclude directive in the template! ' +
        'No parent directive that requires a transclusion found. ' +
        'Element: {0}',
        startingTag($element));
     }
 
-    $transclude(function(clone) {
-      $element.empty();
-      $element.append(clone);
-    });
+    // If there is no slot name defined or the slot name is not optional
+    // then transclude the slot
+    var slotName = $attrs.ngTransclude || $attrs.ngTranscludeSlot;
+    $transclude(ngTranscludeCloneAttachFn, null, slotName);
   }
 });
 
@@ -58661,6 +59430,9 @@ var SelectController =
 
   // Tell the select control that an option, with the given value, has been added
   self.addOption = function(value, element) {
+    // Skip comment nodes, as they only pollute the `optionsMap`
+    if (element[0].nodeType === NODE_TYPE_COMMENT) return;
+
     assertNotHasOwnProperty(value, '"option value"');
     if (value === '') {
       self.emptyOption = element;
@@ -58745,7 +59517,7 @@ var SelectController =
  *
  * <div class="alert alert-warning">
  * Note that the value of a `select` directive used without `ngOptions` is always a string.
- * When the model needs to be bound to a non-string value, you must either explictly convert it
+ * When the model needs to be bound to a non-string value, you must either explicitly convert it
  * using a directive (see example below) or use `ngOptions` to specify the set of options.
  * This is because an option element can only be bound to string values at present.
  * </div>
@@ -59033,7 +59805,6 @@ var optionDirective = ['$interpolate', function($interpolate) {
     restrict: 'E',
     priority: 100,
     compile: function(element, attr) {
-
       if (isDefined(attr.value)) {
         // If the value attribute is defined, check if it contains an interpolation
         var interpolateValueFn = $interpolate(attr.value, true);
@@ -59047,7 +59818,6 @@ var optionDirective = ['$interpolate', function($interpolate) {
       }
 
       return function(scope, element, attr) {
-
         // This is an optimization over using ^^ since we don't want to have to search
         // all the way to the root of the DOM for every single option element
         var selectCtrlName = '$selectController',
@@ -59084,7 +59854,7 @@ var styleDirective = valueFn({
  * for more info.
  *
  * The validator will set the `required` error key to true if the `required` attribute is set and
- * calling {@link ngModel.NgModelController#$isEmpty `NgModelController.$isEmpty` with the
+ * calling {@link ngModel.NgModelController#$isEmpty `NgModelController.$isEmpty`} with the
  * {@link ngModel.NgModelController#$viewValue `ngModel.$viewValue`} returns `true`. For example, the
  * `$isEmpty()` implementation for `input[text]` checks the length of the `$viewValue`. When developing
  * custom controls, `$isEmpty()` can be overwritten to account for a $viewValue that is not string-based.
@@ -59570,6 +60340,7 @@ $provide.value("$locale", {
     ]
   },
   "id": "en-us",
+  "localeID": "en_US",
   "pluralCat": function(n, opt_precision) {  var i = n | 0;  var vf = getVF(n, opt_precision);  if (i == 1 && vf.v == 0) {    return PLURAL_CATEGORY.ONE;  }  return PLURAL_CATEGORY.OTHER;}
 });
 }]);
@@ -59581,6 +60352,846 @@ $provide.value("$locale", {
 })(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
+/**
+ * br-validations
+ * A library of validations applicable to several Brazilian data like I.E., CNPJ, CPF and others
+ * @version v0.2.4
+ * @link http://github.com/the-darc/br-validations
+ * @license MIT
+ */
+(function (root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		// AMD. Register as an anonymous module.
+		define([], factory);
+	} else if (typeof exports === 'object') {
+		// Node. Does not work with strict CommonJS, but
+		// only CommonJS-like environments that support module.exports,
+		// like Node.
+		module.exports = factory();
+	} else {
+		// Browser globals (root is window)
+		root.BrV = factory();
+	}
+}(this, function () {
+var CNPJ = {};
+
+CNPJ.validate = function(c) {
+	var b = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+	c = c.replace(/[^\d]/g,'');
+
+	var r = /^(0{14}|1{14}|2{14}|3{14}|4{14}|5{14}|6{14}|7{14}|8{14}|9{14})$/;
+	if (!c || c.length !== 14 || r.test(c)) {
+		return false;
+	}
+	c = c.split('');
+
+	for (var i = 0, n = 0; i < 12; i++) {
+		n += c[i] * b[i+1];
+	}
+	n = 11 - n%11;
+	n = n >= 10 ? 0 : n;
+	if (parseInt(c[12]) !== n)  {
+		return false;
+	}
+
+	for (i = 0, n = 0; i <= 12; i++) {
+		n += c[i] * b[i];
+	}
+	n = 11 - n%11;
+	n = n >= 10 ? 0 : n;
+	if (parseInt(c[13]) !== n)  {
+		return false;
+	}
+	return true;
+};
+
+
+var CPF = {};
+
+CPF.validate = function(cpf) {
+	cpf = cpf.replace(/[^\d]+/g,'');
+	var r = /^(0{11}|1{11}|2{11}|3{11}|4{11}|5{11}|6{11}|7{11}|8{11}|9{11})$/;
+	if (!cpf || cpf.length !== 11 || r.test(cpf)) {
+		return false;
+	}
+	function validateDigit(digit) {
+		var add = 0;
+		var init = digit - 9;
+		for (var i = 0; i < 9; i ++) {
+			add += parseInt(cpf.charAt(i + init)) * (i+1);
+		}
+		return (add%11)%10 === parseInt(cpf.charAt(digit));
+	}
+	return validateDigit(9) && validateDigit(10);
+};
+
+var IE = function(uf) {
+	if (!(this instanceof IE)) {
+		return new IE(uf);
+	}
+
+	this.rules = IErules[uf] || [];
+	this.rule;
+	IE.prototype._defineRule = function(value) {
+		this.rule = undefined;
+		for (var r = 0; r < this.rules.length && this.rule === undefined; r++) {
+			var str = value.replace(/[^\d]/g,'');
+			var ruleCandidate = this.rules[r];
+			if (str.length === ruleCandidate.chars && (!ruleCandidate.match || ruleCandidate.match.test(value))) {
+				this.rule = ruleCandidate;
+			}
+		}
+		return !!this.rule;
+	};
+
+	IE.prototype.validate = function(value) {
+		if (!value || !this._defineRule(value)) {
+			return false;
+		}
+		return this.rule.validate(value);
+	};
+};
+
+var IErules = {};
+
+var algorithmSteps = {
+	handleStr: {
+		onlyNumbers: function(str) {
+			return str.replace(/[^\d]/g,'').split('');
+		},
+		mgSpec: function(str) {
+			var s = str.replace(/[^\d]/g,'');
+			s = s.substr(0,3)+'0'+s.substr(3, s.length);
+			return s.split('');
+		}
+	},
+	sum: {
+		normalSum: function(handledStr, pesos) {
+			var nums = handledStr;
+			var sum = 0;
+			for (var i = 0; i < pesos.length; i++) {
+				sum += parseInt(nums[i]) * pesos[i];
+			}
+			return sum;
+		},
+		individualSum: function(handledStr, pesos) {
+			var nums = handledStr;
+			var sum = 0;
+			for (var i = 0; i < pesos.length; i++) {
+				var mult = parseInt(nums[i]) * pesos[i];
+				sum += mult%10 + parseInt(mult/10);
+			}
+			return sum;
+		},
+		apSpec: function(handledStr, pesos) {
+			var sum = this.normalSum(handledStr, pesos);
+			var ref = handledStr.join('');
+			if (ref >= '030000010' && ref <= '030170009') {
+				return sum + 5;
+			}
+			if (ref >= '030170010' && ref <= '030190229') {
+				return sum + 9;
+			}
+			return sum;
+		}
+	},
+	rest: {
+		mod11: function(sum) {
+			return sum%11;
+		},
+		mod10: function(sum) {
+			return sum%10;
+		},
+		mod9: function(sum) {
+			return sum%9;
+		}
+	},
+	expectedDV: {
+		minusRestOf11: function(rest) {
+			return rest < 2 ? 0 : 11 - rest;
+		},
+		minusRestOf11v2: function(rest) {
+			return rest < 2 ? 11 - rest - 10 : 11 - rest;
+		},
+		minusRestOf10: function(rest) {
+			return rest < 1 ? 0 : 10 - rest;
+		},
+		mod10: function(rest) {
+			return rest%10;
+		},
+		goSpec: function(rest, handledStr) {
+			var ref = handledStr.join('');
+			if (rest === 1) {
+				return ref >= '101031050' && ref <= '101199979' ? 1 : 0;
+			}
+			return rest === 0 ? 0 : 11 - rest;
+		},
+		apSpec: function(rest, handledStr) {
+			var ref = handledStr.join('');
+			if (rest === 0) {
+				return ref >= '030170010' && ref <= '030190229' ? 1 : 0;
+			}
+			return rest === 1 ? 0 : 11 - rest;
+		},
+		voidFn: function(rest) {
+			return rest;
+		}
+	}
+};
+
+
+/**
+ * options {
+ *     pesos: Array of values used to operate in sum step
+ *     dvPos: Position of the DV to validate considering the handledStr
+ *     algorithmSteps: The four DV's validation algorithm steps names
+ * }
+ */
+function validateDV(value, options) {
+	var steps = options.algorithmSteps;
+
+	// Step 01: Handle String
+	var handledStr = algorithmSteps.handleStr[steps[0]](value);
+
+	// Step 02: Sum chars
+	var sum = algorithmSteps.sum[steps[1]](handledStr, options.pesos);
+
+	// Step 03: Rest calculation
+	var rest = algorithmSteps.rest[steps[2]](sum);
+
+	// Fixed Step: Get current DV
+	var currentDV = parseInt(handledStr[options.dvpos]);
+
+	// Step 04: Expected DV calculation
+	var expectedDV = algorithmSteps.expectedDV[steps[3]](rest, handledStr);
+
+	// Fixed step: DV verification
+	return currentDV === expectedDV;
+}
+
+function validateIE(value, rule) {
+	if (rule.match && !rule.match.test(value)) {
+		return false;
+	}
+	for (var i = 0; i < rule.dvs.length; i++) {
+		// console.log('>> >> dv'+i);
+		if (!validateDV(value, rule.dvs[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+IErules.PE = [{
+	//mask: new StringMask('0000000-00'),
+	chars: 9,
+	dvs: [{
+		dvpos: 7,
+		pesos: [8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	},{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+},{
+	// mask: new StringMask('00.0.000.0000000-0'),
+	chars: 14,
+	pesos: [[1,2,3,4,5,9,8,7,6,5,4,3,2]],
+	dvs: [{
+		dvpos: 13,
+		pesos: [5,4,3,2,1,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11v2']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.RS = [{
+	// mask: new StringMask('000/0000000'),
+	chars: 10,
+	dvs: [{
+		dvpos: 9,
+		pesos: [2,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.AC = [{
+	// mask: new StringMask('00.000.000/000-00'),
+	chars: 13,
+	match: /^01/,
+	dvs: [{
+		dvpos: 11,
+		pesos: [4,3,2,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	},{
+		dvpos: 12,
+		pesos: [5,4,3,2,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.MG = [{
+	// mask: new StringMask('000.000.000/0000'),
+	chars: 13,
+	dvs: [{
+		dvpos: 12,
+		pesos: [1,2,1,2,1,2,1,2,1,2,1,2],
+		algorithmSteps: ['mgSpec', 'individualSum', 'mod10', 'minusRestOf10']
+	},{
+		dvpos: 12,
+		pesos: [3,2,11,10,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.SP = [{
+	// mask: new StringMask('000.000.000.000'),
+	chars: 12,
+	match: /^[0-9]/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [1,3,4,5,6,7,8,10],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'mod10']
+	},{
+		dvpos: 11,
+		pesos: [3,2,10,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'mod10']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+},{
+	// mask: new StringMask('P-00000000.0/000')
+	chars: 12,
+	match: /^P/i,
+	dvs: [{
+		dvpos: 8,
+		pesos: [1,3,4,5,6,7,8,10],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'mod10']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.DF = [{
+	// mask: new StringMask('00000000000-00'),
+	chars: 13,
+	dvs: [{
+		dvpos: 11,
+		pesos: [4,3,2,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	},{
+		dvpos: 12,
+		pesos: [5,4,3,2,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.ES = [{
+	// mask: new StringMask('000.000.00-0')
+	chars: 9,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.BA = [{
+	// mask: new StringMask('000000-00')
+	chars: 8,
+	match: /^[0123458]/,
+	dvs: [{
+		dvpos: 7,
+		pesos: [7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod10', 'minusRestOf10']
+	},{
+		dvpos: 6,
+		pesos: [8,7,6,5,4,3,0,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod10', 'minusRestOf10']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+},{
+	chars: 8,
+	match: /^[679]/,
+	dvs: [{
+		dvpos: 7,
+		pesos: [7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	},{
+		dvpos: 6,
+		pesos: [8,7,6,5,4,3,0,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+},{
+	// mask: new StringMask('0000000-00')
+	chars: 9,
+	match: /^[0-9][0123458]/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod10', 'minusRestOf10']
+	},{
+		dvpos: 7,
+		pesos: [9,8,7,6,5,4,3,0,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod10', 'minusRestOf10']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+},{
+	chars: 9,
+	match: /^[0-9][679]/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	},{
+		dvpos: 7,
+		pesos: [9,8,7,6,5,4,3,0,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.AM = [{
+	//mask: new StringMask('00.000.000-0')
+	chars: 9,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.RN = [{
+	// {mask: new StringMask('00.000.000-0')
+	chars: 9,
+	match: /^20/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+},{
+	// {mask: new StringMask('00.0.000.000-0'), chars: 10}
+	chars: 10,
+	match: /^20/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [10,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.RO = [{
+	// mask: new StringMask('0000000000000-0')
+	chars: 14,
+	dvs: [{
+		dvpos: 13,
+		pesos: [6,5,4,3,2,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.PR = [{
+	// mask: new StringMask('00000000-00')
+	chars: 10,
+	dvs: [{
+		dvpos: 8,
+		pesos: [3,2,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	},{
+		dvpos: 9,
+		pesos: [4,3,2,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.SC = [{
+	// {mask: new StringMask('000.000.000'), uf: 'SANTA CATARINA'}
+	chars: 9,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.RJ = [{
+	// {mask: new StringMask('00.000.00-0'), uf: 'RIO DE JANEIRO'}
+	chars: 8,
+	dvs: [{
+		dvpos: 7,
+		pesos: [2,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.PA = [{
+	// {mask: new StringMask('00-000000-0')
+	chars: 9,
+	match: /^15/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.SE = [{
+	// {mask: new StringMask('00000000-0')
+	chars: 9,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.PB = [{
+	// {mask: new StringMask('00000000-0')
+	chars: 9,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.CE = [{
+	// {mask: new StringMask('00000000-0')
+	chars: 9,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.PI = [{
+	// {mask: new StringMask('000000000')
+	chars: 9,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.MA = [{
+	// {mask: new StringMask('000000000')
+	chars: 9,
+	match: /^12/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.MT = [{
+	// {mask: new StringMask('0000000000-0')
+	chars: 11,
+	dvs: [{
+		dvpos: 10,
+		pesos: [3,2,9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.MS = [{
+	// {mask: new StringMask('000000000')
+	chars: 9,
+	match: /^28/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.TO = [{
+	// {mask: new StringMask('00000000000'),
+	chars: 11,
+	match: /^[0-9]{2}((0[123])|(99))/,
+	dvs: [{
+		dvpos: 10,
+		pesos: [9,8,0,0,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.AL = [{
+	// {mask: new StringMask('000000000')
+	chars: 9,
+	match: /^24[03578]/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'minusRestOf11']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.RR = [{
+	// {mask: new StringMask('00000000-0')
+	chars: 9,
+	match: /^24/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [1,2,3,4,5,6,7,8],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod9', 'voidFn']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.GO = [{
+	// {mask: new StringMask('00.000.000-0')
+	chars: 9,
+	match: /^1[015]/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'normalSum', 'mod11', 'goSpec']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+IErules.AP = [{
+	// {mask: new StringMask('000000000')
+	chars: 9,
+	match: /^03/,
+	dvs: [{
+		dvpos: 8,
+		pesos: [9,8,7,6,5,4,3,2],
+		algorithmSteps: ['onlyNumbers', 'apSpec', 'mod11', 'apSpec']
+	}],
+	validate: function(value) { return validateIE(value, this); }
+}];
+
+	return {
+		ie: IE,
+		cpf: CPF,
+		cnpj: CNPJ
+	};
+}));
+(function (root, factory) {
+	if (typeof define === 'function' && define.amd) {
+		// AMD. Register as an anonymous module.
+		define([], factory);
+	} else if (typeof exports === 'object') {
+		// Node. Does not work with strict CommonJS, but
+		// only CommonJS-like environments that support module.exports,
+		// like Node.
+		module.exports = factory();
+	} else {
+		// Browser globals (root is window)
+		root.StringMask = factory();
+	}
+}(this, function () {
+	var tokens = {
+		'0': {pattern: /\d/, _default: '0'},
+		'9': {pattern: /\d/, optional: true},
+		'#': {pattern: /\d/, optional: true, recursive: true},
+		'S': {pattern: /[a-zA-Z]/},
+		'U': {pattern: /[a-zA-Z]/, transform: function (c) { return c.toLocaleUpperCase(); }},
+		'L': {pattern: /[a-zA-Z]/, transform: function (c) { return c.toLocaleLowerCase(); }},
+		'$': {escape: true}
+	};
+
+	function isEscaped(pattern, pos) {
+		var count = 0;
+		var i = pos - 1;
+		var token = {escape: true};
+		while (i >= 0 && token && token.escape) {
+			token = tokens[pattern.charAt(i)];
+			count += token && token.escape ? 1 : 0;
+			i--;
+		}
+		return count > 0 && count%2 === 1;
+	}
+
+	function calcOptionalNumbersToUse(pattern, value) {
+		var numbersInP = pattern.replace(/[^0]/g,'').length;
+		var numbersInV = value.replace(/[^\d]/g,'').length;
+		return numbersInV - numbersInP;
+	}
+
+	function concatChar(text, character, options, token) {
+		if (token && typeof token.transform === 'function') character = token.transform(character);
+		if (options.reverse) return character + text;
+		return text + character;
+	}
+
+	function hasMoreTokens(pattern, pos, inc) {
+		var pc = pattern.charAt(pos);
+		var token = tokens[pc];
+		if (pc === '') return false;
+		return token && !token.escape ? true : hasMoreTokens(pattern, pos + inc, inc);
+	}
+
+	function insertChar(text, char, position) {
+		var t = text.split('');
+		t.splice(position >= 0 ? position: 0, 0, char);
+		return t.join('');
+	}
+
+	function StringMask(pattern, opt) {
+		this.options = opt || {};
+		this.options = {
+			reverse: this.options.reverse || false,
+			usedefaults: this.options.usedefaults || this.options.reverse
+		};
+		this.pattern = pattern;
+	}
+
+	StringMask.prototype.process = function proccess(value) {
+		if (!value) {
+			return {result: '', valid: false};
+		}
+		value = value + '';
+		var pattern2 = this.pattern;
+		var valid = true;
+		var formatted = '';
+		var valuePos = this.options.reverse ? value.length - 1 : 0;
+		var optionalNumbersToUse = calcOptionalNumbersToUse(pattern2, value);
+		var escapeNext = false;
+		var recursive = [];
+		var inRecursiveMode = false;
+
+		var steps = {
+			start: this.options.reverse ? pattern2.length - 1 : 0,
+			end: this.options.reverse ? -1 : pattern2.length,
+			inc: this.options.reverse ? -1 : 1
+		};
+
+		function continueCondition(options) {
+			if (!inRecursiveMode && hasMoreTokens(pattern2, i, steps.inc)) {
+				return true;
+			} else if (!inRecursiveMode) {
+				inRecursiveMode = recursive.length > 0;
+			}
+
+			if (inRecursiveMode) {
+				var pc = recursive.shift();
+				recursive.push(pc);
+				if (options.reverse && valuePos >= 0) {
+					i++;
+					pattern2 = insertChar(pattern2, pc, i);
+					return true;
+				} else if (!options.reverse && valuePos < value.length) {
+					pattern2 = insertChar(pattern2, pc, i);
+					return true;
+				}
+			}
+			return i < pattern2.length && i >= 0;
+		}
+
+		for (var i = steps.start; continueCondition(this.options); i = i + steps.inc) {
+			var pc = pattern2.charAt(i);
+			var vc = value.charAt(valuePos);
+			var token = tokens[pc];
+			if (!inRecursiveMode || vc) {
+				if (this.options.reverse && isEscaped(pattern2, i)) {
+					formatted = concatChar(formatted, pc, this.options, token);
+					i = i + steps.inc;
+					continue;
+				} else if (!this.options.reverse && escapeNext) {
+					formatted = concatChar(formatted, pc, this.options, token);
+					escapeNext = false;
+					continue;
+				} else if (!this.options.reverse && token && token.escape) {
+					escapeNext = true;
+					continue;
+				}
+			}
+
+			if (!inRecursiveMode && token && token.recursive) {
+				recursive.push(pc);
+			} else if (inRecursiveMode && !vc) {
+				if (!token || !token.recursive) formatted = concatChar(formatted, pc, this.options, token);
+				continue;
+			} else if (recursive.length > 0 && token && !token.recursive) {
+				// Recursive tokens most be the last tokens of the pattern
+				valid = false;
+				continue;
+			} else if (!inRecursiveMode && recursive.length > 0 && !vc) {
+				continue;
+			}
+
+			if (!token) {
+				formatted = concatChar(formatted, pc, this.options, token);
+				if (!inRecursiveMode && recursive.length) {
+					recursive.push(pc);
+				}
+			} else if (token.optional) {
+				if (token.pattern.test(vc) && optionalNumbersToUse) {
+					formatted = concatChar(formatted, vc, this.options, token);
+					valuePos = valuePos + steps.inc;
+					optionalNumbersToUse--;
+				} else if (recursive.length > 0 && vc) {
+					valid = false;
+					break;
+				}
+			} else if (token.pattern.test(vc)) {
+				formatted = concatChar(formatted, vc, this.options, token);
+				valuePos = valuePos + steps.inc;
+			} else if (!vc && token._default && this.options.usedefaults) {
+				formatted = concatChar(formatted, token._default, this.options, token);
+			} else {
+				valid = false;
+				break;
+			}
+		}
+
+		return {result: formatted, valid: valid};
+	};
+
+	StringMask.prototype.apply = function(value) {
+		return this.process(value).result;
+	};
+
+	StringMask.prototype.validate = function(value) {
+		return this.process(value).valid;
+	};
+
+	StringMask.process = function(value, pattern, options) {
+		return new StringMask(pattern, options).process(value);
+	};
+
+	StringMask.apply = function(value, pattern, options) {
+		return new StringMask(pattern, options).apply(value);
+	};
+
+	StringMask.validate = function(value, pattern, options) {
+		return new StringMask(pattern, options).validate(value);
+	};
+
+	return StringMask;
+}));
+
+require=function e(t,n,r){function i(a,o){if(!n[a]){if(!t[a]){var u="function"==typeof require&&require;if(!o&&u)return u(a,!0);if(s)return s(a,!0);var l=new Error("Cannot find module '"+a+"'");throw l.code="MODULE_NOT_FOUND",l}var c=n[a]={exports:{}};t[a][0].call(c.exports,function(e){var n=t[a][1][e];return i(n?n:e)},c,c.exports,e,t,n,r)}return n[a].exports}for(var s="function"==typeof require&&require,a=0;a<r.length;a++)i(r[a]);return i}({1:[function(e,t,n){!function(e,r){"function"==typeof define&&define.amd?define([],r):"object"==typeof n?t.exports=r():e.BrV=r()}(this,function(){function e(e,t){var n=t.algorithmSteps,r=a.handleStr[n[0]](e),i=a.sum[n[1]](r,t.pesos),s=a.rest[n[2]](i),o=parseInt(r[t.dvpos]),u=a.expectedDV[n[3]](s,r);return o===u}function t(t,n){if(n.match&&!n.match.test(t))return!1;for(var r=0;r<n.dvs.length;r++)if(!e(t,n.dvs[r]))return!1;return!0}var n={};n.validate=function(e){var t=[6,5,4,3,2,9,8,7,6,5,4,3,2];e=e.replace(/[^\d]/g,"");var n=/^(0{14}|1{14}|2{14}|3{14}|4{14}|5{14}|6{14}|7{14}|8{14}|9{14})$/;if(!e||14!==e.length||n.test(e))return!1;e=e.split("");for(var r=0,i=0;12>r;r++)i+=e[r]*t[r+1];if(i=11-i%11,i=i>=10?0:i,parseInt(e[12])!==i)return!1;for(r=0,i=0;12>=r;r++)i+=e[r]*t[r];return i=11-i%11,i=i>=10?0:i,parseInt(e[13])!==i?!1:!0};var r={};r.validate=function(e){function t(t){for(var n=0,r=t-9,i=0;9>i;i++)n+=parseInt(e.charAt(i+r))*(i+1);return n%11%10===parseInt(e.charAt(t))}e=e.replace(/[^\d]+/g,"");var n=/^(0{11}|1{11}|2{11}|3{11}|4{11}|5{11}|6{11}|7{11}|8{11}|9{11})$/;return!e||11!==e.length||n.test(e)?!1:t(9)&&t(10)};var i=function(e){return this instanceof i?(this.rules=s[e]||[],this.rule,i.prototype._defineRule=function(e){this.rule=void 0;for(var t=0;t<this.rules.length&&void 0===this.rule;t++){var n=e.replace(/[^\d]/g,""),r=this.rules[t];n.length!==r.chars||r.match&&!r.match.test(e)||(this.rule=r)}return!!this.rule},void(i.prototype.validate=function(e){return e&&this._defineRule(e)?this.rule.validate(e):!1})):new i(e)},s={},a={handleStr:{onlyNumbers:function(e){return e.replace(/[^\d]/g,"").split("")},mgSpec:function(e){var t=e.replace(/[^\d]/g,"");return t=t.substr(0,3)+"0"+t.substr(3,t.length),t.split("")}},sum:{normalSum:function(e,t){for(var n=e,r=0,i=0;i<t.length;i++)r+=parseInt(n[i])*t[i];return r},individualSum:function(e,t){for(var n=e,r=0,i=0;i<t.length;i++){var s=parseInt(n[i])*t[i];r+=s%10+parseInt(s/10)}return r},apSpec:function(e,t){var n=this.normalSum(e,t),r=e.join("");return r>="030000010"&&"030170009">=r?n+5:r>="030170010"&&"030190229">=r?n+9:n}},rest:{mod11:function(e){return e%11},mod10:function(e){return e%10},mod9:function(e){return e%9}},expectedDV:{minusRestOf11:function(e){return 2>e?0:11-e},minusRestOf11v2:function(e){return 2>e?11-e-10:11-e},minusRestOf10:function(e){return 1>e?0:10-e},mod10:function(e){return e%10},goSpec:function(e,t){var n=t.join("");return 1===e?n>="101031050"&&"101199979">=n?1:0:0===e?0:11-e},apSpec:function(e,t){var n=t.join("");return 0===e?n>="030170010"&&"030190229">=n?1:0:1===e?0:11-e},voidFn:function(e){return e}}};return s.PE=[{chars:9,dvs:[{dvpos:7,pesos:[8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]},{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}},{chars:14,pesos:[[1,2,3,4,5,9,8,7,6,5,4,3,2]],dvs:[{dvpos:13,pesos:[5,4,3,2,1,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11v2"]}],validate:function(e){return t(e,this)}}],s.RS=[{chars:10,dvs:[{dvpos:9,pesos:[2,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.AC=[{chars:13,match:/^01/,dvs:[{dvpos:11,pesos:[4,3,2,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]},{dvpos:12,pesos:[5,4,3,2,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.MG=[{chars:13,dvs:[{dvpos:12,pesos:[1,2,1,2,1,2,1,2,1,2,1,2],algorithmSteps:["mgSpec","individualSum","mod10","minusRestOf10"]},{dvpos:12,pesos:[3,2,11,10,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.SP=[{chars:12,match:/^[0-9]/,dvs:[{dvpos:8,pesos:[1,3,4,5,6,7,8,10],algorithmSteps:["onlyNumbers","normalSum","mod11","mod10"]},{dvpos:11,pesos:[3,2,10,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","mod10"]}],validate:function(e){return t(e,this)}},{chars:12,match:/^P/i,dvs:[{dvpos:8,pesos:[1,3,4,5,6,7,8,10],algorithmSteps:["onlyNumbers","normalSum","mod11","mod10"]}],validate:function(e){return t(e,this)}}],s.DF=[{chars:13,dvs:[{dvpos:11,pesos:[4,3,2,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]},{dvpos:12,pesos:[5,4,3,2,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.ES=[{chars:9,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.BA=[{chars:8,match:/^[0123458]/,dvs:[{dvpos:7,pesos:[7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod10","minusRestOf10"]},{dvpos:6,pesos:[8,7,6,5,4,3,0,2],algorithmSteps:["onlyNumbers","normalSum","mod10","minusRestOf10"]}],validate:function(e){return t(e,this)}},{chars:8,match:/^[679]/,dvs:[{dvpos:7,pesos:[7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]},{dvpos:6,pesos:[8,7,6,5,4,3,0,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}},{chars:9,match:/^[0-9][0123458]/,dvs:[{dvpos:8,pesos:[8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod10","minusRestOf10"]},{dvpos:7,pesos:[9,8,7,6,5,4,3,0,2],algorithmSteps:["onlyNumbers","normalSum","mod10","minusRestOf10"]}],validate:function(e){return t(e,this)}},{chars:9,match:/^[0-9][679]/,dvs:[{dvpos:8,pesos:[8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]},{dvpos:7,pesos:[9,8,7,6,5,4,3,0,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.AM=[{chars:9,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.RN=[{chars:9,match:/^20/,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}},{chars:10,match:/^20/,dvs:[{dvpos:8,pesos:[10,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.RO=[{chars:14,dvs:[{dvpos:13,pesos:[6,5,4,3,2,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.PR=[{chars:10,dvs:[{dvpos:8,pesos:[3,2,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]},{dvpos:9,pesos:[4,3,2,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.SC=[{chars:9,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.RJ=[{chars:8,dvs:[{dvpos:7,pesos:[2,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.PA=[{chars:9,match:/^15/,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.SE=[{chars:9,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.PB=[{chars:9,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.CE=[{chars:9,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.PI=[{chars:9,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.MA=[{chars:9,match:/^12/,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.MT=[{chars:11,dvs:[{dvpos:10,pesos:[3,2,9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.MS=[{chars:9,match:/^28/,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.TO=[{chars:11,match:/^[0-9]{2}((0[123])|(99))/,dvs:[{dvpos:10,pesos:[9,8,0,0,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.AL=[{chars:9,match:/^24[03578]/,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","minusRestOf11"]}],validate:function(e){return t(e,this)}}],s.RR=[{chars:9,match:/^24/,dvs:[{dvpos:8,pesos:[1,2,3,4,5,6,7,8],algorithmSteps:["onlyNumbers","normalSum","mod9","voidFn"]}],validate:function(e){return t(e,this)}}],s.GO=[{chars:9,match:/^1[015]/,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","normalSum","mod11","goSpec"]}],validate:function(e){return t(e,this)}}],s.AP=[{chars:9,match:/^03/,dvs:[{dvpos:8,pesos:[9,8,7,6,5,4,3,2],algorithmSteps:["onlyNumbers","apSpec","mod11","apSpec"]}],validate:function(e){return t(e,this)}}],{ie:i,cpf:r,cnpj:n}})},{}],2:[function(e,t,n){!function(e,r){"object"==typeof n&&"undefined"!=typeof t?t.exports=r():"function"==typeof define&&define.amd?define(r):e.moment=r()}(this,function(){"use strict";function n(){return Un.apply(null,arguments)}function r(e){Un=e}function i(e){return"[object Array]"===Object.prototype.toString.call(e)}function s(e){return e instanceof Date||"[object Date]"===Object.prototype.toString.call(e)}function a(e,t){var n,r=[];for(n=0;n<e.length;++n)r.push(t(e[n],n));return r}function o(e,t){return Object.prototype.hasOwnProperty.call(e,t)}function u(e,t){for(var n in t)o(t,n)&&(e[n]=t[n]);return o(t,"toString")&&(e.toString=t.toString),o(t,"valueOf")&&(e.valueOf=t.valueOf),e}function l(e,t,n,r){return Te(e,t,n,r,!0).utc()}function c(){return{empty:!1,unusedTokens:[],unusedInput:[],overflow:-2,charsLeftOver:0,nullInput:!1,invalidMonth:null,invalidFormat:!1,userInvalidated:!1,iso:!1}}function f(e){return null==e._pf&&(e._pf=c()),e._pf}function d(e){if(null==e._isValid){var t=f(e);e._isValid=!(isNaN(e._d.getTime())||!(t.overflow<0)||t.empty||t.invalidMonth||t.invalidWeekday||t.nullInput||t.invalidFormat||t.userInvalidated),e._strict&&(e._isValid=e._isValid&&0===t.charsLeftOver&&0===t.unusedTokens.length&&void 0===t.bigHour)}return e._isValid}function m(e){var t=l(NaN);return null!=e?u(f(t),e):f(t).userInvalidated=!0,t}function h(e,t){var n,r,i;if("undefined"!=typeof t._isAMomentObject&&(e._isAMomentObject=t._isAMomentObject),"undefined"!=typeof t._i&&(e._i=t._i),"undefined"!=typeof t._f&&(e._f=t._f),"undefined"!=typeof t._l&&(e._l=t._l),"undefined"!=typeof t._strict&&(e._strict=t._strict),"undefined"!=typeof t._tzm&&(e._tzm=t._tzm),"undefined"!=typeof t._isUTC&&(e._isUTC=t._isUTC),"undefined"!=typeof t._offset&&(e._offset=t._offset),"undefined"!=typeof t._pf&&(e._pf=f(t)),"undefined"!=typeof t._locale&&(e._locale=t._locale),Cn.length>0)for(n in Cn)r=Cn[n],i=t[r],"undefined"!=typeof i&&(e[r]=i);return e}function p(e){h(this,e),this._d=new Date(null!=e._d?e._d.getTime():NaN),Vn===!1&&(Vn=!0,n.updateOffset(this),Vn=!1)}function v(e){return e instanceof p||null!=e&&null!=e._isAMomentObject}function g(e){return 0>e?Math.ceil(e):Math.floor(e)}function y(e){var t=+e,n=0;return 0!==t&&isFinite(t)&&(n=g(t)),n}function _(e,t,n){var r,i=Math.min(e.length,t.length),s=Math.abs(e.length-t.length),a=0;for(r=0;i>r;r++)(n&&e[r]!==t[r]||!n&&y(e[r])!==y(t[r]))&&a++;return a+s}function S(){}function M(e){return e?e.toLowerCase().replace("_","-"):e}function k(e){for(var t,n,r,i,s=0;s<e.length;){for(i=M(e[s]).split("-"),t=i.length,n=M(e[s+1]),n=n?n.split("-"):null;t>0;){if(r=w(i.slice(0,t).join("-")))return r;if(n&&n.length>=t&&_(i,n,!0)>=t-1)break;t--}s++}return null}function w(n){var r=null;if(!Gn[n]&&"undefined"!=typeof t&&t&&t.exports)try{r=En._abbr,e("./locale/"+n),D(r)}catch(i){}return Gn[n]}function D(e,t){var n;return e&&(n="undefined"==typeof t?Y(e):b(e,t),n&&(En=n)),En._abbr}function b(e,t){return null!==t?(t.abbr=e,Gn[e]=Gn[e]||new S,Gn[e].set(t),D(e),Gn[e]):(delete Gn[e],null)}function Y(e){var t;if(e&&e._locale&&e._locale._abbr&&(e=e._locale._abbr),!e)return En;if(!i(e)){if(t=w(e))return t;e=[e]}return k(e)}function O(e,t){var n=e.toLowerCase();In[n]=In[n+"s"]=In[t]=e}function $(e){return"string"==typeof e?In[e]||In[e.toLowerCase()]:void 0}function N(e){var t,n,r={};for(n in e)o(e,n)&&(t=$(n),t&&(r[t]=e[n]));return r}function T(e,t){return function(r){return null!=r?(x(this,e,r),n.updateOffset(this,t),this):P(this,e)}}function P(e,t){return e._d["get"+(e._isUTC?"UTC":"")+t]()}function x(e,t,n){return e._d["set"+(e._isUTC?"UTC":"")+t](n)}function A(e,t){var n;if("object"==typeof e)for(n in e)this.set(n,e[n]);else if(e=$(e),"function"==typeof this[e])return this[e](t);return this}function F(e,t,n){var r=""+Math.abs(e),i=t-r.length,s=e>=0;return(s?n?"+":"":"-")+Math.pow(10,Math.max(0,i)).toString().substr(1)+r}function R(e,t,n,r){var i=r;"string"==typeof r&&(i=function(){return this[r]()}),e&&(Hn[e]=i),t&&(Hn[t[0]]=function(){return F(i.apply(this,arguments),t[1],t[2])}),n&&(Hn[n]=function(){return this.localeData().ordinal(i.apply(this,arguments),e)})}function U(e){return e.match(/\[[\s\S]/)?e.replace(/^\[|\]$/g,""):e.replace(/\\/g,"")}function E(e){var t,n,r=e.match(Wn);for(t=0,n=r.length;n>t;t++)Hn[r[t]]?r[t]=Hn[r[t]]:r[t]=U(r[t]);return function(i){var s="";for(t=0;n>t;t++)s+=r[t]instanceof Function?r[t].call(i,e):r[t];return s}}function C(e,t){return e.isValid()?(t=V(t,e.localeData()),jn[t]=jn[t]||E(t),jn[t](e)):e.localeData().invalidDate()}function V(e,t){function n(e){return t.longDateFormat(e)||e}var r=5;for(Ln.lastIndex=0;r>=0&&Ln.test(e);)e=e.replace(Ln,n),Ln.lastIndex=0,r-=1;return e}function G(e){return"function"==typeof e&&"[object Function]"===Object.prototype.toString.call(e)}function I(e,t,n){ar[e]=G(t)?t:function(e){return e&&n?n:t}}function W(e,t){return o(ar,e)?ar[e](t._strict,t._locale):new RegExp(L(e))}function L(e){return e.replace("\\","").replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g,function(e,t,n,r,i){return t||n||r||i}).replace(/[-\/\\^$*+?.()|[\]{}]/g,"\\$&")}function j(e,t){var n,r=t;for("string"==typeof e&&(e=[e]),"number"==typeof t&&(r=function(e,n){n[t]=y(e)}),n=0;n<e.length;n++)or[e[n]]=r}function H(e,t){j(e,function(e,n,r,i){r._w=r._w||{},t(e,r._w,r,i)})}function B(e,t,n){null!=t&&o(or,e)&&or[e](t,n._a,n,e)}function Z(e,t){return new Date(Date.UTC(e,t+1,0)).getUTCDate()}function z(e){return this._months[e.month()]}function q(e){return this._monthsShort[e.month()]}function J(e,t,n){var r,i,s;for(this._monthsParse||(this._monthsParse=[],this._longMonthsParse=[],this._shortMonthsParse=[]),r=0;12>r;r++){if(i=l([2e3,r]),n&&!this._longMonthsParse[r]&&(this._longMonthsParse[r]=new RegExp("^"+this.months(i,"").replace(".","")+"$","i"),this._shortMonthsParse[r]=new RegExp("^"+this.monthsShort(i,"").replace(".","")+"$","i")),n||this._monthsParse[r]||(s="^"+this.months(i,"")+"|^"+this.monthsShort(i,""),this._monthsParse[r]=new RegExp(s.replace(".",""),"i")),n&&"MMMM"===t&&this._longMonthsParse[r].test(e))return r;if(n&&"MMM"===t&&this._shortMonthsParse[r].test(e))return r;if(!n&&this._monthsParse[r].test(e))return r}}function Q(e,t){var n;return"string"==typeof t&&(t=e.localeData().monthsParse(t),"number"!=typeof t)?e:(n=Math.min(e.date(),Z(e.year(),t)),e._d["set"+(e._isUTC?"UTC":"")+"Month"](t,n),e)}function X(e){return null!=e?(Q(this,e),n.updateOffset(this,!0),this):P(this,"Month")}function K(){return Z(this.year(),this.month())}function ee(e){var t,n=e._a;return n&&-2===f(e).overflow&&(t=n[lr]<0||n[lr]>11?lr:n[cr]<1||n[cr]>Z(n[ur],n[lr])?cr:n[fr]<0||n[fr]>24||24===n[fr]&&(0!==n[dr]||0!==n[mr]||0!==n[hr])?fr:n[dr]<0||n[dr]>59?dr:n[mr]<0||n[mr]>59?mr:n[hr]<0||n[hr]>999?hr:-1,f(e)._overflowDayOfYear&&(ur>t||t>cr)&&(t=cr),f(e).overflow=t),e}function te(e){n.suppressDeprecationWarnings===!1&&"undefined"!=typeof console&&console.warn&&console.warn("Deprecation warning: "+e)}function ne(e,t){var n=!0;return u(function(){return n&&(te(e+"\n"+(new Error).stack),n=!1),t.apply(this,arguments)},t)}function re(e,t){gr[e]||(te(t),gr[e]=!0)}function ie(e){var t,n,r=e._i,i=yr.exec(r);if(i){for(f(e).iso=!0,t=0,n=_r.length;n>t;t++)if(_r[t][1].exec(r)){e._f=_r[t][0];break}for(t=0,n=Sr.length;n>t;t++)if(Sr[t][1].exec(r)){e._f+=(i[6]||" ")+Sr[t][0];break}r.match(rr)&&(e._f+="Z"),we(e)}else e._isValid=!1}function se(e){var t=Mr.exec(e._i);return null!==t?void(e._d=new Date(+t[1])):(ie(e),void(e._isValid===!1&&(delete e._isValid,n.createFromInputFallback(e))))}function ae(e,t,n,r,i,s,a){var o=new Date(e,t,n,r,i,s,a);return 1970>e&&o.setFullYear(e),o}function oe(e){var t=new Date(Date.UTC.apply(null,arguments));return 1970>e&&t.setUTCFullYear(e),t}function ue(e){return le(e)?366:365}function le(e){return e%4===0&&e%100!==0||e%400===0}function ce(){return le(this.year())}function fe(e,t,n){var r,i=n-t,s=n-e.day();return s>i&&(s-=7),i-7>s&&(s+=7),r=Pe(e).add(s,"d"),{week:Math.ceil(r.dayOfYear()/7),year:r.year()}}function de(e){return fe(e,this._week.dow,this._week.doy).week}function me(){return this._week.dow}function he(){return this._week.doy}function pe(e){var t=this.localeData().week(this);return null==e?t:this.add(7*(e-t),"d")}function ve(e){var t=fe(this,1,4).week;return null==e?t:this.add(7*(e-t),"d")}function ge(e,t,n,r,i){var s,a=6+i-r,o=oe(e,0,1+a),u=o.getUTCDay();return i>u&&(u+=7),n=null!=n?1*n:i,s=1+a+7*(t-1)-u+n,{year:s>0?e:e-1,dayOfYear:s>0?s:ue(e-1)+s}}function ye(e){var t=Math.round((this.clone().startOf("day")-this.clone().startOf("year"))/864e5)+1;return null==e?t:this.add(e-t,"d")}function _e(e,t,n){return null!=e?e:null!=t?t:n}function Se(e){var t=new Date;return e._useUTC?[t.getUTCFullYear(),t.getUTCMonth(),t.getUTCDate()]:[t.getFullYear(),t.getMonth(),t.getDate()]}function Me(e){var t,n,r,i,s=[];if(!e._d){for(r=Se(e),e._w&&null==e._a[cr]&&null==e._a[lr]&&ke(e),e._dayOfYear&&(i=_e(e._a[ur],r[ur]),e._dayOfYear>ue(i)&&(f(e)._overflowDayOfYear=!0),n=oe(i,0,e._dayOfYear),e._a[lr]=n.getUTCMonth(),e._a[cr]=n.getUTCDate()),t=0;3>t&&null==e._a[t];++t)e._a[t]=s[t]=r[t];for(;7>t;t++)e._a[t]=s[t]=null==e._a[t]?2===t?1:0:e._a[t];24===e._a[fr]&&0===e._a[dr]&&0===e._a[mr]&&0===e._a[hr]&&(e._nextDay=!0,e._a[fr]=0),e._d=(e._useUTC?oe:ae).apply(null,s),null!=e._tzm&&e._d.setUTCMinutes(e._d.getUTCMinutes()-e._tzm),e._nextDay&&(e._a[fr]=24)}}function ke(e){var t,n,r,i,s,a,o;t=e._w,null!=t.GG||null!=t.W||null!=t.E?(s=1,a=4,n=_e(t.GG,e._a[ur],fe(Pe(),1,4).year),r=_e(t.W,1),i=_e(t.E,1)):(s=e._locale._week.dow,a=e._locale._week.doy,n=_e(t.gg,e._a[ur],fe(Pe(),s,a).year),r=_e(t.w,1),null!=t.d?(i=t.d,s>i&&++r):i=null!=t.e?t.e+s:s),o=ge(n,r,i,a,s),e._a[ur]=o.year,e._dayOfYear=o.dayOfYear}function we(e){if(e._f===n.ISO_8601)return void ie(e);e._a=[],f(e).empty=!0;var t,r,i,s,a,o=""+e._i,u=o.length,l=0;for(i=V(e._f,e._locale).match(Wn)||[],t=0;t<i.length;t++)s=i[t],r=(o.match(W(s,e))||[])[0],r&&(a=o.substr(0,o.indexOf(r)),a.length>0&&f(e).unusedInput.push(a),o=o.slice(o.indexOf(r)+r.length),l+=r.length),Hn[s]?(r?f(e).empty=!1:f(e).unusedTokens.push(s),B(s,r,e)):e._strict&&!r&&f(e).unusedTokens.push(s);f(e).charsLeftOver=u-l,o.length>0&&f(e).unusedInput.push(o),f(e).bigHour===!0&&e._a[fr]<=12&&e._a[fr]>0&&(f(e).bigHour=void 0),e._a[fr]=De(e._locale,e._a[fr],e._meridiem),Me(e),ee(e)}function De(e,t,n){var r;return null==n?t:null!=e.meridiemHour?e.meridiemHour(t,n):null!=e.isPM?(r=e.isPM(n),r&&12>t&&(t+=12),r||12!==t||(t=0),t):t}function be(e){var t,n,r,i,s;if(0===e._f.length)return f(e).invalidFormat=!0,void(e._d=new Date(NaN));for(i=0;i<e._f.length;i++)s=0,t=h({},e),null!=e._useUTC&&(t._useUTC=e._useUTC),t._f=e._f[i],we(t),d(t)&&(s+=f(t).charsLeftOver,s+=10*f(t).unusedTokens.length,f(t).score=s,(null==r||r>s)&&(r=s,n=t));u(e,n||t)}function Ye(e){if(!e._d){var t=N(e._i);e._a=[t.year,t.month,t.day||t.date,t.hour,t.minute,t.second,t.millisecond],Me(e)}}function Oe(e){var t=new p(ee($e(e)));return t._nextDay&&(t.add(1,"d"),t._nextDay=void 0),t}function $e(e){var t=e._i,n=e._f;return e._locale=e._locale||Y(e._l),null===t||void 0===n&&""===t?m({nullInput:!0}):("string"==typeof t&&(e._i=t=e._locale.preparse(t)),v(t)?new p(ee(t)):(i(n)?be(e):n?we(e):s(t)?e._d=t:Ne(e),e))}function Ne(e){var t=e._i;void 0===t?e._d=new Date:s(t)?e._d=new Date(+t):"string"==typeof t?se(e):i(t)?(e._a=a(t.slice(0),function(e){return parseInt(e,10)}),Me(e)):"object"==typeof t?Ye(e):"number"==typeof t?e._d=new Date(t):n.createFromInputFallback(e)}function Te(e,t,n,r,i){var s={};return"boolean"==typeof n&&(r=n,n=void 0),s._isAMomentObject=!0,s._useUTC=s._isUTC=i,s._l=n,s._i=e,s._f=t,s._strict=r,Oe(s)}function Pe(e,t,n,r){return Te(e,t,n,r,!1)}function xe(e,t){var n,r;if(1===t.length&&i(t[0])&&(t=t[0]),!t.length)return Pe();for(n=t[0],r=1;r<t.length;++r)(!t[r].isValid()||t[r][e](n))&&(n=t[r]);return n}function Ae(){var e=[].slice.call(arguments,0);return xe("isBefore",e)}function Fe(){var e=[].slice.call(arguments,0);return xe("isAfter",e)}function Re(e){var t=N(e),n=t.year||0,r=t.quarter||0,i=t.month||0,s=t.week||0,a=t.day||0,o=t.hour||0,u=t.minute||0,l=t.second||0,c=t.millisecond||0;this._milliseconds=+c+1e3*l+6e4*u+36e5*o,this._days=+a+7*s,this._months=+i+3*r+12*n,this._data={},this._locale=Y(),this._bubble()}function Ue(e){return e instanceof Re}function Ee(e,t){R(e,0,0,function(){var e=this.utcOffset(),n="+";return 0>e&&(e=-e,n="-"),n+F(~~(e/60),2)+t+F(~~e%60,2)})}function Ce(e){var t=(e||"").match(rr)||[],n=t[t.length-1]||[],r=(n+"").match(Yr)||["-",0,0],i=+(60*r[1])+y(r[2]);return"+"===r[0]?i:-i}function Ve(e,t){var r,i;return t._isUTC?(r=t.clone(),i=(v(e)||s(e)?+e:+Pe(e))-+r,r._d.setTime(+r._d+i),n.updateOffset(r,!1),r):Pe(e).local()}function Ge(e){return 15*-Math.round(e._d.getTimezoneOffset()/15)}function Ie(e,t){var r,i=this._offset||0;return null!=e?("string"==typeof e&&(e=Ce(e)),Math.abs(e)<16&&(e=60*e),!this._isUTC&&t&&(r=Ge(this)),this._offset=e,this._isUTC=!0,null!=r&&this.add(r,"m"),i!==e&&(!t||this._changeInProgress?rt(this,Xe(e-i,"m"),1,!1):this._changeInProgress||(this._changeInProgress=!0,n.updateOffset(this,!0),this._changeInProgress=null)),this):this._isUTC?i:Ge(this)}function We(e,t){return null!=e?("string"!=typeof e&&(e=-e),this.utcOffset(e,t),this):-this.utcOffset()}function Le(e){return this.utcOffset(0,e)}function je(e){return this._isUTC&&(this.utcOffset(0,e),this._isUTC=!1,e&&this.subtract(Ge(this),"m")),this}function He(){return this._tzm?this.utcOffset(this._tzm):"string"==typeof this._i&&this.utcOffset(Ce(this._i)),this}function Be(e){return e=e?Pe(e).utcOffset():0,(this.utcOffset()-e)%60===0}function Ze(){return this.utcOffset()>this.clone().month(0).utcOffset()||this.utcOffset()>this.clone().month(5).utcOffset()}function ze(){if("undefined"!=typeof this._isDSTShifted)return this._isDSTShifted;var e={};if(h(e,this),e=$e(e),e._a){var t=e._isUTC?l(e._a):Pe(e._a);this._isDSTShifted=this.isValid()&&_(e._a,t.toArray())>0}else this._isDSTShifted=!1;return this._isDSTShifted}function qe(){return!this._isUTC}function Je(){return this._isUTC}function Qe(){return this._isUTC&&0===this._offset}function Xe(e,t){var n,r,i,s=e,a=null;return Ue(e)?s={ms:e._milliseconds,d:e._days,M:e._months}:"number"==typeof e?(s={},t?s[t]=e:s.milliseconds=e):(a=Or.exec(e))?(n="-"===a[1]?-1:1,s={y:0,d:y(a[cr])*n,h:y(a[fr])*n,m:y(a[dr])*n,s:y(a[mr])*n,ms:y(a[hr])*n}):(a=$r.exec(e))?(n="-"===a[1]?-1:1,s={y:Ke(a[2],n),M:Ke(a[3],n),d:Ke(a[4],n),h:Ke(a[5],n),m:Ke(a[6],n),s:Ke(a[7],n),w:Ke(a[8],n)}):null==s?s={}:"object"==typeof s&&("from"in s||"to"in s)&&(i=tt(Pe(s.from),Pe(s.to)),s={},s.ms=i.milliseconds,s.M=i.months),r=new Re(s),Ue(e)&&o(e,"_locale")&&(r._locale=e._locale),r}function Ke(e,t){var n=e&&parseFloat(e.replace(",","."));return(isNaN(n)?0:n)*t}function et(e,t){var n={milliseconds:0,months:0};return n.months=t.month()-e.month()+12*(t.year()-e.year()),e.clone().add(n.months,"M").isAfter(t)&&--n.months,n.milliseconds=+t-+e.clone().add(n.months,"M"),n}function tt(e,t){var n;return t=Ve(t,e),e.isBefore(t)?n=et(e,t):(n=et(t,e),n.milliseconds=-n.milliseconds,n.months=-n.months),n}function nt(e,t){return function(n,r){var i,s;return null===r||isNaN(+r)||(re(t,"moment()."+t+"(period, number) is deprecated. Please use moment()."+t+"(number, period)."),s=n,n=r,r=s),n="string"==typeof n?+n:n,i=Xe(n,r),rt(this,i,e),this}}function rt(e,t,r,i){var s=t._milliseconds,a=t._days,o=t._months;i=null==i?!0:i,s&&e._d.setTime(+e._d+s*r),a&&x(e,"Date",P(e,"Date")+a*r),o&&Q(e,P(e,"Month")+o*r),i&&n.updateOffset(e,a||o)}function it(e,t){var n=e||Pe(),r=Ve(n,this).startOf("day"),i=this.diff(r,"days",!0),s=-6>i?"sameElse":-1>i?"lastWeek":0>i?"lastDay":1>i?"sameDay":2>i?"nextDay":7>i?"nextWeek":"sameElse";return this.format(t&&t[s]||this.localeData().calendar(s,this,Pe(n)))}function st(){return new p(this)}function at(e,t){var n;return t=$("undefined"!=typeof t?t:"millisecond"),"millisecond"===t?(e=v(e)?e:Pe(e),+this>+e):(n=v(e)?+e:+Pe(e),n<+this.clone().startOf(t))}function ot(e,t){var n;return t=$("undefined"!=typeof t?t:"millisecond"),"millisecond"===t?(e=v(e)?e:Pe(e),+e>+this):(n=v(e)?+e:+Pe(e),+this.clone().endOf(t)<n)}function ut(e,t,n){return this.isAfter(e,n)&&this.isBefore(t,n)}function lt(e,t){var n;return t=$(t||"millisecond"),"millisecond"===t?(e=v(e)?e:Pe(e),+this===+e):(n=+Pe(e),+this.clone().startOf(t)<=n&&n<=+this.clone().endOf(t))}function ct(e,t,n){var r,i,s=Ve(e,this),a=6e4*(s.utcOffset()-this.utcOffset());return t=$(t),"year"===t||"month"===t||"quarter"===t?(i=ft(this,s),"quarter"===t?i/=3:"year"===t&&(i/=12)):(r=this-s,i="second"===t?r/1e3:"minute"===t?r/6e4:"hour"===t?r/36e5:"day"===t?(r-a)/864e5:"week"===t?(r-a)/6048e5:r),n?i:g(i)}function ft(e,t){var n,r,i=12*(t.year()-e.year())+(t.month()-e.month()),s=e.clone().add(i,"months");return 0>t-s?(n=e.clone().add(i-1,"months"),r=(t-s)/(s-n)):(n=e.clone().add(i+1,"months"),r=(t-s)/(n-s)),-(i+r)}function dt(){return this.clone().locale("en").format("ddd MMM DD YYYY HH:mm:ss [GMT]ZZ")}function mt(){var e=this.clone().utc();return 0<e.year()&&e.year()<=9999?"function"==typeof Date.prototype.toISOString?this.toDate().toISOString():C(e,"YYYY-MM-DD[T]HH:mm:ss.SSS[Z]"):C(e,"YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]")}function ht(e){var t=C(this,e||n.defaultFormat);return this.localeData().postformat(t)}function pt(e,t){return this.isValid()?Xe({to:this,from:e}).locale(this.locale()).humanize(!t):this.localeData().invalidDate()}function vt(e){return this.from(Pe(),e)}function gt(e,t){return this.isValid()?Xe({from:this,to:e}).locale(this.locale()).humanize(!t):this.localeData().invalidDate()}function yt(e){return this.to(Pe(),e)}function _t(e){var t;return void 0===e?this._locale._abbr:(t=Y(e),null!=t&&(this._locale=t),this)}function St(){return this._locale}function Mt(e){switch(e=$(e)){case"year":this.month(0);case"quarter":case"month":this.date(1);case"week":case"isoWeek":case"day":this.hours(0);case"hour":this.minutes(0);case"minute":this.seconds(0);case"second":this.milliseconds(0)}return"week"===e&&this.weekday(0),"isoWeek"===e&&this.isoWeekday(1),"quarter"===e&&this.month(3*Math.floor(this.month()/3)),this}function kt(e){return e=$(e),void 0===e||"millisecond"===e?this:this.startOf(e).add(1,"isoWeek"===e?"week":e).subtract(1,"ms")}function wt(){return+this._d-6e4*(this._offset||0)}function Dt(){return Math.floor(+this/1e3)}function bt(){return this._offset?new Date(+this):this._d}function Yt(){var e=this;return[e.year(),e.month(),e.date(),e.hour(),e.minute(),e.second(),e.millisecond()]}function Ot(){var e=this;return{years:e.year(),months:e.month(),date:e.date(),hours:e.hours(),minutes:e.minutes(),seconds:e.seconds(),milliseconds:e.milliseconds()}}function $t(){return d(this)}function Nt(){return u({},f(this))}function Tt(){return f(this).overflow}function Pt(e,t){R(0,[e,e.length],0,t)}function xt(e,t,n){return fe(Pe([e,11,31+t-n]),t,n).week}function At(e){var t=fe(this,this.localeData()._week.dow,this.localeData()._week.doy).year;return null==e?t:this.add(e-t,"y")}function Ft(e){var t=fe(this,1,4).year;return null==e?t:this.add(e-t,"y")}function Rt(){return xt(this.year(),1,4)}function Ut(){var e=this.localeData()._week;return xt(this.year(),e.dow,e.doy)}function Et(e){return null==e?Math.ceil((this.month()+1)/3):this.month(3*(e-1)+this.month()%3)}function Ct(e,t){return"string"!=typeof e?e:isNaN(e)?(e=t.weekdaysParse(e),"number"==typeof e?e:null):parseInt(e,10)}function Vt(e){return this._weekdays[e.day()]}function Gt(e){return this._weekdaysShort[e.day()]}function It(e){return this._weekdaysMin[e.day()]}function Wt(e){var t,n,r;for(this._weekdaysParse=this._weekdaysParse||[],t=0;7>t;t++)if(this._weekdaysParse[t]||(n=Pe([2e3,1]).day(t),r="^"+this.weekdays(n,"")+"|^"+this.weekdaysShort(n,"")+"|^"+this.weekdaysMin(n,""),this._weekdaysParse[t]=new RegExp(r.replace(".",""),"i")),this._weekdaysParse[t].test(e))return t}function Lt(e){var t=this._isUTC?this._d.getUTCDay():this._d.getDay();return null!=e?(e=Ct(e,this.localeData()),this.add(e-t,"d")):t}function jt(e){var t=(this.day()+7-this.localeData()._week.dow)%7;return null==e?t:this.add(e-t,"d")}function Ht(e){return null==e?this.day()||7:this.day(this.day()%7?e:e-7)}function Bt(e,t){R(e,0,0,function(){return this.localeData().meridiem(this.hours(),this.minutes(),t)})}function Zt(e,t){return t._meridiemParse}function zt(e){return"p"===(e+"").toLowerCase().charAt(0)}function qt(e,t,n){return e>11?n?"pm":"PM":n?"am":"AM"}function Jt(e,t){t[hr]=y(1e3*("0."+e))}function Qt(){return this._isUTC?"UTC":""}function Xt(){return this._isUTC?"Coordinated Universal Time":""}function Kt(e){return Pe(1e3*e)}function en(){return Pe.apply(null,arguments).parseZone()}function tn(e,t,n){var r=this._calendar[e];return"function"==typeof r?r.call(t,n):r}function nn(e){var t=this._longDateFormat[e],n=this._longDateFormat[e.toUpperCase()];return t||!n?t:(this._longDateFormat[e]=n.replace(/MMMM|MM|DD|dddd/g,function(e){return e.slice(1)}),this._longDateFormat[e])}function rn(){return this._invalidDate}function sn(e){return this._ordinal.replace("%d",e)}function an(e){return e}function on(e,t,n,r){var i=this._relativeTime[n];return"function"==typeof i?i(e,t,n,r):i.replace(/%d/i,e)}function un(e,t){var n=this._relativeTime[e>0?"future":"past"];return"function"==typeof n?n(t):n.replace(/%s/i,t)}function ln(e){var t,n;for(n in e)t=e[n],"function"==typeof t?this[n]=t:this["_"+n]=t;this._ordinalParseLenient=new RegExp(this._ordinalParse.source+"|"+/\d{1,2}/.source)}function cn(e,t,n,r){var i=Y(),s=l().set(r,t);return i[n](s,e)}function fn(e,t,n,r,i){if("number"==typeof e&&(t=e,e=void 0),e=e||"",null!=t)return cn(e,t,n,i);var s,a=[];for(s=0;r>s;s++)a[s]=cn(e,s,n,i);return a}function dn(e,t){return fn(e,t,"months",12,"month")}function mn(e,t){return fn(e,t,"monthsShort",12,"month")}function hn(e,t){return fn(e,t,"weekdays",7,"day")}function pn(e,t){return fn(e,t,"weekdaysShort",7,"day")}function vn(e,t){return fn(e,t,"weekdaysMin",7,"day")}function gn(){var e=this._data;return this._milliseconds=Qr(this._milliseconds),this._days=Qr(this._days),this._months=Qr(this._months),e.milliseconds=Qr(e.milliseconds),e.seconds=Qr(e.seconds),e.minutes=Qr(e.minutes),e.hours=Qr(e.hours),e.months=Qr(e.months),e.years=Qr(e.years),this}function yn(e,t,n,r){var i=Xe(t,n);return e._milliseconds+=r*i._milliseconds,
+e._days+=r*i._days,e._months+=r*i._months,e._bubble()}function _n(e,t){return yn(this,e,t,1)}function Sn(e,t){return yn(this,e,t,-1)}function Mn(e){return 0>e?Math.floor(e):Math.ceil(e)}function kn(){var e,t,n,r,i,s=this._milliseconds,a=this._days,o=this._months,u=this._data;return s>=0&&a>=0&&o>=0||0>=s&&0>=a&&0>=o||(s+=864e5*Mn(Dn(o)+a),a=0,o=0),u.milliseconds=s%1e3,e=g(s/1e3),u.seconds=e%60,t=g(e/60),u.minutes=t%60,n=g(t/60),u.hours=n%24,a+=g(n/24),i=g(wn(a)),o+=i,a-=Mn(Dn(i)),r=g(o/12),o%=12,u.days=a,u.months=o,u.years=r,this}function wn(e){return 4800*e/146097}function Dn(e){return 146097*e/4800}function bn(e){var t,n,r=this._milliseconds;if(e=$(e),"month"===e||"year"===e)return t=this._days+r/864e5,n=this._months+wn(t),"month"===e?n:n/12;switch(t=this._days+Math.round(Dn(this._months)),e){case"week":return t/7+r/6048e5;case"day":return t+r/864e5;case"hour":return 24*t+r/36e5;case"minute":return 1440*t+r/6e4;case"second":return 86400*t+r/1e3;case"millisecond":return Math.floor(864e5*t)+r;default:throw new Error("Unknown unit "+e)}}function Yn(){return this._milliseconds+864e5*this._days+this._months%12*2592e6+31536e6*y(this._months/12)}function On(e){return function(){return this.as(e)}}function $n(e){return e=$(e),this[e+"s"]()}function Nn(e){return function(){return this._data[e]}}function Tn(){return g(this.days()/7)}function Pn(e,t,n,r,i){return i.relativeTime(t||1,!!n,e,r)}function xn(e,t,n){var r=Xe(e).abs(),i=mi(r.as("s")),s=mi(r.as("m")),a=mi(r.as("h")),o=mi(r.as("d")),u=mi(r.as("M")),l=mi(r.as("y")),c=i<hi.s&&["s",i]||1===s&&["m"]||s<hi.m&&["mm",s]||1===a&&["h"]||a<hi.h&&["hh",a]||1===o&&["d"]||o<hi.d&&["dd",o]||1===u&&["M"]||u<hi.M&&["MM",u]||1===l&&["y"]||["yy",l];return c[2]=t,c[3]=+e>0,c[4]=n,Pn.apply(null,c)}function An(e,t){return void 0===hi[e]?!1:void 0===t?hi[e]:(hi[e]=t,!0)}function Fn(e){var t=this.localeData(),n=xn(this,!e,t);return e&&(n=t.pastFuture(+this,n)),t.postformat(n)}function Rn(){var e,t,n,r=pi(this._milliseconds)/1e3,i=pi(this._days),s=pi(this._months);e=g(r/60),t=g(e/60),r%=60,e%=60,n=g(s/12),s%=12;var a=n,o=s,u=i,l=t,c=e,f=r,d=this.asSeconds();return d?(0>d?"-":"")+"P"+(a?a+"Y":"")+(o?o+"M":"")+(u?u+"D":"")+(l||c||f?"T":"")+(l?l+"H":"")+(c?c+"M":"")+(f?f+"S":""):"P0D"}var Un,En,Cn=n.momentProperties=[],Vn=!1,Gn={},In={},Wn=/(\[[^\[]*\])|(\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Q|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g,Ln=/(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g,jn={},Hn={},Bn=/\d/,Zn=/\d\d/,zn=/\d{3}/,qn=/\d{4}/,Jn=/[+-]?\d{6}/,Qn=/\d\d?/,Xn=/\d{1,3}/,Kn=/\d{1,4}/,er=/[+-]?\d{1,6}/,tr=/\d+/,nr=/[+-]?\d+/,rr=/Z|[+-]\d\d:?\d\d/gi,ir=/[+-]?\d+(\.\d{1,3})?/,sr=/[0-9]*['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i,ar={},or={},ur=0,lr=1,cr=2,fr=3,dr=4,mr=5,hr=6;R("M",["MM",2],"Mo",function(){return this.month()+1}),R("MMM",0,0,function(e){return this.localeData().monthsShort(this,e)}),R("MMMM",0,0,function(e){return this.localeData().months(this,e)}),O("month","M"),I("M",Qn),I("MM",Qn,Zn),I("MMM",sr),I("MMMM",sr),j(["M","MM"],function(e,t){t[lr]=y(e)-1}),j(["MMM","MMMM"],function(e,t,n,r){var i=n._locale.monthsParse(e,r,n._strict);null!=i?t[lr]=i:f(n).invalidMonth=e});var pr="January_February_March_April_May_June_July_August_September_October_November_December".split("_"),vr="Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec".split("_"),gr={};n.suppressDeprecationWarnings=!1;var yr=/^\s*(?:[+-]\d{6}|\d{4})-(?:(\d\d-\d\d)|(W\d\d$)|(W\d\d-\d)|(\d\d\d))((T| )(\d\d(:\d\d(:\d\d(\.\d+)?)?)?)?([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/,_r=[["YYYYYY-MM-DD",/[+-]\d{6}-\d{2}-\d{2}/],["YYYY-MM-DD",/\d{4}-\d{2}-\d{2}/],["GGGG-[W]WW-E",/\d{4}-W\d{2}-\d/],["GGGG-[W]WW",/\d{4}-W\d{2}/],["YYYY-DDD",/\d{4}-\d{3}/]],Sr=[["HH:mm:ss.SSSS",/(T| )\d\d:\d\d:\d\d\.\d+/],["HH:mm:ss",/(T| )\d\d:\d\d:\d\d/],["HH:mm",/(T| )\d\d:\d\d/],["HH",/(T| )\d\d/]],Mr=/^\/?Date\((\-?\d+)/i;n.createFromInputFallback=ne("moment construction falls back to js Date. This is discouraged and will be removed in upcoming major release. Please refer to https://github.com/moment/moment/issues/1407 for more info.",function(e){e._d=new Date(e._i+(e._useUTC?" UTC":""))}),R(0,["YY",2],0,function(){return this.year()%100}),R(0,["YYYY",4],0,"year"),R(0,["YYYYY",5],0,"year"),R(0,["YYYYYY",6,!0],0,"year"),O("year","y"),I("Y",nr),I("YY",Qn,Zn),I("YYYY",Kn,qn),I("YYYYY",er,Jn),I("YYYYYY",er,Jn),j(["YYYYY","YYYYYY"],ur),j("YYYY",function(e,t){t[ur]=2===e.length?n.parseTwoDigitYear(e):y(e)}),j("YY",function(e,t){t[ur]=n.parseTwoDigitYear(e)}),n.parseTwoDigitYear=function(e){return y(e)+(y(e)>68?1900:2e3)};var kr=T("FullYear",!1);R("w",["ww",2],"wo","week"),R("W",["WW",2],"Wo","isoWeek"),O("week","w"),O("isoWeek","W"),I("w",Qn),I("ww",Qn,Zn),I("W",Qn),I("WW",Qn,Zn),H(["w","ww","W","WW"],function(e,t,n,r){t[r.substr(0,1)]=y(e)});var wr={dow:0,doy:6};R("DDD",["DDDD",3],"DDDo","dayOfYear"),O("dayOfYear","DDD"),I("DDD",Xn),I("DDDD",zn),j(["DDD","DDDD"],function(e,t,n){n._dayOfYear=y(e)}),n.ISO_8601=function(){};var Dr=ne("moment().min is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548",function(){var e=Pe.apply(null,arguments);return this>e?this:e}),br=ne("moment().max is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548",function(){var e=Pe.apply(null,arguments);return e>this?this:e});Ee("Z",":"),Ee("ZZ",""),I("Z",rr),I("ZZ",rr),j(["Z","ZZ"],function(e,t,n){n._useUTC=!0,n._tzm=Ce(e)});var Yr=/([\+\-]|\d\d)/gi;n.updateOffset=function(){};var Or=/(\-)?(?:(\d*)\.)?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/,$r=/^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;Xe.fn=Re.prototype;var Nr=nt(1,"add"),Tr=nt(-1,"subtract");n.defaultFormat="YYYY-MM-DDTHH:mm:ssZ";var Pr=ne("moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.",function(e){return void 0===e?this.localeData():this.locale(e)});R(0,["gg",2],0,function(){return this.weekYear()%100}),R(0,["GG",2],0,function(){return this.isoWeekYear()%100}),Pt("gggg","weekYear"),Pt("ggggg","weekYear"),Pt("GGGG","isoWeekYear"),Pt("GGGGG","isoWeekYear"),O("weekYear","gg"),O("isoWeekYear","GG"),I("G",nr),I("g",nr),I("GG",Qn,Zn),I("gg",Qn,Zn),I("GGGG",Kn,qn),I("gggg",Kn,qn),I("GGGGG",er,Jn),I("ggggg",er,Jn),H(["gggg","ggggg","GGGG","GGGGG"],function(e,t,n,r){t[r.substr(0,2)]=y(e)}),H(["gg","GG"],function(e,t,r,i){t[i]=n.parseTwoDigitYear(e)}),R("Q",0,0,"quarter"),O("quarter","Q"),I("Q",Bn),j("Q",function(e,t){t[lr]=3*(y(e)-1)}),R("D",["DD",2],"Do","date"),O("date","D"),I("D",Qn),I("DD",Qn,Zn),I("Do",function(e,t){return e?t._ordinalParse:t._ordinalParseLenient}),j(["D","DD"],cr),j("Do",function(e,t){t[cr]=y(e.match(Qn)[0],10)});var xr=T("Date",!0);R("d",0,"do","day"),R("dd",0,0,function(e){return this.localeData().weekdaysMin(this,e)}),R("ddd",0,0,function(e){return this.localeData().weekdaysShort(this,e)}),R("dddd",0,0,function(e){return this.localeData().weekdays(this,e)}),R("e",0,0,"weekday"),R("E",0,0,"isoWeekday"),O("day","d"),O("weekday","e"),O("isoWeekday","E"),I("d",Qn),I("e",Qn),I("E",Qn),I("dd",sr),I("ddd",sr),I("dddd",sr),H(["dd","ddd","dddd"],function(e,t,n){var r=n._locale.weekdaysParse(e);null!=r?t.d=r:f(n).invalidWeekday=e}),H(["d","e","E"],function(e,t,n,r){t[r]=y(e)});var Ar="Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"),Fr="Sun_Mon_Tue_Wed_Thu_Fri_Sat".split("_"),Rr="Su_Mo_Tu_We_Th_Fr_Sa".split("_");R("H",["HH",2],0,"hour"),R("h",["hh",2],0,function(){return this.hours()%12||12}),Bt("a",!0),Bt("A",!1),O("hour","h"),I("a",Zt),I("A",Zt),I("H",Qn),I("h",Qn),I("HH",Qn,Zn),I("hh",Qn,Zn),j(["H","HH"],fr),j(["a","A"],function(e,t,n){n._isPm=n._locale.isPM(e),n._meridiem=e}),j(["h","hh"],function(e,t,n){t[fr]=y(e),f(n).bigHour=!0});var Ur=/[ap]\.?m?\.?/i,Er=T("Hours",!0);R("m",["mm",2],0,"minute"),O("minute","m"),I("m",Qn),I("mm",Qn,Zn),j(["m","mm"],dr);var Cr=T("Minutes",!1);R("s",["ss",2],0,"second"),O("second","s"),I("s",Qn),I("ss",Qn,Zn),j(["s","ss"],mr);var Vr=T("Seconds",!1);R("S",0,0,function(){return~~(this.millisecond()/100)}),R(0,["SS",2],0,function(){return~~(this.millisecond()/10)}),R(0,["SSS",3],0,"millisecond"),R(0,["SSSS",4],0,function(){return 10*this.millisecond()}),R(0,["SSSSS",5],0,function(){return 100*this.millisecond()}),R(0,["SSSSSS",6],0,function(){return 1e3*this.millisecond()}),R(0,["SSSSSSS",7],0,function(){return 1e4*this.millisecond()}),R(0,["SSSSSSSS",8],0,function(){return 1e5*this.millisecond()}),R(0,["SSSSSSSSS",9],0,function(){return 1e6*this.millisecond()}),O("millisecond","ms"),I("S",Xn,Bn),I("SS",Xn,Zn),I("SSS",Xn,zn);var Gr;for(Gr="SSSS";Gr.length<=9;Gr+="S")I(Gr,tr);for(Gr="S";Gr.length<=9;Gr+="S")j(Gr,Jt);var Ir=T("Milliseconds",!1);R("z",0,0,"zoneAbbr"),R("zz",0,0,"zoneName");var Wr=p.prototype;Wr.add=Nr,Wr.calendar=it,Wr.clone=st,Wr.diff=ct,Wr.endOf=kt,Wr.format=ht,Wr.from=pt,Wr.fromNow=vt,Wr.to=gt,Wr.toNow=yt,Wr.get=A,Wr.invalidAt=Tt,Wr.isAfter=at,Wr.isBefore=ot,Wr.isBetween=ut,Wr.isSame=lt,Wr.isValid=$t,Wr.lang=Pr,Wr.locale=_t,Wr.localeData=St,Wr.max=br,Wr.min=Dr,Wr.parsingFlags=Nt,Wr.set=A,Wr.startOf=Mt,Wr.subtract=Tr,Wr.toArray=Yt,Wr.toObject=Ot,Wr.toDate=bt,Wr.toISOString=mt,Wr.toJSON=mt,Wr.toString=dt,Wr.unix=Dt,Wr.valueOf=wt,Wr.year=kr,Wr.isLeapYear=ce,Wr.weekYear=At,Wr.isoWeekYear=Ft,Wr.quarter=Wr.quarters=Et,Wr.month=X,Wr.daysInMonth=K,Wr.week=Wr.weeks=pe,Wr.isoWeek=Wr.isoWeeks=ve,Wr.weeksInYear=Ut,Wr.isoWeeksInYear=Rt,Wr.date=xr,Wr.day=Wr.days=Lt,Wr.weekday=jt,Wr.isoWeekday=Ht,Wr.dayOfYear=ye,Wr.hour=Wr.hours=Er,Wr.minute=Wr.minutes=Cr,Wr.second=Wr.seconds=Vr,Wr.millisecond=Wr.milliseconds=Ir,Wr.utcOffset=Ie,Wr.utc=Le,Wr.local=je,Wr.parseZone=He,Wr.hasAlignedHourOffset=Be,Wr.isDST=Ze,Wr.isDSTShifted=ze,Wr.isLocal=qe,Wr.isUtcOffset=Je,Wr.isUtc=Qe,Wr.isUTC=Qe,Wr.zoneAbbr=Qt,Wr.zoneName=Xt,Wr.dates=ne("dates accessor is deprecated. Use date instead.",xr),Wr.months=ne("months accessor is deprecated. Use month instead",X),Wr.years=ne("years accessor is deprecated. Use year instead",kr),Wr.zone=ne("moment().zone is deprecated, use moment().utcOffset instead. https://github.com/moment/moment/issues/1779",We);var Lr=Wr,jr={sameDay:"[Today at] LT",nextDay:"[Tomorrow at] LT",nextWeek:"dddd [at] LT",lastDay:"[Yesterday at] LT",lastWeek:"[Last] dddd [at] LT",sameElse:"L"},Hr={LTS:"h:mm:ss A",LT:"h:mm A",L:"MM/DD/YYYY",LL:"MMMM D, YYYY",LLL:"MMMM D, YYYY h:mm A",LLLL:"dddd, MMMM D, YYYY h:mm A"},Br="Invalid date",Zr="%d",zr=/\d{1,2}/,qr={future:"in %s",past:"%s ago",s:"a few seconds",m:"a minute",mm:"%d minutes",h:"an hour",hh:"%d hours",d:"a day",dd:"%d days",M:"a month",MM:"%d months",y:"a year",yy:"%d years"},Jr=S.prototype;Jr._calendar=jr,Jr.calendar=tn,Jr._longDateFormat=Hr,Jr.longDateFormat=nn,Jr._invalidDate=Br,Jr.invalidDate=rn,Jr._ordinal=Zr,Jr.ordinal=sn,Jr._ordinalParse=zr,Jr.preparse=an,Jr.postformat=an,Jr._relativeTime=qr,Jr.relativeTime=on,Jr.pastFuture=un,Jr.set=ln,Jr.months=z,Jr._months=pr,Jr.monthsShort=q,Jr._monthsShort=vr,Jr.monthsParse=J,Jr.week=de,Jr._week=wr,Jr.firstDayOfYear=he,Jr.firstDayOfWeek=me,Jr.weekdays=Vt,Jr._weekdays=Ar,Jr.weekdaysMin=It,Jr._weekdaysMin=Rr,Jr.weekdaysShort=Gt,Jr._weekdaysShort=Fr,Jr.weekdaysParse=Wt,Jr.isPM=zt,Jr._meridiemParse=Ur,Jr.meridiem=qt,D("en",{ordinalParse:/\d{1,2}(th|st|nd|rd)/,ordinal:function(e){var t=e%10,n=1===y(e%100/10)?"th":1===t?"st":2===t?"nd":3===t?"rd":"th";return e+n}}),n.lang=ne("moment.lang is deprecated. Use moment.locale instead.",D),n.langData=ne("moment.langData is deprecated. Use moment.localeData instead.",Y);var Qr=Math.abs,Xr=On("ms"),Kr=On("s"),ei=On("m"),ti=On("h"),ni=On("d"),ri=On("w"),ii=On("M"),si=On("y"),ai=Nn("milliseconds"),oi=Nn("seconds"),ui=Nn("minutes"),li=Nn("hours"),ci=Nn("days"),fi=Nn("months"),di=Nn("years"),mi=Math.round,hi={s:45,m:45,h:22,d:26,M:11},pi=Math.abs,vi=Re.prototype;vi.abs=gn,vi.add=_n,vi.subtract=Sn,vi.as=bn,vi.asMilliseconds=Xr,vi.asSeconds=Kr,vi.asMinutes=ei,vi.asHours=ti,vi.asDays=ni,vi.asWeeks=ri,vi.asMonths=ii,vi.asYears=si,vi.valueOf=Yn,vi._bubble=kn,vi.get=$n,vi.milliseconds=ai,vi.seconds=oi,vi.minutes=ui,vi.hours=li,vi.days=ci,vi.weeks=Tn,vi.months=fi,vi.years=di,vi.humanize=Fn,vi.toISOString=Rn,vi.toString=Rn,vi.toJSON=Rn,vi.locale=_t,vi.localeData=St,vi.toIsoString=ne("toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)",Rn),vi.lang=Pr,R("X",0,0,"unix"),R("x",0,0,"valueOf"),I("x",nr),I("X",ir),j("X",function(e,t,n){n._d=new Date(1e3*parseFloat(e,10))}),j("x",function(e,t,n){n._d=new Date(y(e))}),n.version="2.10.6",r(Pe),n.fn=Lr,n.min=Ae,n.max=Fe,n.utc=l,n.unix=Kt,n.months=dn,n.isDate=s,n.locale=D,n.invalid=m,n.duration=Xe,n.isMoment=v,n.weekdays=hn,n.parseZone=en,n.localeData=Y,n.isDuration=Ue,n.monthsShort=mn,n.weekdaysMin=vn,n.defineLocale=b,n.weekdaysShort=pn,n.normalizeUnits=$,n.relativeTimeThreshold=An;var gi=n;return gi})},{}],3:[function(e,t,n){!function(e,r){"function"==typeof define&&define.amd?define([],r):"object"==typeof n?t.exports=r():e.StringMask=r()}(this,function(){function e(e,t){for(var n=0,r=t-1,i={escape:!0};r>=0&&i&&i.escape;)i=a[e.charAt(r)],n+=i&&i.escape?1:0,r--;return n>0&&n%2===1}function t(e,t){var n=e.replace(/[^0]/g,"").length,r=t.replace(/[^\d]/g,"").length;return r-n}function n(e,t,n,r){return r&&"function"==typeof r.transform&&(t=r.transform(t)),n.reverse?t+e:e+t}function r(e,t,n){var i=e.charAt(t),s=a[i];return""===i?!1:s&&!s.escape?!0:r(e,t+n,n)}function i(e,t,n){var r=e.split("");return r.splice(n>=0?n:0,0,t),r.join("")}function s(e,t){this.options=t||{},this.options={reverse:this.options.reverse||!1,usedefaults:this.options.usedefaults||this.options.reverse},this.pattern=e}var a={0:{pattern:/\d/,_default:"0"},9:{pattern:/\d/,optional:!0},"#":{pattern:/\d/,optional:!0,recursive:!0},S:{pattern:/[a-zA-Z]/},U:{pattern:/[a-zA-Z]/,transform:function(e){return e.toLocaleUpperCase()}},L:{pattern:/[a-zA-Z]/,transform:function(e){return e.toLocaleLowerCase()}},$:{escape:!0}};return s.prototype.process=function(s){function o(e){if(!p&&r(u,g,v.inc))return!0;if(p||(p=h.length>0),p){var t=h.shift();if(h.push(t),e.reverse&&f>=0)return g++,u=i(u,t,g),!0;if(!e.reverse&&f<s.length)return u=i(u,t,g),!0}return g<u.length&&g>=0}if(!s)return"";s+="";for(var u=this.pattern,l=!0,c="",f=this.options.reverse?s.length-1:0,d=t(u,s),m=!1,h=[],p=!1,v={start:this.options.reverse?u.length-1:0,end:this.options.reverse?-1:u.length,inc:this.options.reverse?-1:1},g=v.start;o(this.options);g+=v.inc){var y=u.charAt(g),_=s.charAt(f),S=a[y];if(!p||_){if(this.options.reverse&&e(u,g)){c=n(c,y,this.options,S),g+=v.inc;continue}if(!this.options.reverse&&m){c=n(c,y,this.options,S),m=!1;continue}if(!this.options.reverse&&S&&S.escape){m=!0;continue}}if(!p&&S&&S.recursive)h.push(y);else{if(p&&!_){S&&S.recursive||(c=n(c,y,this.options,S));continue}if(h.length>0&&S&&!S.recursive){l=!1;continue}if(!p&&h.length>0&&!_)continue}if(S)if(S.optional){if(S.pattern.test(_)&&d)c=n(c,_,this.options,S),f+=v.inc,d--;else if(h.length>0&&_){l=!1;break}}else if(S.pattern.test(_))c=n(c,_,this.options,S),f+=v.inc;else{if(_||!S._default||!this.options.usedefaults){l=!1;break}c=n(c,S._default,this.options,S)}else c=n(c,y,this.options,S),!p&&h.length&&h.push(y)}return{result:c,valid:l}},s.prototype.apply=function(e){return this.process(e).result},s.prototype.validate=function(e){return this.process(e).valid},s.process=function(e,t,n){return new s(t,n).process(e)},s.apply=function(e,t,n){return new s(t,n).apply(e)},s.validate=function(e,t,n){return new s(t,n).validate(e)},s})},{}],4:[function(e,t,n){t.exports=angular.module("ui.utils.masks",[e("./global/global-masks"),e("./br/br-masks"),e("./us/us-masks")]).name},{"./br/br-masks":6,"./global/global-masks":15,"./us/us-masks":23}],5:[function(e,t,n){var r=e("string-mask"),i=e("mask-factory"),s=new r("00000.00000 00000.000000 00000.000000 0 00000000000000");t.exports=i({clearValue:function(e){return e.replace(/[^0-9]/g,"").slice(0,47)},format:function(e){return 0===e.length?e:s.apply(e).replace(/[^0-9]$/,"")},validations:{brBoletoBancario:function(e){return 47===e.length}}})},{"mask-factory":"mask-factory","string-mask":3}],6:[function(e,t,n){var r=angular.module("ui.utils.masks.br",[e("../helpers")]).directive("uiBrBoletoBancarioMask",e("./boleto-bancario/boleto-bancario")).directive("uiBrCepMask",e("./cep/cep")).directive("uiBrCnpjMask",e("./cnpj/cnpj")).directive("uiBrCpfMask",e("./cpf/cpf")).directive("uiBrCpfcnpjMask",e("./cpf-cnpj/cpf-cnpj")).directive("uiBrIeMask",e("./inscricao-estadual/ie")).directive("uiNfeAccessKeyMask",e("./nfe/nfe")).directive("uiBrPhoneNumber",e("./phone/br-phone"));t.exports=r.name},{"../helpers":21,"./boleto-bancario/boleto-bancario":5,"./cep/cep":7,"./cnpj/cnpj":8,"./cpf-cnpj/cpf-cnpj":9,"./cpf/cpf":10,"./inscricao-estadual/ie":11,"./nfe/nfe":12,"./phone/br-phone":13}],7:[function(e,t,n){var r=e("string-mask"),i=e("mask-factory"),s=new r("00000-000");t.exports=i({clearValue:function(e){return e.replace(/[^0-9]/g,"").slice(0,8)},format:function(e){return(s.apply(e)||"").replace(/[^0-9]$/,"")},validations:{cep:function(e){return 8===e.length}}})},{"mask-factory":"mask-factory","string-mask":3}],8:[function(e,t,n){var r=e("string-mask"),i=e("br-validations"),s=e("mask-factory"),a=new r("00.000.000/0000-00");t.exports=s({clearValue:function(e){return e.replace(/[^\d]/g,"").slice(0,14)},format:function(e){return(a.apply(e)||"").trim().replace(/[^0-9]$/,"")},validations:{cnpj:function(e){return i.cnpj.validate(e)}}})},{"br-validations":1,"mask-factory":"mask-factory","string-mask":3}],9:[function(e,t,n){var r=e("string-mask"),i=e("br-validations"),s=e("mask-factory"),a=new r("00.000.000/0000-00"),o=new r("000.000.000-00");t.exports=s({clearValue:function(e){return e.replace(/[^\d]/g,"").slice(0,14)},format:function(e){var t;return t=e.length>11?a.apply(e):o.apply(e)||"",t.trim().replace(/[^0-9]$/,"")},validations:{cpf:function(e){return e.length>11||i.cpf.validate(e)},cnpj:function(e){return e.length<=11||i.cnpj.validate(e)}}})},{"br-validations":1,"mask-factory":"mask-factory","string-mask":3}],10:[function(e,t,n){var r=e("string-mask"),i=e("br-validations"),s=e("mask-factory"),a=new r("000.000.000-00");t.exports=s({clearValue:function(e){return e.replace(/[^\d]/g,"").slice(0,11)},format:function(e){return(a.apply(e)||"").trim().replace(/[^0-9]$/,"")},validations:{cpf:function(e){return i.cpf.validate(e)}}})},{"br-validations":1,"mask-factory":"mask-factory","string-mask":3}],11:[function(e,t,n){function r(e){function t(e){return e?e.replace(/[^0-9]/g,""):e}function n(e,n){if(!e||!a[e])return void 0;if("SP"===e&&/^P/i.test(n))return a.SP[1].mask;for(var r=a[e],i=0;r[i].chars&&r[i].chars<t(n).length&&i<r.length-1;)i++;return r[i].mask}function r(e,r){var i=n(r,e);if(!i)return e;var s=i.process(t(e)),a=s.result||"";return a=a.trim().replace(/[^0-9]$/,""),"SP"===r&&/^p/i.test(e)?"P"+a:a}var a={AC:[{mask:new i("00.000.000/000-00")}],AL:[{mask:new i("000000000")}],AM:[{mask:new i("00.000.000-0")}],AP:[{mask:new i("000000000")}],BA:[{chars:8,mask:new i("000000-00")},{mask:new i("0000000-00")}],CE:[{mask:new i("00000000-0")}],DF:[{mask:new i("00000000000-00")}],ES:[{mask:new i("00000000-0")}],GO:[{mask:new i("00.000.000-0")}],MA:[{mask:new i("000000000")}],MG:[{mask:new i("000.000.000/0000")}],MS:[{mask:new i("000000000")}],MT:[{mask:new i("0000000000-0")}],PA:[{mask:new i("00-000000-0")}],PB:[{mask:new i("00000000-0")}],PE:[{chars:9,mask:new i("0000000-00")},{mask:new i("00.0.000.0000000-0")}],PI:[{mask:new i("000000000")}],PR:[{mask:new i("000.00000-00")}],RJ:[{mask:new i("00.000.00-0")}],RN:[{chars:9,mask:new i("00.000.000-0")},{mask:new i("00.0.000.000-0")}],RO:[{mask:new i("0000000000000-0")}],RR:[{mask:new i("00000000-0")}],RS:[{mask:new i("000/0000000")}],SC:[{mask:new i("000.000.000")}],SE:[{mask:new i("00000000-0")}],SP:[{mask:new i("000.000.000.000")},{mask:new i("-00000000.0/000")}],TO:[{mask:new i("00000000000")}]};return{restrict:"A",require:"ngModel",link:function(n,i,a,o){function u(e){return o.$isEmpty(e)?e:r(e,c)}function l(e){if(o.$isEmpty(e))return e;var n=r(e,c),i=t(n);return o.$viewValue!==n&&(o.$setViewValue(n),o.$render()),c&&"SP"===c.toUpperCase()&&/^p/i.test(e)?"P"+i:i}var c=(e(a.uiBrIeMask)(n)||"").toUpperCase();o.$formatters.push(u),o.$parsers.push(l),o.$validators.ie=function(e){return o.$isEmpty(e)||s.ie(c).validate(e)},n.$watch(a.uiBrIeMask,function(e){c=(e||"").toUpperCase(),l(o.$viewValue),o.$validate()})}}}var i=e("string-mask"),s=e("br-validations");r.$inject=["$parse"],t.exports=r},{"br-validations":1,"string-mask":3}],12:[function(e,t,n){var r=e("string-mask"),i=e("mask-factory"),s=new r("0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000");t.exports=i({clearValue:function(e){return e.replace(/[^0-9]/g,"").slice(0,44)},format:function(e){return(s.apply(e)||"").replace(/[^0-9]$/,"")},validations:{nfeAccessKey:function(e){return 44===e.length}}})},{"mask-factory":"mask-factory","string-mask":3}],13:[function(e,t,n){var r=e("string-mask"),i=e("mask-factory"),s=new r("(00) 0000-0000"),a=new r("(00) 00000-0000"),o=new r("0000-000-0000");t.exports=i({clearValue:function(e){return e.toString().replace(/[^0-9]/g,"").slice(0,11)},format:function(e){var t;return t=0===e.indexOf("0800")?o.apply(e):e.length<11?s.apply(e)||"":a.apply(e),t.trim().replace(/[^0-9]$/,"")},getModelValue:function(e,t){var n=this.clearValue(e);return"number"===t?parseInt(n):n},validations:{brPhoneNumber:function(e){var t=e&&e.toString().length;return 10===t||11===t}}})},{"mask-factory":"mask-factory","string-mask":3}],14:[function(e,t,n){function r(e){var t={"pt-br":"DD/MM/YYYY"},n=t[e.id]||"YYYY-MM-DD";return{restrict:"A",require:"ngModel",link:function(e,t,r,a){function o(e){if(a.$isEmpty(e))return e;var t=e;"object"==typeof e&&(t=i(e).format(n)),t=t.replace(/[^0-9]/g,"");var r=u.apply(t)||"";return r.trim().replace(/[^0-9]$/,"")}var u=new s(n.replace(/[YMD]/g,"0"));a.$formatters.push(o),a.$parsers.push(function(e){if(a.$isEmpty(e))return e;var t=o(e);return a.$viewValue!==t&&(a.$setViewValue(t),a.$render()),i(t,n).toDate()}),a.$validators.date=function(e,t){return a.$isEmpty(e)?!0:i(t,n).isValid()&&t.length===n.length}}}}var i=e("moment"),s=e("string-mask");r.$inject=["$locale"],t.exports=r},{moment:2,"string-mask":3}],15:[function(e,t,n){var r=angular.module("ui.utils.masks.global",[e("../helpers")]).directive("uiDateMask",e("./date/date")).directive("uiMoneyMask",e("./money/money")).directive("uiNumberMask",e("./number/number")).directive("uiPercentageMask",e("./percentage/percentage")).directive("uiScientificNotationMask",e("./scientific-notation/scientific-notation")).directive("uiTimeMask",e("./time/time"));t.exports=r.name},{"../helpers":21,"./date/date":14,"./money/money":16,"./number/number":17,"./percentage/percentage":18,"./scientific-notation/scientific-notation":19,"./time/time":20}],16:[function(e,t,n){function r(e,t,n){return{restrict:"A",require:"ngModel",link:function(r,a,o,u){function l(e){var t=e>0?d+new Array(e+1).join("0"):"",n=h+" #"+m+"##0"+t;return new i(n,{reverse:!0})}function c(e){if(u.$isEmpty(e))return e;var t=angular.isDefined(o.uiNegativeNumber)&&0>e?"-":"",r=n.prepareNumberToFormatter(e,p);return t+v.apply(r)}function f(e){if(u.$isEmpty(e))return e;var t=e.replace(/[^\d]+/g,"");t=t.replace(/^[0]+([1-9])/,"$1");var n=v.apply(t);if(angular.isDefined(o.uiNegativeNumber)){var r="-"===e[0],i="-"===e.slice(-1);i^r&&t&&(t*=-1,n="-"+n)}return e!==n&&(u.$setViewValue(n),u.$render()),n?parseInt(n.replace(/[^\d\-]+/g,""))/Math.pow(10,p):null}var d=e.NUMBER_FORMATS.DECIMAL_SEP,m=e.NUMBER_FORMATS.GROUP_SEP,h=e.NUMBER_FORMATS.CURRENCY_SYM,p=t(o.uiMoneyMask)(r);angular.isDefined(o.uiHideGroupSep)&&(m=""),isNaN(p)&&(p=2);var v=l(p);if(u.$formatters.push(c),u.$parsers.push(f),o.uiMoneyMask&&r.$watch(o.uiMoneyMask,function(e){p=isNaN(e)?2:e,v=l(p),f(u.$viewValue)}),o.min){var g;u.$validators.min=function(e){return s.minNumber(u,e,g)},r.$watch(o.min,function(e){g=e,u.$validate()})}if(o.max){var y;u.$validators.max=function(e){return s.maxNumber(u,e,y)},r.$watch(o.max,function(e){y=e,u.$validate()})}}}}var i=e("string-mask"),s=e("validators");r.$inject=["$locale","$parse","PreFormatters"],t.exports=r},{"string-mask":3,validators:"validators"}],17:[function(e,t,n){function r(e,t,n,r){return{restrict:"A",require:"ngModel",link:function(s,a,o,u){function l(e){if(u.$isEmpty(e))return null;var t=n.clearDelimitersAndLeadingZeros(e)||"0",r=h.apply(t),i=parseFloat(p.apply(t));if(angular.isDefined(o.uiNegativeNumber)){var s="-"===e[0],a="-"===e.slice(-1);a^s&&i&&(i*=-1,r="-"+r)}return u.$viewValue!==r&&(u.$setViewValue(r),u.$render()),i}function c(e){if(u.$isEmpty(e))return e;var t=angular.isDefined(o.uiNegativeNumber)&&0>e?"-":"",r=n.prepareNumberToFormatter(e,m);return t+h.apply(r)}var f=e.NUMBER_FORMATS.DECIMAL_SEP,d=e.NUMBER_FORMATS.GROUP_SEP,m=t(o.uiNumberMask)(s);angular.isDefined(o.uiHideGroupSep)&&(d=""),isNaN(m)&&(m=2);var h=r.viewMask(m,f,d),p=r.modelMask(m);if(u.$formatters.push(c),u.$parsers.push(l),o.uiNumberMask&&s.$watch(o.uiNumberMask,function(e){m=isNaN(e)?2:e,h=r.viewMask(m,f,d),p=r.modelMask(m),l(u.$viewValue)}),o.min){var v;u.$validators.min=function(e){return i.minNumber(u,e,v)},s.$watch(o.min,function(e){v=e,u.$validate()})}if(o.max){var g;u.$validators.max=function(e){return i.maxNumber(u,e,g)},s.$watch(o.max,function(e){g=e,u.$validate()})}}}}var i=e("validators");r.$inject=["$locale","$parse","PreFormatters","NumberMasks"],t.exports=r},{validators:"validators"}],18:[function(e,t,n){function r(e,t,n,r){function s(e,t,r){return n.clearDelimitersAndLeadingZeros((parseFloat(e)*r).toFixed(t))}return{restrict:"A",require:"ngModel",link:function(t,a,o,u){function l(e){if(u.$isEmpty(e))return e;var t=s(e,m,h.multiplier);return v.apply(t)+" %"}function c(e){if(u.$isEmpty(e))return null;var t=n.clearDelimitersAndLeadingZeros(e)||"0";e.length>1&&-1===e.indexOf("%")&&(t=t.slice(0,t.length-1));var r=v.apply(t)+" %",i=parseFloat(g.apply(t));return u.$viewValue!==r&&(u.$setViewValue(r),u.$render()),i}var f=e.NUMBER_FORMATS.DECIMAL_SEP,d=e.NUMBER_FORMATS.GROUP_SEP,m=parseInt(o.uiPercentageMask),h={multiplier:100,decimalMask:2};angular.isDefined(o.uiHideGroupSep)&&(d=""),angular.isDefined(o.uiPercentageValue)&&(h.multiplier=1,h.decimalMask=0),isNaN(m)&&(m=2);var p=m+h.decimalMask,v=r.viewMask(m,f,d),g=r.modelMask(p);if(u.$formatters.push(l),u.$parsers.push(c),o.uiPercentageMask&&t.$watch(o.uiPercentageMask,function(e){m=isNaN(e)?2:e,angular.isDefined(o.uiPercentageValue)&&(h.multiplier=1,h.decimalMask=0),p=m+h.decimalMask,v=r.viewMask(m,f,d),g=r.modelMask(p),c(u.$viewValue)}),o.min){var y;u.$validators.min=function(e){return i.minNumber(u,e,y)},t.$watch(o.min,function(e){y=e,u.$validate()})}if(o.max){var _;u.$validators.max=function(e){return i.maxNumber(u,e,_)},t.$watch(o.max,function(e){_=e,u.$validate()})}}}}var i=e("validators");r.$inject=["$locale","$parse","PreFormatters","NumberMasks"],t.exports=r},{validators:"validators"}],19:[function(e,t,n){function r(e,t){function n(e){var t="0";if(e>0){t+=r;for(var n=0;e>n;n++)t+="0"}return new i(t,{reverse:!0})}var r=e.NUMBER_FORMATS.DECIMAL_SEP,s=2;return{restrict:"A",require:"ngModel",link:function(e,i,a,o){function u(e){var t=e.toString(),n=t.match(/(-?[0-9]*)[\.]?([0-9]*)?[Ee]?([\+-]?[0-9]*)?/);return{integerPartOfSignificand:n[1],decimalPartOfSignificand:n[2],exponent:0|n[3]}}function l(e){if(o.$isEmpty(e))return e;"string"==typeof e?e=e.replace(r,"."):"number"==typeof e&&(e=e.toExponential(f));var t,n,i=u(e),s=i.integerPartOfSignificand||0,a=s.toString();angular.isDefined(i.decimalPartOfSignificand)&&(a+=i.decimalPartOfSignificand);var l=(s>=1||-1>=s)&&(angular.isDefined(i.decimalPartOfSignificand)&&i.decimalPartOfSignificand.length>f||0===f&&a.length>=2);return l&&(n=a.slice(f+1,a.length),a=a.slice(0,f+1)),t=d.apply(a),0!==i.exponent&&(n=i.exponent),angular.isDefined(n)&&(t+="e"+n),t}function c(e){if(o.$isEmpty(e))return e;var t=l(e),n=parseFloat(t.replace(r,"."));return o.$viewValue!==t&&(o.$setViewValue(t),o.$render()),n}var f=t(a.uiScientificNotationMask)(e);isNaN(f)&&(f=s);var d=n(f);o.$formatters.push(l),o.$parsers.push(c),o.$validators.max=function(e){return o.$isEmpty(e)||e<Number.MAX_VALUE}}}}var i=e("string-mask");r.$inject=["$locale","$parse"],t.exports=r},{"string-mask":3}],20:[function(e,t,n){var r=e("string-mask");t.exports=function(){return{restrict:"A",require:"ngModel",link:function(e,t,n,i){function s(e){if(i.$isEmpty(e))return e;var t=e.replace(/[^0-9]/g,"").slice(0,u)||"";return(l.apply(t)||"").replace(/[^0-9]$/,"")}var a="00:00:00";angular.isDefined(n.uiTimeMask)&&"short"===n.uiTimeMask&&(a="00:00");var o=a.length,u=a.replace(":","").length,l=new r(a);i.$formatters.push(s),i.$parsers.push(function(e){if(i.$isEmpty(e))return e;var t=s(e),n=t;return i.$viewValue!==t&&(i.$setViewValue(t),i.$render()),n}),i.$validators.time=function(e){if(i.$isEmpty(e))return!0;var t=e.toString().split(/:/).filter(function(e){return!!e}),n=parseInt(t[0]),r=parseInt(t[1]),s=parseInt(t[2]||0);return e.toString().length===o&&24>n&&60>r&&60>s}}}}},{"string-mask":3}],21:[function(e,t,n){var r=e("string-mask"),i=angular.module("ui.utils.masks.helpers",[]);t.exports=i.name,i.factory("PreFormatters",[function(){function e(e){if("0"===e)return"0";var t=e.replace(/^-/,"").replace(/^0*/,"");return t.replace(/[^0-9]/g,"")}function t(t,n){return e(parseFloat(t).toFixed(n))}return{clearDelimitersAndLeadingZeros:e,prepareNumberToFormatter:t}}]).factory("NumberValidators",[function(){return{maxNumber:function(e,t,n){var r=parseFloat(n),i=e.$isEmpty(t)||isNaN(r)||r>=t;return e.$setValidity("max",i),t},minNumber:function(e,t,n){var r=parseFloat(n),i=e.$isEmpty(t)||isNaN(r)||t>=r;return e.$setValidity("min",i),t}}}]).factory("NumberMasks",[function(){return{viewMask:function(e,t,n){var i="#"+n+"##0";if(e>0){i+=t;for(var s=0;e>s;s++)i+="0"}return new r(i,{reverse:!0})},modelMask:function(e){var t="###0";if(e>0){t+=".";for(var n=0;e>n;n++)t+="0"}return new r(t,{reverse:!0})}}}])},{"string-mask":3}],22:[function(e,t,n){var r=e("string-mask"),i=e("mask-factory"),s=new r("(000) 000-0000"),a=new r("+00-00-000-000000");t.exports=i({clearValue:function(e){return e.toString().replace(/[^0-9]/g,"")},format:function(e){var t;return t=e.length<11?s.apply(e)||"":a.apply(e),t.trim().replace(/[^0-9]$/,"")},validations:{usPhoneNumber:function(e){return e.length>9}}})},{"mask-factory":"mask-factory","string-mask":3}],23:[function(e,t,n){var r=angular.module("ui.utils.masks.us",[e("../helpers")]).directive("uiUsPhoneNumber",e("./phone/us-phone"));t.exports=r.name},{"../helpers":21,"./phone/us-phone":22}],"mask-factory":[function(e,t,n){t.exports=function(e){return function(){return{restrict:"A",require:"ngModel",link:function(t,n,r,i){i.$formatters.push(function(t){if(i.$isEmpty(t))return t;var n=e.clearValue(t);return e.format(n)}),i.$parsers.push(function(t){if(i.$isEmpty(t))return t;var n=e.clearValue(t),r=e.format(n);if(i.$viewValue!==r&&(i.$setViewValue(r),i.$render()),angular.isUndefined(e.getModelValue))return n;var s=typeof i.$modelValue;return e.getModelValue(r,s)}),angular.forEach(e.validations,function(e,t){i.$validators[t]=function(t,n){return i.$isEmpty(t)||e(t,n)}})}}}}},{}],validators:[function(e,t,n){t.exports={maxNumber:function(e,t,n){var r=parseFloat(n,10);return e.$isEmpty(t)||isNaN(r)||r>=t},minNumber:function(e,t,n){var r=parseFloat(n,10);return e.$isEmpty(t)||isNaN(r)||t>=r}}},{}]},{},[4]);
 /**
  * @license AngularJS v1.4.9
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -105208,6 +106819,736 @@ if (typeof jQuery === 'undefined') {
   }
 }.call(this));
 
+(function() {
+  'use strict';
+  angular.module('ngMask', []);
+})();(function() {
+  'use strict';
+  angular.module('ngMask')
+    .directive('mask', ['$log', '$timeout', 'MaskService', function($log, $timeout, MaskService) {
+      return {
+        restrict: 'A',
+        require: 'ngModel',
+        compile: function($element, $attrs) { 
+         if (!$attrs.mask || !$attrs.ngModel) {
+            $log.info('Mask and ng-model attributes are required!');
+            return;
+          }
+
+          var maskService = MaskService.create();
+          var timeout;
+          var promise;
+
+          function setSelectionRange(selectionStart){
+            if (typeof selectionStart !== 'number') {
+              return;
+            }
+
+            // using $timeout:
+            // it should run after the DOM has been manipulated by Angular
+            // and after the browser renders (which may cause flicker in some cases)
+            $timeout.cancel(timeout);
+            timeout = $timeout(function(){
+              var selectionEnd = selectionStart + 1;
+              var input = $element[0];
+
+              if (input.setSelectionRange) {
+                input.focus();
+                input.setSelectionRange(selectionStart, selectionEnd);
+              } else if (input.createTextRange) {
+                var range = input.createTextRange();
+
+                range.collapse(true);
+                range.moveEnd('character', selectionEnd);
+                range.moveStart('character', selectionStart);
+                range.select();
+              }
+            });
+          }
+
+          return {
+            pre: function($scope, $element, $attrs, controller) {
+              promise = maskService.generateRegex({
+                mask: $attrs.mask,
+                // repeat mask expression n times
+                repeat: ($attrs.repeat || $attrs.maskRepeat),
+                // clean model value - without divisors
+                clean: (($attrs.clean || $attrs.maskClean) === 'true'),
+                // limit length based on mask length
+                limit: (($attrs.limit || $attrs.maskLimit || 'true') === 'true'),
+                // how to act with a wrong value
+                restrict: ($attrs.restrict || $attrs.maskRestrict || 'select'), //select, reject, accept
+                // set validity mask
+                validate: (($attrs.validate || $attrs.maskValidate || 'true') === 'true'),
+                // default model value
+                model: $attrs.ngModel,
+                // default input value
+                value: $attrs.ngValue
+              });
+            },
+            post: function($scope, $element, $attrs, controller) {
+              promise.then(function() {
+                // get initial options
+                var timeout;
+                var options = maskService.getOptions();
+
+                function parseViewValue(value) {
+                  var untouchedValue = value;
+                  // set default value equal 0
+                  value = value || '';
+
+                  // get view value object
+                  var viewValue = maskService.getViewValue(value);
+
+                  // get mask without question marks
+                  var maskWithoutOptionals = options['maskWithoutOptionals'] || '';
+
+                  // get view values capped
+                  // used on view
+                  var viewValueWithDivisors = viewValue.withDivisors(true);
+                  // used on model
+                  var viewValueWithoutDivisors = viewValue.withoutDivisors(true);
+
+                  try {
+                    // get current regex
+                    var regex = maskService.getRegex(viewValueWithDivisors.length - 1);
+                    var fullRegex = maskService.getRegex(maskWithoutOptionals.length - 1);
+
+                    // current position is valid
+                    var validCurrentPosition = regex.test(viewValueWithDivisors) || fullRegex.test(viewValueWithDivisors);
+
+                    // difference means for select option
+                    var diffValueAndViewValueLengthIsOne = (value.length - viewValueWithDivisors.length) === 1;
+                    var diffMaskAndViewValueIsGreaterThanZero = (maskWithoutOptionals.length - viewValueWithDivisors.length) > 0;
+
+                    if (options.restrict !== 'accept') {
+                      if (options.restrict === 'select' && (!validCurrentPosition || diffValueAndViewValueLengthIsOne)) {
+                        var lastCharInputed = value[(value.length-1)];
+                        var lastCharGenerated = viewValueWithDivisors[(viewValueWithDivisors.length-1)];
+
+                        if ((lastCharInputed !== lastCharGenerated) && diffMaskAndViewValueIsGreaterThanZero) {
+                          viewValueWithDivisors = viewValueWithDivisors + lastCharInputed;
+                        }
+
+                        var wrongPosition = maskService.getFirstWrongPosition(viewValueWithDivisors);
+                        if (angular.isDefined(wrongPosition)) {
+                          setSelectionRange(wrongPosition);
+                        }
+                      } else if (options.restrict === 'reject' && !validCurrentPosition) {
+                        viewValue = maskService.removeWrongPositions(viewValueWithDivisors);
+                        viewValueWithDivisors = viewValue.withDivisors(true);
+                        viewValueWithoutDivisors = viewValue.withoutDivisors(true);
+
+                        // setSelectionRange(viewValueWithDivisors.length);
+                      }
+                    }
+
+                    if (!options.limit) {
+                      viewValueWithDivisors = viewValue.withDivisors(false);
+                      viewValueWithoutDivisors = viewValue.withoutDivisors(false);
+                    }
+
+                    // Set validity
+                    if (options.validate && controller.$dirty) {
+                      if (fullRegex.test(viewValueWithDivisors) || controller.$isEmpty(untouchedValue)) {
+                        controller.$setValidity('mask', true);
+                      } else {
+                        controller.$setValidity('mask', false);
+                      }
+                    }
+
+                    // Update view and model values
+                    if(value !== viewValueWithDivisors){
+                      controller.$setViewValue(angular.copy(viewValueWithDivisors), 'input');
+                      controller.$render();
+                    }
+                  } catch (e) {
+                    $log.error('[mask - parseViewValue]');
+                    throw e;
+                  }
+
+                  // Update model, can be different of view value
+                  if (options.clean) {
+                    return viewValueWithoutDivisors;
+                  } else {
+                    return viewValueWithDivisors;
+                  }
+                }
+
+                controller.$parsers.push(parseViewValue);
+
+                $element.on('click input paste keyup', function() {
+                  timeout = $timeout(function() {
+                    // Manual debounce to prevent multiple execution
+                    $timeout.cancel(timeout);
+
+                    parseViewValue($element.val());
+                    $scope.$apply();
+                  }, 100);
+                });
+
+                // Register the watch to observe remote loading or promised data
+                // Deregister calling returned function
+                var watcher = $scope.$watch($attrs.ngModel, function (newValue, oldValue) {
+                  if (angular.isDefined(newValue)) {
+                    parseViewValue(newValue);
+                    watcher();
+                  }
+                });
+
+                // $evalAsync from a directive
+                // it should run after the DOM has been manipulated by Angular
+                // but before the browser renders
+                if(options.value) {
+                  $scope.$evalAsync(function($scope) {
+                    controller.$setViewValue(angular.copy(options.value), 'input');
+                    controller.$render();
+                  });
+                }
+              });
+            }
+          }
+        }
+      }
+    }]);
+})();
+(function() {
+  'use strict';
+  angular.module('ngMask')
+    .factory('MaskService', ['$q', 'OptionalService', 'UtilService', function($q, OptionalService, UtilService) {
+      function create() {
+        var options;
+        var maskWithoutOptionals;
+        var maskWithoutOptionalsLength = 0;
+        var maskWithoutOptionalsAndDivisorsLength = 0;
+        var optionalIndexes = [];
+        var optionalDivisors = {};
+        var optionalDivisorsCombinations = [];
+        var divisors = [];
+        var divisorElements = {};
+        var regex = [];
+        var patterns = {
+          '9': /[0-9]/,
+          '8': /[0-8]/,
+          '7': /[0-7]/,
+          '6': /[0-6]/,
+          '5': /[0-5]/,
+          '4': /[0-4]/,
+          '3': /[0-3]/,
+          '2': /[0-2]/,
+          '1': /[0-1]/,
+          '0': /[0]/,
+          '*': /./,
+          'w': /\w/,
+          'W': /\W/,
+          'd': /\d/,
+          'D': /\D/,
+          's': /\s/,
+          'S': /\S/,
+          'b': /\b/,
+          'A': /[A-Z]/,
+          'a': /[a-z]/,
+          'Z': /[A-ZÇÀÁÂÃÈÉÊẼÌÍÎĨÒÓÔÕÙÚÛŨ]/,
+          'z': /[a-zçáàãâéèêẽíìĩîóòôõúùũüû]/,
+          '@': /[a-zA-Z]/,
+          '#': /[a-zA-ZçáàãâéèêẽíìĩîóòôõúùũüûÇÀÁÂÃÈÉÊẼÌÍÎĨÒÓÔÕÙÚÛŨ]/,
+          '%': /[0-9a-zA-ZçáàãâéèêẽíìĩîóòôõúùũüûÇÀÁÂÃÈÉÊẼÌÍÎĨÒÓÔÕÙÚÛŨ]/
+        };
+
+        // REGEX
+
+        function generateIntermetiateElementRegex(i, forceOptional) {
+          var charRegex;
+          try {
+            var element = maskWithoutOptionals[i];
+            var elementRegex = patterns[element];
+            var hasOptional = isOptional(i);
+
+            if (elementRegex) {
+              charRegex = '(' + elementRegex.source + ')';
+            } else { // is a divisor
+              if (!isDivisor(i)) {
+                divisors.push(i);
+                divisorElements[i] = element;
+              }
+
+              charRegex = '(' + '\\' + element + ')';
+            }
+          } catch (e) {
+            throw e;
+          }
+
+          if (hasOptional || forceOptional) {
+            charRegex += '?';
+          }
+
+          return new RegExp(charRegex);
+        }
+
+        function generateIntermetiateRegex(i, forceOptional) {
+
+
+          var elementRegex
+          var elementOptionalRegex;
+          try {
+            var intermetiateElementRegex = generateIntermetiateElementRegex(i, forceOptional);
+            elementRegex = intermetiateElementRegex;
+
+            var hasOptional = isOptional(i);
+            var currentRegex = intermetiateElementRegex.source;
+
+            if (hasOptional && ((i+1) < maskWithoutOptionalsLength)) {
+              var intermetiateRegex = generateIntermetiateRegex((i+1), true).elementOptionalRegex();
+              currentRegex += intermetiateRegex.source;
+            }
+
+            elementOptionalRegex = new RegExp(currentRegex);
+          } catch (e) {
+            throw e;
+          }
+          return {
+            elementRegex: function() {
+              return elementRegex;
+            },
+            elementOptionalRegex: function() {
+              // from element regex, gets the flow of regex until first not optional
+              return elementOptionalRegex;
+            }
+          };
+        }
+
+        function generateRegex(opts) {
+          var deferred = $q.defer();
+          options = opts;
+
+          try {
+            var mask = opts['mask'];
+            var repeat = opts['repeat'];
+
+            if (!mask)
+              return;
+
+            if (repeat) {
+              mask = Array((parseInt(repeat)+1)).join(mask);
+            }
+
+            optionalIndexes = OptionalService.getOptionals(mask).fromMaskWithoutOptionals();
+            options['maskWithoutOptionals'] = maskWithoutOptionals = OptionalService.removeOptionals(mask);
+            maskWithoutOptionalsLength = maskWithoutOptionals.length;
+
+            var cumulativeRegex;
+            for (var i=0; i<maskWithoutOptionalsLength; i++) {
+              var charRegex = generateIntermetiateRegex(i);
+              var elementRegex = charRegex.elementRegex();
+              var elementOptionalRegex = charRegex.elementOptionalRegex();
+
+              var newRegex = cumulativeRegex ? cumulativeRegex.source + elementOptionalRegex.source : elementOptionalRegex.source;
+              newRegex = new RegExp(newRegex);
+              cumulativeRegex = cumulativeRegex ? cumulativeRegex.source + elementRegex.source : elementRegex.source;
+              cumulativeRegex = new RegExp(cumulativeRegex);
+
+              regex.push(newRegex);
+            }
+
+            generateOptionalDivisors();
+            maskWithoutOptionalsAndDivisorsLength = removeDivisors(maskWithoutOptionals).length;
+
+            deferred.resolve({
+              options: options,
+              divisors: divisors,
+              divisorElements: divisorElements,
+              optionalIndexes: optionalIndexes,
+              optionalDivisors: optionalDivisors,
+              optionalDivisorsCombinations: optionalDivisorsCombinations
+            });
+          } catch (e) {
+            deferred.reject(e);
+            throw e;
+          }
+
+          return deferred.promise;
+        }
+
+        function getRegex(index) {
+          var currentRegex;
+
+          try {
+            currentRegex = regex[index] ? regex[index].source : '';
+          } catch (e) {
+            throw e;
+          }
+
+          return (new RegExp('^' + currentRegex + '$'));
+        }
+
+        // DIVISOR
+
+        function isOptional(currentPos) {
+          return UtilService.inArray(currentPos, optionalIndexes);
+        }
+
+        function isDivisor(currentPos) {
+          return UtilService.inArray(currentPos, divisors);
+        }
+
+        function generateOptionalDivisors() {
+          function sortNumber(a,b) {
+              return a - b;
+          }
+
+          var sortedDivisors = divisors.sort(sortNumber);
+          var sortedOptionals = optionalIndexes.sort(sortNumber);
+          for (var i = 0; i<sortedDivisors.length; i++) {
+            var divisor = sortedDivisors[i];
+            for (var j = 1; j<=sortedOptionals.length; j++) {
+              var optional = sortedOptionals[(j-1)];
+              if (optional >= divisor) {
+                break;
+              }
+
+              if (optionalDivisors[divisor]) {
+                optionalDivisors[divisor] = optionalDivisors[divisor].concat(divisor-j);
+              } else {
+                optionalDivisors[divisor] = [(divisor-j)];
+              }
+
+              // get the original divisor for alternative divisor
+              divisorElements[(divisor-j)] = divisorElements[divisor];
+            }
+          }
+        }
+
+        function removeDivisors(value) {
+              value = value.toString();
+          try {
+            if (divisors.length > 0 && value) {
+              var keys = Object.keys(divisorElements);
+              var elments = [];
+
+              for (var i = keys.length - 1; i >= 0; i--) {
+                var divisor = divisorElements[keys[i]];
+                if (divisor) {
+                  elments.push(divisor);
+                }
+              }
+
+              elments = UtilService.uniqueArray(elments);
+
+              // remove if it is not pattern
+              var regex = new RegExp(('[' + '\\' + elments.join('\\') + ']'), 'g');
+              return value.replace(regex, '');
+            } else {
+              return value;
+            }
+          } catch (e) {
+            throw e;
+          }
+        }
+
+        function insertDivisors(array, combination) {
+          function insert(array, output) {
+            var out = output;
+            for (var i=0; i<array.length; i++) {
+              var divisor = array[i];
+              if (divisor < out.length) {
+                out.splice(divisor, 0, divisorElements[divisor]);
+              }
+            }
+            return out;
+          }
+
+          var output = array;
+          var divs = divisors.filter(function(it) {
+            var optionalDivisorsKeys = Object.keys(optionalDivisors).map(function(it){
+              return parseInt(it);
+            });
+
+            return !UtilService.inArray(it, combination) && !UtilService.inArray(it, optionalDivisorsKeys);
+          });
+
+          if (!angular.isArray(array) || !angular.isArray(combination)) {
+            return output;
+          }
+
+          // insert not optional divisors
+          output = insert(divs, output);
+
+          // insert optional divisors
+          output = insert(combination, output);
+
+          return output;
+        }
+
+        function tryDivisorConfiguration(value) {
+          var output = value.split('');
+          var defaultDivisors = true;
+
+          // has optional?
+          if (optionalIndexes.length > 0) {
+            var lazyArguments = [];
+            var optionalDivisorsKeys = Object.keys(optionalDivisors);
+
+            // get all optional divisors as array of arrays [[], [], []...]
+            for (var i=0; i<optionalDivisorsKeys.length; i++) {
+              var val = optionalDivisors[optionalDivisorsKeys[i]];
+              lazyArguments.push(val);
+            }
+
+            // generate all possible configurations
+            if (optionalDivisorsCombinations.length === 0) {
+              UtilService.lazyProduct(lazyArguments, function() {
+                // convert arguments to array
+                optionalDivisorsCombinations.push(Array.prototype.slice.call(arguments));
+              });
+            }
+
+            for (var i = optionalDivisorsCombinations.length - 1; i >= 0; i--) {
+              var outputClone = angular.copy(output);
+              outputClone = insertDivisors(outputClone, optionalDivisorsCombinations[i]);
+
+              // try validation
+              var viewValueWithDivisors = outputClone.join('');
+              var regex = getRegex(maskWithoutOptionals.length - 1);
+
+              if (regex.test(viewValueWithDivisors)) {
+                defaultDivisors = false;
+                output = outputClone;
+                break;
+              }
+            }
+          }
+
+          if (defaultDivisors) {
+            output = insertDivisors(output, divisors);
+          }
+
+          return output.join('');
+        }
+
+        // MASK
+
+        function getOptions() {
+          return options;
+        }
+
+        function getViewValue(value) {
+          try {
+            var outputWithoutDivisors = removeDivisors(value);
+            var output = tryDivisorConfiguration(outputWithoutDivisors);
+
+            return {
+              withDivisors: function(capped) {
+                if (capped) {
+                  return output.substr(0, maskWithoutOptionalsLength);
+                } else {
+                  return output;
+                }
+              },
+              withoutDivisors: function(capped) {
+                if (capped) {
+                  return outputWithoutDivisors.substr(0, maskWithoutOptionalsAndDivisorsLength);
+                } else {
+                  return outputWithoutDivisors;
+                }
+              }
+            };
+          } catch (e) {
+            throw e;
+          }
+        }
+
+        // SELECTOR
+
+        function getWrongPositions(viewValueWithDivisors, onlyFirst) {
+          var pos = [];
+
+          if (!viewValueWithDivisors) {
+            return 0;
+          }
+
+          for (var i=0; i<viewValueWithDivisors.length; i++){
+            var pattern = getRegex(i);
+            var value = viewValueWithDivisors.substr(0, (i+1));
+
+            if(pattern && !pattern.test(value)){
+              pos.push(i);
+
+              if (onlyFirst) {
+                break;
+              }
+            }
+          }
+
+          return pos;
+        }
+
+        function getFirstWrongPosition(viewValueWithDivisors) {
+          return getWrongPositions(viewValueWithDivisors, true)[0];
+        }
+
+        function removeWrongPositions(viewValueWithDivisors) {
+          var wrongPositions = getWrongPositions(viewValueWithDivisors, false);
+          var newViewValue = viewValueWithDivisors;
+
+          for(var i = 0; i < wrongPositions.length; i++){
+            var wrongPosition = wrongPositions[i];
+            var viewValueArray = viewValueWithDivisors.split('');
+            viewValueArray.splice(wrongPosition, 1);
+            newViewValue = viewValueArray.join('');
+          }
+
+          return getViewValue(newViewValue);
+        }
+
+        return {
+          getViewValue: getViewValue,
+          generateRegex: generateRegex,
+          getRegex: getRegex,
+          getOptions: getOptions,
+          removeDivisors: removeDivisors,
+          getFirstWrongPosition: getFirstWrongPosition,
+          removeWrongPositions: removeWrongPositions
+        }
+      }
+
+      return {
+        create: create
+      }
+    }]);
+})();
+(function() {
+  'use strict';
+  angular.module('ngMask')
+    .factory('OptionalService', [function() {
+      function getOptionalsIndexes(mask) {
+        var indexes = [];
+
+        try {
+          var regexp = /\?/g;
+          var match = [];
+
+          while ((match = regexp.exec(mask)) != null) {
+            // Save the optional char
+            indexes.push((match.index - 1));
+          }
+        } catch (e) {
+          throw e;
+        }
+
+        return {
+          fromMask: function() {
+            return indexes;
+          },
+          fromMaskWithoutOptionals: function() {
+            return getOptionalsRelativeMaskWithoutOptionals(indexes);
+          }
+        };
+      }
+
+      function getOptionalsRelativeMaskWithoutOptionals(optionals) {
+        var indexes = [];
+        for (var i=0; i<optionals.length; i++) {
+          indexes.push(optionals[i]-i);
+        }
+        return indexes;
+      }
+
+      function removeOptionals(mask) {
+        var newMask;
+
+        try {
+          newMask = mask.replace(/\?/g, '');
+        } catch (e) {
+          throw e;
+        }
+
+        return newMask;
+      }
+
+      return {
+        removeOptionals: removeOptionals,
+        getOptionals: getOptionalsIndexes
+      }
+    }]);
+})();(function() {
+  'use strict';
+  angular.module('ngMask')
+    .factory('UtilService', [function() {
+
+      // sets: an array of arrays
+      // f: your callback function
+      // context: [optional] the `this` to use for your callback
+      // http://phrogz.net/lazy-cartesian-product
+      function lazyProduct(sets, f, context){
+        if (!context){
+          context=this;
+        }
+
+        var p = [];
+        var max = sets.length-1;
+        var lens = [];
+
+        for (var i=sets.length;i--;) {
+          lens[i] = sets[i].length;
+        }
+
+        function dive(d){
+          var a = sets[d];
+          var len = lens[d];
+
+          if (d === max) {
+            for (var i=0;i<len;++i) {
+              p[d] = a[i];
+              f.apply(context, p);
+            }
+          } else {
+            for (var i=0;i<len;++i) {
+              p[d]=a[i];
+              dive(d+1);
+            }
+          }
+
+          p.pop();
+        }
+
+        dive(0);
+      }
+
+      function inArray(i, array) {
+        var output;
+
+        try {
+          output = array.indexOf(i) > -1;
+        } catch (e) {
+          throw e;
+        }
+
+        return output;
+      }
+
+      function uniqueArray(array) {
+        var u = {};
+        var a = [];
+
+        for (var i = 0, l = array.length; i < l; ++i) {
+          if(u.hasOwnProperty(array[i])) {
+            continue;
+          }
+
+          a.push(array[i]);
+          u[array[i]] = 1;
+        }
+
+        return a;
+      }
+
+      return {
+        lazyProduct: lazyProduct,
+        inArray: inArray,
+        uniqueArray: uniqueArray
+      }
+    }]);
+})();
 /**
  * Copyright (c) 2011-2014 Felix Gnass
  * Licensed under the MIT license
@@ -107849,3 +110190,587 @@ if (typeof jQuery === 'undefined') {
 	$.timepicker.version = "1.6.1";
 
 }));
+
+/**
+ * vAccordion - AngularJS multi-level accordion component
+ * @version v1.4.2
+ * @link http://lukaszwatroba.github.io/v-accordion
+ * @author Łukasz Wątroba <l@lukaszwatroba.com>
+ * @license MIT License, http://www.opensource.org/licenses/MIT
+ */
+
+(function (angular) {
+'use strict';
+
+
+// Config
+angular.module('vAccordion.config', [])
+  .constant('accordionConfig', {
+    states: {
+      expanded: 'is-expanded'
+    }
+  });
+
+
+// Modules
+angular.module('vAccordion.directives', []);
+angular.module('vAccordion',
+  [
+    'vAccordion.config',
+    'vAccordion.directives'
+  ]);
+
+
+
+// vAccordion directive
+angular.module('vAccordion.directives')
+  .directive('vAccordion', vAccordionDirective);
+
+
+function vAccordionDirective ($timeout) {
+  return {
+    restrict: 'E',
+    transclude: true,
+    controller: AccordionDirectiveController,
+    scope: {
+      control: '=?',
+      allowMultiple: '=?multiple',
+      expandCb: '&?onexpand',
+      collapseCb: '&?oncollapse',
+      id: '@?'
+    },
+    link: {
+      pre: function (scope, iElement, iAttrs) {
+        scope.allowMultiple = (angular.isDefined(iAttrs.multiple) && iAttrs.multiple === '');
+      },
+      post: function (scope, iElement, iAttrs, ctrl, transclude) {
+        transclude(scope.$parent.$new(), function (clone, transclusionScope) {
+          transclusionScope.$accordion = scope.internalControl;
+          iElement.append(clone);
+        });
+
+        iAttrs.$set('role', 'tablist');
+
+        if (scope.allowMultiple) {
+          iAttrs.$set('aria-multiselectable', 'true');
+        }
+
+        function checkCustomControlAPIMethods () {
+          var protectedApiMethods = ['toggle', 'expand', 'collapse', 'expandAll', 'collapseAll', 'hasExpandedPane'];
+
+          angular.forEach(protectedApiMethods, function (iteratedMethodName) {
+            if (scope.control[iteratedMethodName]) {
+              throw new Error('The `' + iteratedMethodName + '` method can not be overwritten');
+            }
+          });
+        }
+
+        if (angular.isDefined(scope.control)) {
+          checkCustomControlAPIMethods();
+
+          var mergedControl = angular.extend({}, scope.internalControl, scope.control);
+          scope.control = scope.internalControl = mergedControl;
+        }
+        else {
+          scope.control = scope.internalControl;
+        }
+
+        $timeout(function () {
+          var eventName = (angular.isDefined(ctrl.getAccordionId())) ? ctrl.getAccordionId() + ':onReady' : 'vAccordion:onReady';
+          scope.$emit(eventName);
+        }, 0);
+      }
+    }
+  };
+}
+vAccordionDirective.$inject = ['$timeout'];
+
+
+// vAccordion directive controller
+function AccordionDirectiveController ($scope) {
+  var ctrl = this;
+  var isDisabled = false;
+
+  $scope.panes = [];
+
+	$scope.expandCb = (angular.isFunction($scope.expandCb)) ? $scope.expandCb : angular.noop;
+	$scope.collapseCb = (angular.isFunction($scope.collapseCb)) ? $scope.collapseCb : angular.noop;
+
+  ctrl.hasExpandedPane = function hasExpandedPane () {
+    var bool = false;
+
+    for (var i = 0, length = $scope.panes.length; i < length; i++) {
+      var iteratedPane = $scope.panes[i];
+
+      if (iteratedPane.isExpanded) {
+        bool = true;
+        break;
+      }
+    }
+
+    return bool;
+  };
+
+  ctrl.getPaneByIndex = function getPaneByIndex (index) {
+    var thePane;
+
+    angular.forEach($scope.panes, function (iteratedPane) {
+      if (iteratedPane.$parent && angular.isDefined(iteratedPane.$parent.$index) && iteratedPane.$parent.$index === index) {
+        thePane = iteratedPane;
+      }
+    });
+
+    return (thePane) ? thePane : $scope.panes[index];
+  };
+
+  ctrl.getPaneIndex = function getPaneIndex (pane) {
+    var theIndex;
+
+    angular.forEach($scope.panes, function (iteratedPane) {
+      if (iteratedPane.$parent && angular.isDefined(iteratedPane.$parent.$index) && iteratedPane === pane) {
+        theIndex = iteratedPane.$parent.$index;
+      }
+    });
+
+    return (angular.isDefined(theIndex)) ? theIndex : $scope.panes.indexOf(pane);
+  };
+
+  ctrl.getPaneById = function getPaneById (id) {
+    var thePane;
+
+    angular.forEach($scope.panes, function (iteratedPane) {
+      if (iteratedPane.id && iteratedPane.id === id) {
+        thePane = iteratedPane;
+      }
+    });
+
+    return thePane;
+  };
+
+  ctrl.getPaneId = function getPaneId (pane) {
+    return pane.id;
+  };
+
+  ctrl.getAccordionId = function getAccordionId () {
+    return $scope.id;
+  };
+
+
+  ctrl.disable = function disable () {
+    isDisabled = true;
+  };
+
+  ctrl.enable = function enable () {
+    isDisabled = false;
+  };
+
+  ctrl.addPane = function addPane (paneToAdd) {
+    if (!$scope.allowMultiple) {
+      if (ctrl.hasExpandedPane() && paneToAdd.isExpanded) {
+        throw new Error('The `multiple` attribute can\'t be found');
+      }
+    }
+
+    $scope.panes.push(paneToAdd);
+
+    if (paneToAdd.isExpanded) {
+      $scope.expandCb({ index: ctrl.getPaneIndex(paneToAdd), id: paneToAdd.id, pane: paneToAdd });
+    }
+  };
+
+  ctrl.focusNext = function focusNext () {
+    var length = $scope.panes.length;
+
+    for (var i = 0; i < length; i++) {
+      var iteratedPane = $scope.panes[i];
+
+      if (iteratedPane.isFocused) {
+        var paneToFocusIndex = i + 1;
+
+        if (paneToFocusIndex > $scope.panes.length - 1) {
+          paneToFocusIndex = 0;
+        }
+
+        var paneToFocus = $scope.panes[paneToFocusIndex];
+            paneToFocus.paneElement.find('v-pane-header')[0].focus();
+
+        break;
+      }
+    }
+  };
+
+  ctrl.focusPrevious = function focusPrevious () {
+    var length = $scope.panes.length;
+
+    for (var i = 0; i < length; i++) {
+      var iteratedPane = $scope.panes[i];
+
+      if (iteratedPane.isFocused) {
+        var paneToFocusIndex = i - 1;
+
+        if (paneToFocusIndex < 0) {
+          paneToFocusIndex = $scope.panes.length - 1;
+        }
+
+        var paneToFocus = $scope.panes[paneToFocusIndex];
+            paneToFocus.paneElement.find('v-pane-header')[0].focus();
+
+        break;
+      }
+    }
+  };
+
+  ctrl.toggle = function toggle (paneToToggle) {
+    if (isDisabled || !paneToToggle) { return; }
+
+    if (!$scope.allowMultiple) {
+      ctrl.collapseAll(paneToToggle);
+    }
+
+    paneToToggle.isExpanded = !paneToToggle.isExpanded;
+
+    if (paneToToggle.isExpanded) {
+      $scope.expandCb({ index: ctrl.getPaneIndex(paneToToggle), id: paneToToggle.id, pane: paneToToggle });
+    } else {
+      $scope.collapseCb({ index: ctrl.getPaneIndex(paneToToggle), id: paneToToggle.id, pane: paneToToggle });
+    }
+  };
+
+  ctrl.expand = function expand (paneToExpand) {
+    if (isDisabled || !paneToExpand) { return; }
+
+    if (!$scope.allowMultiple) {
+      ctrl.collapseAll(paneToExpand);
+    }
+
+    if (!paneToExpand.isExpanded) {
+      paneToExpand.isExpanded = true;
+      $scope.expandCb({ index: ctrl.getPaneIndex(paneToExpand), id: paneToExpand.id, pane: paneToExpand });
+    }
+  };
+
+  ctrl.collapse = function collapse (paneToCollapse) {
+    if (isDisabled || !paneToCollapse) { return; }
+
+    if (paneToCollapse.isExpanded) {
+      paneToCollapse.isExpanded = false;
+      $scope.collapseCb({ index: ctrl.getPaneIndex(paneToCollapse), id: paneToCollapse.id, pane: paneToCollapse });
+    }
+  };
+
+  ctrl.expandAll = function expandAll () {
+    if (isDisabled) { return; }
+
+    if ($scope.allowMultiple) {
+      angular.forEach($scope.panes, function (iteratedPane) {
+        ctrl.expand(iteratedPane);
+      });
+    } else {
+      throw new Error('The `multiple` attribute can\'t be found');
+    }
+  };
+
+  ctrl.collapseAll = function collapseAll (exceptionalPane) {
+    if (isDisabled) { return; }
+
+    angular.forEach($scope.panes, function (iteratedPane) {
+      if (iteratedPane !== exceptionalPane) {
+        ctrl.collapse(iteratedPane);
+      }
+    });
+  };
+
+  // API
+  $scope.internalControl = {
+    toggle: function toggle (indexOrId) {
+      if (angular.isString(indexOrId)) {
+        ctrl.toggle( ctrl.getPaneById(indexOrId) );
+      } else {
+        ctrl.toggle( ctrl.getPaneByIndex(indexOrId) );
+      }
+    },
+    expand: function expand (indexOrId) {
+      if (angular.isString(indexOrId)) {
+        ctrl.expand( ctrl.getPaneById(indexOrId) );
+      } else {
+        ctrl.expand( ctrl.getPaneByIndex(indexOrId) );
+      }
+    },
+    collapse: function collapse (indexOrId) {
+      if (angular.isString(indexOrId)) {
+        ctrl.collapse( ctrl.getPaneById(indexOrId) );
+      } else {
+        ctrl.collapse( ctrl.getPaneByIndex(indexOrId) );
+      }
+    },
+    expandAll: ctrl.expandAll,
+    collapseAll: ctrl.collapseAll,
+    hasExpandedPane: ctrl.hasExpandedPane
+  };
+}
+AccordionDirectiveController.$inject = ['$scope'];
+
+
+
+// vPaneContent directive
+angular.module('vAccordion.directives')
+  .directive('vPaneContent', vPaneContentDirective);
+
+
+function vPaneContentDirective () {
+  return {
+    restrict: 'E',
+    require: '^vPane',
+    transclude: true,
+    template: '<div ng-transclude></div>',
+    scope: {},
+    link: function (scope, iElement, iAttrs) {
+      iAttrs.$set('role', 'tabpanel');
+    }
+  };
+}
+
+
+
+// vPaneHeader directive
+angular.module('vAccordion.directives')
+  .directive('vPaneHeader', vPaneHeaderDirective);
+
+
+function vPaneHeaderDirective () {
+  return {
+    restrict: 'E',
+    require: ['^vPane', '^vAccordion'],
+    transclude: true,
+    template: '<div ng-transclude></div>',
+    scope: {},
+    link: function (scope, iElement, iAttrs, ctrls) {
+      iAttrs.$set('role', 'tab');
+
+      var paneCtrl = ctrls[0],
+          accordionCtrl = ctrls[1];
+
+      var isInactive = angular.isDefined(iAttrs.inactive);
+
+      function onClick () {
+        if (isInactive) { return false; }
+        scope.$apply(function () { paneCtrl.toggle(); });
+      }
+
+      function onKeyDown (event) {
+        if (event.keyCode === 32  || event.keyCode === 13) {
+          scope.$apply(function () { paneCtrl.toggle(); });
+          event.preventDefault();
+        } else if (event.keyCode === 39) {
+          scope.$apply(function () { accordionCtrl.focusNext(); });
+          event.preventDefault();
+        } else if (event.keyCode === 37) {
+          scope.$apply(function () { accordionCtrl.focusPrevious(); });
+          event.preventDefault();
+        }
+      }
+
+      iElement[0].onfocus = function () {
+        paneCtrl.focusPane();
+      };
+
+      iElement[0].onblur = function () {
+        paneCtrl.blurPane();
+      };
+
+      iElement.bind('click', onClick);
+      iElement.bind('keydown', onKeyDown);
+
+      scope.$on('$destroy', function () {
+        iElement.unbind('click', onClick);
+        iElement.unbind('keydown', onKeyDown);
+        iElement[0].onfocus = null;
+        iElement[0].onblur = null;
+      });
+    }
+  };
+}
+
+
+
+// vPane directive
+angular.module('vAccordion.directives')
+  .directive('vPane', vPaneDirective);
+
+
+function vPaneDirective ($timeout, $animate, accordionConfig) {
+  return {
+    restrict: 'E',
+    require: '^vAccordion',
+    transclude: true,
+    controller: PaneDirectiveController,
+    scope: {
+      isExpanded: '=?expanded',
+      isDisabled: '=?ngDisabled',
+      id: '@?'
+    },
+    link: function (scope, iElement, iAttrs, accordionCtrl, transclude) {
+      transclude(scope.$parent.$new(), function (clone, transclusionScope) {
+        transclusionScope.$pane = scope.internalControl;
+        if (scope.id) { transclusionScope.$pane.id = scope.id; }
+        iElement.append(clone);
+      });
+
+      if (!angular.isDefined(scope.isExpanded)) {
+        scope.isExpanded = angular.isDefined(iAttrs.expanded);
+      }
+
+      if (angular.isDefined(iAttrs.disabled)) {
+        scope.isDisabled = true;
+      }
+
+      var states = accordionConfig.states;
+
+      var paneHeader = iElement.find('v-pane-header'),
+          paneContent = iElement.find('v-pane-content'),
+          paneInner = paneContent.find('div');
+
+      var accordionId = accordionCtrl.getAccordionId();
+
+      if (!paneHeader[0]) {
+        throw new Error('The `v-pane-header` directive can\'t be found');
+      }
+
+      if (!paneContent[0]) {
+        throw new Error('The `v-pane-content` directive can\'t be found');
+      }
+
+      scope.paneElement = iElement;
+      scope.paneContentElement = paneContent;
+      scope.paneInnerElement = paneInner;
+
+      scope.accordionCtrl = accordionCtrl;
+
+      accordionCtrl.addPane(scope);
+
+      function emitEvent (eventName) {
+        eventName = (angular.isDefined(accordionId)) ? accordionId + ':' + eventName : 'vAccordion:' + eventName;
+        scope.$emit(eventName);
+      }
+
+      function expand () {
+        accordionCtrl.disable();
+
+        paneContent[0].style.maxHeight = '0px';
+        paneHeader.attr({
+          'aria-selected': 'true',
+          'tabindex': '0'
+        });
+
+        emitEvent('onExpand');
+
+        $timeout(function () {
+          $animate.addClass(iElement, states.expanded)
+            .then(function () {
+              accordionCtrl.enable();
+              paneContent[0].style.maxHeight = 'none';
+              emitEvent('onExpandAnimationEnd');
+            });
+
+          setTimeout(function () {
+            paneContent[0].style.maxHeight = paneInner[0].offsetHeight + 'px';
+          }, 0);
+        }, 0);
+      }
+
+      function collapse () {
+        accordionCtrl.disable();
+
+        paneContent[0].style.maxHeight = paneInner[0].offsetHeight + 'px';
+        paneHeader.attr({
+          'aria-selected': 'false',
+          'tabindex': '-1'
+        });
+
+        emitEvent('onCollapse');
+
+        $timeout(function () {
+          $animate.removeClass(iElement, states.expanded)
+            .then(function () {
+              accordionCtrl.enable();
+              emitEvent('onCollapseAnimationEnd');
+            });
+
+          setTimeout(function () {
+            paneContent[0].style.maxHeight = '0px';
+          }, 0);
+        }, 0);
+      }
+
+      if (scope.isExpanded) {
+        iElement.addClass(states.expanded);
+        paneContent[0].style.maxHeight = 'none';
+
+        paneHeader.attr({
+          'aria-selected': 'true',
+          'tabindex': '0'
+        });
+      } else {
+        paneContent[0].style.maxHeight = '0px';
+
+        paneHeader.attr({
+          'aria-selected': 'false',
+          'tabindex': '-1'
+        });
+      }
+
+      scope.$watch('isExpanded', function (newValue, oldValue) {
+        if (newValue === oldValue) { return true; }
+        if (newValue) { expand(); }
+        else { collapse(); }
+      });
+    }
+  };
+}
+vPaneDirective.$inject = ['$timeout', '$animate', 'accordionConfig'];
+
+
+// vPane directive controller
+function PaneDirectiveController ($scope) {
+  var ctrl = this;
+
+  ctrl.isExpanded = function isExpanded () {
+    return $scope.isExpanded;
+  };
+
+  ctrl.toggle = function toggle () {
+    if (!$scope.isAnimating && !$scope.isDisabled) {
+      $scope.accordionCtrl.toggle($scope);
+    }
+  };
+
+  ctrl.expand = function expand () {
+    if (!$scope.isAnimating && !$scope.isDisabled) {
+      $scope.accordionCtrl.expand($scope);
+    }
+  };
+
+  ctrl.collapse = function collapse () {
+    if (!$scope.isAnimating && !$scope.isDisabled) {
+      $scope.accordionCtrl.collapse($scope);
+    }
+  };
+
+  ctrl.focusPane = function focusPane () {
+    $scope.isFocused = true;
+  };
+
+  ctrl.blurPane = function blurPane () {
+    $scope.isFocused = false;
+  };
+
+  $scope.internalControl = {
+    toggle: ctrl.toggle,
+    expand: ctrl.expand,
+    collapse: ctrl.collapse,
+    isExpanded: ctrl.isExpanded
+  };
+}
+PaneDirectiveController.$inject = ['$scope'];
+
+})(angular);

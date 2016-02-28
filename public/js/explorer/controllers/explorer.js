@@ -19,12 +19,10 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
       'headers': [],
       'rows': []
     };
+
+    // reset search filters
     $scope.search = {
-      'collection': '',
-      'group_by': 'minute',
-      'num_rows': '50',
-      'fields': [],
-      'selected_fields': []
+      'collection': ''
     };
 
     /**

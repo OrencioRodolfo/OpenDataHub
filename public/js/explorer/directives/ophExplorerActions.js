@@ -26,20 +26,21 @@ angular.module('openDataHubApp')
           $mdDialog.show({
             controller: 'FiltersController',
             templateUrl: '/js/explorer/views/filters/container.html',
-            // clickOutsideToClose: true,
+            clickOutsideToClose: true,
             fullscreen: true,
+            scope: $scope,        // use parent scope in template
+            preserveScope: true,
             locals: {
-              collection: $scope.search.collection
+              search: $scope.search
             }
           })
-          .then(function(search) {
-            console.log("the search object");
-            $scope.status = 'You said the information was "' + answer + '".';
+          .then(function() {
+            $scope.previewDatasetData();
           }, function() {
-            $scope.status = 'You cancelled the dialog.';
+            // dialog canceled
           });
         };
-        // @TODO remove me
+
         $scope.showFiltersForm();
       }]
     };

@@ -17,13 +17,15 @@ angular.module('openDataHubApp')
     function previewDatasetData(search) {
       const defaultSearch = {
         'collection': '',
-        'group_by': 'minute',
-        'num_rows': '50',
+        'groupBy': 'minute',
+        'numRows': '50',
         'fields': [],
-        'selected_fields': []
+        'filters': [],
       };
 
       let reqObj  = Object.assign({}, defaultSearch, search);
+      console.log("The search filters", search);
+      console.log("The reqObj", reqObj);
       let siteUrl = $('#site-url').data('site_url');
       let url     = `${siteUrl}/datasetExplorer/searchDatasetData`;
 

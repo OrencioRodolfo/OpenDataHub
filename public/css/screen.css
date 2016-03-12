@@ -44,9 +44,11 @@ md-table-container.raw-data table.md-table tbody tr:nth-child(odd) {
   cursor: pointer;
 }
 .accordion-item .body {
-  display: none;
   background-color: white;
   padding-bottom: 20px;
+}
+.accordion-item .body .hide {
+  display: none;
 }
 .md-dialog-content.explorer-filters {
   padding: 10px;

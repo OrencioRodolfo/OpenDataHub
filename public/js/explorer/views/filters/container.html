@@ -4,7 +4,11 @@
       <div class="md-toolbar-tools">
         <h2>Search filters</h2>
         <span flex></span>
-        <md-button class="md-icon-button" ng-click="cancel()">
+        <md-button
+          class="md-icon-button"
+          aria-label="Cancel"
+          ng-click="cancel()"
+          >
           <i class="fa fa-times"></i>
         </md-button>
       </div>
@@ -12,18 +16,23 @@
 
     <md-dialog-content>
       <div class="md-dialog-content explorer-filters">
-
         <oph-accordion data-items="filterItems"></oph-accordion>
-
       </div>
     </md-dialog-content>
 
     <md-dialog-actions layout="row">
       <span flex></span>
-      <md-button ng-click="answer('not useful')">
+      <md-button
+        ng-click="cancel()"
+        aria-label="Cancel"
+        >
        Cancel
       </md-button>
-      <md-button ng-click="answer('useful')" style="margin-right:20px;">
+      <md-button
+        ng-click="searchData()"
+        aria-label="Search"
+        style="margin-right:20px;"
+        >
         Search
       </md-button>
     </md-dialog-actions>

@@ -20,6 +20,7 @@ angular.module('openDataHubApp').directive('ophAccordion', ['$timeout', function
         // guarantee that the DOM is ready so we can bind the click
         $('.accordion-item-js .expand-js').on('click', function () {
           $(this).closest('.accordion-item-js').find('.body-js').slideToggle();
+          $(this).closest('.accordion-item-js').toggleClass("expanded");
         });
       });
     }

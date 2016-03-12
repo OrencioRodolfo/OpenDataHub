@@ -1,16 +1,20 @@
-<section layout="row">
-  <input
-    type="date"
-    name="name"
-    value=""
-    ng-model="item.inputValue.min"
-    flex
-    />
-  <input
-    type="date"
-    name="name"
-    value=""
-    ng-model="item.inputValue.max"
-    flex
-    />
+<section layout="column" layout-gt-xs="row">
+  <md-input-container class="md-block" flex="50">
+    <label>Minimum</label>
+    <input
+      type="date"
+      name="name"
+      value=""
+      ng-model="item.inputValue.min"
+      />
+  </md-input-container>
+  <md-input-container class="md-block" flex="50">
+    <label>Maximum</label>
+    <input
+      type="date"
+      name="name"
+      value=""
+      ng-model="item.inputValue.max"
+      />
+  </md-input-container>
 </section>

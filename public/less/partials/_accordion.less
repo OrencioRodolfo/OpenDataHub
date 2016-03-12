@@ -1,5 +1,21 @@
+@import "../variables/globals.less";
+
 .accordion-item {
+  margin-top: 10px;
+  border-bottom: 1px solid @primary-color;
+  // border-bottom: 1px solid red;
+
+  &.expanded {
+    border-bottom: 2px solid @primary-color;
+  }
+
+  .pointer {
+    cursor: pointer;
+  }
+
   .body {
     display: none;
+    background-color: white;
+    padding-bottom: 20px;
   }
 }

@@ -33,8 +33,35 @@ md-table-container.raw-data table.md-table:not(.md-row-select) td.md-cell:first-
 md-table-container.raw-data table.md-table tbody tr:nth-child(odd) {
   background-color: #f5f5f5;
 }
+.accordion-item {
+  margin-top: 10px;
+  border-bottom: 1px solid #009688;
+}
+.accordion-item.expanded {
+  border-bottom: 2px solid #009688;
+}
+.accordion-item .pointer {
+  cursor: pointer;
+}
 .accordion-item .body {
   display: none;
+  background-color: white;
+  padding-bottom: 20px;
+}
+.md-dialog-content.explorer-filters {
+  padding: 10px;
+}
+.md-dialog-content.explorer-filters .accordion-item {
+  padding: 0 10px;
+}
+.md-dialog-content.explorer-filters md-input-container {
+  margin-bottom: 0px;
+}
+.md-dialog-content.explorer-filters md-input-container .md-errors-spacer {
+  display: none;
+}
+* {
+  outline: none;
 }
 body {
   padding-top: 0px;

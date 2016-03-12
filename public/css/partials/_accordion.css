@@ -1,3 +1,15 @@
+.accordion-item {
+  margin-top: 10px;
+  border-bottom: 1px solid #009688;
+}
+.accordion-item.expanded {
+  border-bottom: 2px solid #009688;
+}
+.accordion-item .pointer {
+  cursor: pointer;
+}
 .accordion-item .body {
   display: none;
+  background-color: white;
+  padding-bottom: 20px;
 }

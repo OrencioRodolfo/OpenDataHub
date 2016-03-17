@@ -158,5 +158,6 @@ module.exports = function (grunt) {
     }, 500);
   });
 
-  grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'uglify', 'develop', 'watch']);
+  // grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'uglify', 'develop', 'watch']);
+  grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'develop', 'watch']);
 };

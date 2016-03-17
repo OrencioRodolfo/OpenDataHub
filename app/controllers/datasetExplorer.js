@@ -6,11 +6,21 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _queryBuilder = require('../libs/queryBuilder');
+
+var _queryBuilder2 = _interopRequireDefault(_queryBuilder);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var queryBuilder = new _queryBuilder2.default();
 
 /**
  * @class ExplorerCtrl
- * @description Responsible for all the logic processing relative to the data explorer module
+ * @description
+ * Responsible for all the logic processing relative to the data explorer module
+ *
  * @author ogoncalves
  * @date 2016-02-17
  */
@@ -48,26 +58,12 @@ var ExplorerCtrl = function () {
     key: 'getMetadata',
     value: function getMetadata(req, res) {
       var params = req.params;
-      this._getCollectionMetadata(params.collection, function (doc) {
+      queryBuilder.getCollectionMetadata(params.collection, function (doc) {
         res.json(doc);
       });
     }
   }, {
-    key: '_getCollectionMetadata',
-
-    /**
-     * Responsible for quering the database and retrieve the metadata for a certain collection
-     * @private
-     * @param  {String}   collection - the name of the collection to query
-     * @param  {Function} callback - The callback that will handle the database response
-     * @return {function} the result of the query
-     */
-    value: function _getCollectionMetadata(collection, callback) {
-      var Metadata_m = mongoose.model('metadata');
-      return Metadata_m.findOne({ collectionName: collection }).exec(function (err, doc) {
-        return callback(doc);
-      });
-    }
+    key: 'searchDatasetData',
 
     /**
      * @description Responsible for receiving a request with filters to query a specific
@@ -76,26 +72,34 @@ var ExplorerCtrl = function () {
      * @param  {object} req NodeJS request obj
      * @return {json} the collection metadata, identifying its fields, descriptions and so on
      */
-
-  }, {
-    key: 'searchDatasetData',
     value: function searchDatasetData(req, res) {
-      var _this = this;
-
+      var async = require('async');
       var req_data = req.body;
       var collection = req_data.collection;
-      var records = null;
+      var fields = req_data.fields;
+      var filters = req_data.filters;
+      var response = {};
 
-      this._getCollectionMetadata(collection, function (metadata) {
-        var cursor = _this.buildQuery(collection);
-
-        cursor.toArray(function (err, docs) {
-          var response = {
-            'headers': metadata.fields,
-            'rows': docs
-          };
-          res.json(response);
+      async.parallel([
+      // get the headers
+      function (callback) {
+        queryBuilder.getCollectionMetadata(collection, function (metadata) {
+          response.headers = metadata.fields;
+          callback();
         });
+      },
+      // perform the query
+      function (callback) {
+        queryBuilder.getCollectionData(collection, fields, filters, function (err, docs) {
+          response.rows = docs;
+          callback();
+        });
+      }], function (err) {
+        // when it is all done, return the data
+        if (err) {
+          throw err; //Or pass it on to an outer callback, log it or whatever suits your needs
+        }
+        res.json(response);
       });
     }
   }, {
@@ -119,8 +123,8 @@ var ExplorerCtrl = function () {
       }
     }
   }, {
-    key: 'buildQuery',
-    value: function buildQuery(collection) {
+    key: '_buildQuery',
+    value: function _buildQuery(collection) {
       var cursor = db.collection(collection).find();
       return cursor.limit(50);
     }

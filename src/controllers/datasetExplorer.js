@@ -1,6 +1,11 @@
+import QueryBuilder from '../libs/queryBuilder';
+const queryBuilder = new QueryBuilder();
+
 /**
  * @class ExplorerCtrl
- * @description Responsible for all the logic processing relative to the data explorer module
+ * @description
+ * Responsible for all the logic processing relative to the data explorer module
+ *
  * @author ogoncalves
  * @date 2016-02-17
  */
@@ -30,24 +35,10 @@ export default class ExplorerCtrl {
    */
   getMetadata(req, res) {
     const params = req.params;
-    this._getCollectionMetadata(params.collection, function(doc) {
+    queryBuilder.getCollectionMetadata(params.collection, function(doc) {
       res.json(doc);
     });
   };
-
-  /**
-   * Responsible for quering the database and retrieve the metadata for a certain collection
-   * @private
-   * @param  {String}   collection - the name of the collection to query
-   * @param  {Function} callback - The callback that will handle the database response
-   * @return {function} the result of the query
-   */
-  _getCollectionMetadata(collection, callback) {
-    const Metadata_m = mongoose.model('metadata');
-    return Metadata_m
-            .findOne({collectionName: collection})
-            .exec((err, doc) => callback(doc));
-  }
 
   /**
    * @description Responsible for receiving a request with filters to query a specific
@@ -57,20 +48,39 @@ export default class ExplorerCtrl {
    * @return {json} the collection metadata, identifying its fields, descriptions and so on
    */
   searchDatasetData (req, res) {
-    let req_data   = req.body;
-  	let collection = req_data.collection;
-  	let records    = null;
+    const async          = require('async');
+    const req_data       = req.body;
+  	const collection     = req_data.collection;
+  	const fields         = req_data.fields;
+  	const filters        = req_data.filters;
+    let response       = {};
 
-    this._getCollectionMetadata(collection, (metadata) => {
-      let cursor = this.buildQuery(collection);
-
-      cursor.toArray(function(err, docs) {
-        let response = {
-          'headers': metadata.fields,
-          'rows': docs
-        };
-        res.json(response);
-      });
+    async.parallel([
+      // get the headers
+      (callback) => {
+        queryBuilder.getCollectionMetadata(collection, (metadata) => {
+          response.headers = metadata.fields;
+          callback();
+        })
+      },
+      // perform the query
+      (callback) => {
+        queryBuilder.getCollectionData(
+          collection,
+          fields,
+          filters,
+          function(err, docs) {
+            response.rows = docs;
+            callback();
+          }
+        );
+      }
+    ], function(err) {
+      // when it is all done, return the data
+      if (err) {
+        throw err; //Or pass it on to an outer callback, log it or whatever suits your needs
+      }
+      res.json(response);
     });
   }
 
@@ -94,7 +104,7 @@ export default class ExplorerCtrl {
   	}
   }
 
-  buildQuery(collection) {
+  _buildQuery(collection) {
     let cursor = db.collection(collection).find();
     return cursor.limit(50);
   }

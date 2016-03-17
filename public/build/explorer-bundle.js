@@ -344,8 +344,6 @@ angular.module('openDataHubApp').service('ExplorerService', ["$http", function (
     };
 
     var reqObj = Object.assign({}, defaultSearch, search);
-    console.log("The search filters", search);
-    console.log("The reqObj", reqObj);
     var siteUrl = $('#site-url').data('site_url');
     var url = siteUrl + '/datasetExplorer/searchDatasetData';
 

@@ -24,8 +24,6 @@ angular.module('openDataHubApp')
       };
 
       let reqObj  = Object.assign({}, defaultSearch, search);
-      console.log("The search filters", search);
-      console.log("The reqObj", reqObj);
       let siteUrl = $('#site-url').data('site_url');
       let url     = `${siteUrl}/datasetExplorer/searchDatasetData`;
 

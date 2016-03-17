@@ -1,8 +1,8 @@
 var schema = new Schema({
 	_id: Schema.ObjectId,
-	field : "string",
-  type : "string",
-  description : "string"
+	collectionName: "string",
+  description: "string",
+	fields: []
 });
 
 var Metadata_m = mongoose.model('metadata', schema, 'metadata');

@@ -22,6 +22,7 @@ var ExplorerCtrl = function () {
 
   /**
    * @description Responsible for loading the index page of the Data Explorer module
+   * @public
    * @param  {object} req NodeJS request obj
    * @param  {object} res NodeJS request obj
    * @return {html} the rendered index page
@@ -37,6 +38,7 @@ var ExplorerCtrl = function () {
 
     /**
      * @description Responsible for loading the metadata from MongoFB for a certain collection
+     * @public
      * @param  {object} req NodeJS request obj
      * @param  {object} res NodeJS request obj
      * @return {json} the collection metadata, identifying its fields, descriptions and so on
@@ -45,165 +47,55 @@ var ExplorerCtrl = function () {
   }, {
     key: 'getMetadata',
     value: function getMetadata(req, res) {
-      var Metadata_m = mongoose.model('metadata');
       var params = req.params;
-      Metadata_m.findOne({ 'collection': params.collection }).exec(function (err, doc) {
-        res.json({ doc: doc });
+      this._getCollectionMetadata(params.collection, function (doc) {
+        res.json(doc);
       });
     }
   }, {
-    key: 'queryData',
+    key: '_getCollectionMetadata',
 
-    // @TODO deprecated
-    value: function queryData(req, res) {
-      var data = this.queryDataset(req);
-      res.render('explorer/formDataConsult', data);
+    /**
+     * Responsible for quering the database and retrieve the metadata for a certain collection
+     * @private
+     * @param  {String}   collection - the name of the collection to query
+     * @param  {Function} callback - The callback that will handle the database response
+     * @return {function} the result of the query
+     */
+    value: function _getCollectionMetadata(collection, callback) {
+      var Metadata_m = mongoose.model('metadata');
+      return Metadata_m.findOne({ collectionName: collection }).exec(function (err, doc) {
+        return callback(doc);
+      });
     }
-  }, {
-    key: 'queryDataset',
-    value: function queryDataset(req) {
-      var dataset = req.body.dataset;
-      var data = {};
-      switch (dataset) {
-        case "energy_consumption":
-          data.collection = 'power_sample';
-          data.fields = [{ 'field': 'iid', 'type': 'integer', 'description': 'Monitored home unique identifier' }, { 'field': 'tmstp', 'type': 'date', 'description': 'Date and time of the measurement' }, { 'field': 'deploy', 'type': 'float', 'description': 'Deployment' }, { 'field': 'Imin', 'type': 'float', 'description': 'Minimum current' }, { 'field': 'Imax', 'type': 'float', 'description': 'Maximum current' }, { 'field': 'Iavg', 'type': 'float', 'description': 'Average current' }, { 'field': 'Vmin', 'type': 'float', 'description': 'Minimum voltage' }, { 'field': 'Vmax', 'type': 'float', 'description': 'Maximum voltage' }, { 'field': 'Vavg', 'type': 'float', 'description': 'Average voltage' }, { 'field': 'Pmin', 'type': 'float', 'description': 'Minimum real power' }, { 'field': 'Pmax', 'type': 'float', 'description': 'Maximum real power' }, { 'field': 'Pavg', 'type': 'float', 'description': 'Average real power' }, { 'field': 'miss_flag', 'type': 'boolean', 'description': 'Post Process' }];
-          break;
 
-        case "power_event":
-          data.collection = 'power_event';
-          data.fields = [{ 'field': 'iid', 'type': 'integer', 'description': 'Monitored home unique identifier' }, { 'field': 'tmstp', 'type': 'date', 'description': 'Date and time of the measurement' }, { 'field': 'deploy', 'type': 'float', 'description': 'Deployment' }, { 'field': 'delta_P', 'type': 'float', 'description': 'Real power change' }, { 'field': 'delta_Q', 'type': 'float', 'description': 'Reactive power change' }, { 'field': 'trace_P', 'type': 'float', 'description': 'Real power trace of the event (50 Hz)' }, { 'field': 'trace_Q', 'type': 'float', 'description': 'Reactive power trace of the event (50 Hz)' }];
-          break;
+    /**
+     * @description Responsible for receiving a request with filters to query a specific
+     * collection and return its data
+     * @public
+     * @param  {object} req NodeJS request obj
+     * @return {json} the collection metadata, identifying its fields, descriptions and so on
+     */
 
-        case "user_event":
-          data.collection = 'user_event';
-          data.fields = [{ 'field': 'iid', 'type': 'integer', 'description': 'Monitored home unique identifier' }, { 'field': 'tmstp', 'type': 'date', 'description': 'Date and time of the measurement' }, { 'field': 'deploy', 'type': 'float', 'description': 'Deployment' }, { 'field': 'type_id', 'type': 'float', 'description': 'Identifier of the type of interactions' }, { 'field': 'type_name', 'type': 'string', 'description': 'Type of interaction' }, { 'field': 'view_id', 'type': 'float', 'description': 'Identifier of the visualized screen' }, { 'field': 'view_name', 'type': 'string', 'description': 'Name of visualized screen' }];
-          break;
-
-        case "demographic":
-          data.fields = {};
-          break;
-
-        case "electric_production":
-          data.collection = 'electric_production';
-          data.fields = [{ 'field': 'id', 'type': 'integer', 'description': 'ID' }, { 'field': 'tmstp', 'type': 'date', 'description': 'Date and time of the measurement' }, { 'field': 'total', 'type': 'float', 'description': 'Total' }, { 'field': 'thermal', 'type': 'float', 'description': 'Thermal' }, { 'field': 'hydro', 'type': 'float', 'description': 'Hydro' }, { 'field': 'eolic', 'type': 'float', 'description': 'Eolic' }, { 'field': 'biomass', 'type': 'float', 'description': 'Biomass' }, { 'field': 'solar', 'type': 'float', 'description': 'Solar' }];
-          break;
-
-        case "environmental_data":
-          data.collection = 'environmental';
-          data.fields = [{ 'field': 'tmstp', 'type': 'date', 'description': 'Date and time of the measurement' }, { 'field': 'station_id', 'type': 'integer', 'description': 'Station ID' }, { 'field': 'station', 'type': 'string', 'description': 'Station' }, { 'field': 'Temp', 'type': 'float', 'description': 'Temperature' }, { 'field': 'Hum', 'type': 'float', 'description': 'Eolic' }, { 'field': 'WS', 'type': 'float', 'description': 'Wind Speed' }, { 'field': 'WD', 'type': 'string', 'description': 'Wind Direction' }, { 'field': 'Pre', 'type': 'float', 'description': 'Precipitation' }, { 'field': 'Cond', 'type': 'string', 'description': 'Conditions' }];
-          break;
-
-        case "power_event_sum":
-          data.fields = {};
-          break;
-
-        case "eco_feedback":
-          data.fields = {};
-          break;
-
-        default:
-          data.fields = {};
-          break;
-      }
-
-      return data;
-    }
   }, {
     key: 'searchDatasetData',
     value: function searchDatasetData(req, res) {
+      var _this = this;
+
       var req_data = req.body;
       var collection = req_data.collection;
       var records = null;
 
-      switch (collection) {
-        case "power_sample":
-          this.searchPowerSampleData(req_data, res);
-          break;
+      this._getCollectionMetadata(collection, function (metadata) {
+        var cursor = _this.buildQuery(collection);
 
-        case "power_event":
-          this.searchPowerEventData(req_data, res);
-          break;
-
-        case "user_event":
-          this.searchUserEventData(req_data, res);
-          break;
-
-        case "electric_production":
-          this.searchElectricProductionData(req_data, res);
-          break;
-
-        case "environmental":
-          this.searchEnvironmentalData(req_data, res);
-          break;
-
-        default:
-          res.send("Invalid request");
-          return false;
-          break;
-      }
-    }
-  }, {
-    key: 'searchPowerSampleData',
-    value: function searchPowerSampleData(req_data, res) {
-      var cursor = this.buildQuery('power_sample');
-      cursor.toArray(function (err, docs) {
-        var response = {
-          'headers': [{ 'field': 'iid', 'label': 'Home ID' }, { 'field': 'tmstp', 'label': 'Date ' }, { 'field': 'deploy', 'label': 'Deployment' }, { 'field': 'Imin', 'label': 'Min. current' }, { 'field': 'Imax', 'label': 'Max. current' }, { 'field': 'Iavg', 'label': 'Avg current' }, { 'field': 'Vmin', 'label': 'Min. voltage' }, { 'field': 'Vmax', 'label': 'Max. voltage' }, { 'field': 'Vavg', 'label': 'Avg voltage' }, { 'field': 'Pmin', 'label': 'Min. real power' }, { 'field': 'Pmax', 'label': 'Max. real power' }, { 'field': 'Pavg', 'label': 'Avg real power' }, { 'field': 'miss_flag', 'label': 'Post Process' }],
-          'rows': docs
-        };
-        res.json(response);
-      });
-    }
-  }, {
-    key: 'searchPowerEventData',
-    value: function searchPowerEventData(req_data, res) {
-      var cursor = this.buildQuery('power_event');
-      cursor.toArray(function (err, docs) {
-        var response = {
-          'headers': [{ 'field': 'iid', 'label': 'Home ID' }, { 'field': 'tmstp', 'label': 'Date' }, { 'field': 'deploy', 'label': 'Deployment' }, { 'field': 'delta_P', 'label': 'Real power change' }, { 'field': 'delta_Q', 'label': 'Reactive power change' }, { 'field': 'trace_P', 'label': 'Real power trace' }, { 'field': 'trace_Q', 'label': 'Reactive power trace' }],
-          'rows': docs
-        };
-        res.json(response);
-      });
-    }
-  }, {
-    key: 'searchUserEventData',
-    value: function searchUserEventData(req_data, res) {
-      var cursor = this.buildQuery('user_event');
-      cursor.toArray(function (err, docs) {
-        var response = {
-          'headers': [{ 'field': 'tmstp', 'label': 'Home ID' }, { 'field': 'deploy', 'label': 'Date' }, { 'field': 'type_id', 'label': 'Deployment' }, { 'field': 'type_name', 'label': 'Interaction' }, { 'field': 'view_id', 'label': 'Screen ID' }, { 'field': 'view_name', 'label': 'Screen name' }],
-          'rows': docs
-        };
-        res.json(response);
-        // db.close();
-      });
-    }
-  }, {
-    key: 'searchElectricProductionData',
-    value: function searchElectricProductionData(req_data, res) {
-      var cursor = this.buildQuery('electric_production');
-
-      cursor.toArray(function (err, docs) {
-        var response = {
-          'headers': [{ 'field': 'id', 'label': 'ID' }, { 'field': 'tmstp', 'label': 'Date' }, { 'field': 'total', 'label': 'Total' }, { 'field': 'thermal', 'label': 'Thermal' }, { 'field': 'hydro', 'label': 'Hydro' }, { 'field': 'eolic', 'label': 'Eolic' }, { 'field': 'biomass', 'label': 'Biomass' }, { 'field': 'solar', 'label': 'Solar' }],
-          'rows': docs
-        };
-        res.json(response);
-        // db.close();
-      });
-    }
-  }, {
-    key: 'searchEnvironmentalData',
-    value: function searchEnvironmentalData(req_data, res) {
-      var cursor = this.buildQuery('environmental');
-      cursor.toArray(function (err, docs) {
-        var response = {
-          'headers': [{ 'field': 'tmstp', 'label': 'Date' }, { 'field': 'station_id', 'label': 'Station ID' }, { 'field': 'station', 'label': 'Station' }, { 'field': 'Temp', 'label': 'Temperature' }, { 'field': 'Hum', 'label': 'Eolic' }, { 'field': 'WS', 'label': 'Wind Speed' }, { 'field': 'WD', 'label': 'Wind Direction' }, { 'field': 'Pre', 'label': 'Precipitation' }, { 'field': 'Cond', 'label': 'Conditions' }],
-          'rows': docs
-        };
-        res.json(response);
+        cursor.toArray(function (err, docs) {
+          var response = {
+            'headers': metadata.fields,
+            'rows': docs
+          };
+          res.json(response);
+        });
       });
     }
   }, {

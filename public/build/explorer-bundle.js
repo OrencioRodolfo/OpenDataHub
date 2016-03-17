@@ -88,7 +88,7 @@ angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$md
     FiltersService.getMetadata($scope.search.collection).then(function (res) {
       try {
         if (res.status !== 200) throw res.statusText;
-        setFilterItems(res.data.doc.fields);
+        setFilterItems(res.data.fields);
       } catch (e) {
         console.log(e);
       };

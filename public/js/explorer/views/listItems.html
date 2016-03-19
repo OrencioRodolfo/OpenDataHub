@@ -7,7 +7,14 @@
     </thead>
     <tbody md-body>
       <tr md-row ng-repeat="row in data.rows">
-        <td md-cell ng-repeat="header in data.headers">{{row[header.field]}}</td>
+        <td
+          md-cell
+          ng-repeat="header in data.headers"
+          >
+          {{ header.type == 'date' ? (row[header.field] | date:'yyyy-MM-dd HH:mm') : row[header.field] }}
+        </td>
+
+        <!-- <td md-cell ng-repeat="header in data.headers">{{ row[header.field] }}</td> -->
       </tr>
     </tbody>
   </table>

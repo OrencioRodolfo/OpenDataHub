@@ -15,7 +15,8 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
     develop: {
       server: {
-        file: 'app.js'
+        file: 'app.js',
+        nodeArgs: ['--debug']
       }
     },
     less: {
@@ -155,7 +156,7 @@ module.exports = function (grunt) {
             grunt.log.error('Unable to make a delayed live reload.');
           done(reloaded);
         });
-    }, 500);
+    }, 800);
   });
 
   // grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'uglify', 'develop', 'watch']);

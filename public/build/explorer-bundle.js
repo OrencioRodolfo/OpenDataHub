@@ -110,6 +110,7 @@ angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$md
         'header': field.description,
         'contentTmpl': 'js/explorer/views/filters/templates/' + field.type + '.html',
         'field': field.field,
+        'type': field.type,
         'inputValue': null,
         'visible': true
       };
@@ -145,12 +146,21 @@ angular.module('openDataHubApp').controller('FiltersController', ["$scope", "$md
       }
 
       // set filters for each field
-      if (item.inputValue && (item.inputValue.min || item.inputValue.max)) {
-        filters.push({
+      if (item.inputValue) {
+        var filter = {
           field: item.field,
-          min: item.inputValue.min,
-          max: item.inputValue.max
-        });
+          type: item.type
+        };
+        if (item.inputValue.min || item.inputValue.max) {
+          Object.assign(filter, {
+            min: item.inputValue.min,
+            max: item.inputValue.max
+          });
+        } else if (item.inputValue.length) {
+          Object.assign(filter, { val: item.inputValue });
+        };
+
+        filters.push(filter);
       }
     });
 

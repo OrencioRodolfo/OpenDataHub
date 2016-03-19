@@ -83,98 +83,27 @@ export default class ExplorerCtrl {
       res.json(response);
     });
   }
-
-  response(req_data, docs, res) {
-  	let fields 	= [];
-  	req_data.selected_fields.forEach(function(field){
-  		fields.push(field.field);
-  	});
-  	//console.log(docs);
-  	if (req_data.context == 'download') {
-  		let file_path = saveDatasetFile( docs, fields, req_data.collection, req_data.file_extension );
-  		res.send({file: file_path})
-  	}else if (req_data.context == 'chart') {
-  		let response = {records: docs, fields: fields};
-  		res.render('dataConsult/canvas', response);
-  	}else{
-  		let response = {records: docs, fields: fields};
-  		if (!utils.empty(req_data.page))
-  			response.more_results = true;
-  		res.render('dataConsult/listRecords', response);
-  	}
-  }
-
-  _buildQuery(collection) {
-    let cursor = db.collection(collection).find();
-    return cursor.limit(50);
-  }
-
-  setProjection(group_by) {
-  	let json = {};
-  	switch (group_by) {
-  		case "minute":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'},
-  				h: {'$hour': '$tmstp'},
-  				m: {'$minute': '$tmstp'}
-  			};
-  			break;
-  		case "hour":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'},
-  				h: {'$hour': '$tmstp'}
-  			};
-  			break;
-  		case "day":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'}
-  			};
-  			break;
-  		case "month":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'}
-  			};
-  			break;
-  		case "year":
-  			json = {
-  				y: {'$year': '$tmstp'}
-  			};
-  			break;
-  		default:
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'},
-  				h: {'$hour': '$tmstp'},
-  				m: {'$minute': '$tmstp'}
-  			};
-  			break;
-  	}
-  	return json;
-  }
-
-  addFilter(req, res) {
-  	let req_data = req.body;
-  	if( req_data.type == 'integer' ){
-  		let PowerSample_m 	= mongoose.model('power_sample');
-  		let homes = PowerSample_m
-  					.find()
-  					.distinct('iid')
-  					.exec(function( err, home_ids ){
-  						res.render('dataConsult/addFilter', {'field': req_data, 'homes': home_ids});
-  					});
-  	}else{
-  		res.render('dataConsult/addFilter', {'field': req_data});
-  	}
-  }
 }
+
+// response(req_data, docs, res) {
+//   let fields 	= [];
+//   req_data.selected_fields.forEach(function(field){
+//     fields.push(field.field);
+//   });
+//   //console.log(docs);
+//   if (req_data.context == 'download') {
+//     let file_path = saveDatasetFile( docs, fields, req_data.collection, req_data.file_extension );
+//     res.send({file: file_path})
+//   }else if (req_data.context == 'chart') {
+//     let response = {records: docs, fields: fields};
+//     res.render('dataConsult/canvas', response);
+//   }else{
+//     let response = {records: docs, fields: fields};
+//     if (!utils.empty(req_data.page))
+//     response.more_results = true;
+//     res.render('dataConsult/listRecords', response);
+//   }
+// }
 
 //
 // exports.downloadDatasetFile = function (req, res) {

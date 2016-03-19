@@ -8,18 +8,27 @@
  * @date 2016-02-17
  */
 export default class QueryBuilder {
-  /**
-   * [constructor description]
-   * @param  {[type]} fields=[]  [description]
-   * @param  {[type]} filters=[] [description]
-   * @return {[type]}            [description]
-   */
+
   constructor() {
   }
 
+  /**
+   * @description
+   * Responsible for quering the database retriving all the data from the
+   * collection, being aware of the filters specified by the user
+   *
+   * @public
+   *
+   * @param  {String}   collection the name of the collection to be queried
+   * @param  {Object}   fields     an array identifying which fields are selected to be
+   * present on the data preview
+   * @param  {Object}   filters    an array containing all the filters specified by the user
+   * @param  {Function} callback   the callback to be executed when the query
+   * is performed. Containing the query result.
+   */
   getCollectionData(collection, fields, filters, callback) {
     const queryFilters = this._setFilters(filters);
-
+    console.log('queryFilters', queryFilters);
     // build the query and return the promise with its result
     db.collection(collection)
       .find(queryFilters)
@@ -27,19 +36,35 @@ export default class QueryBuilder {
       .toArray(callback);
   }
 
+  /**
+   * @description
+   * Responsible for building the query statements for filtering the data
+   *
+   * @private
+   *
+   * @param  {Object} filters  an array containing all the filters specified by the user
+   * @return {JSON} the query statement
+   */
   _setFilters(filters) {
     let result = {};
 
     if (!filters.length)
       return result;
 
-    filters.forEach(function(filter){
+    filters.forEach((filter) => {
     	let json = {};
+      switch (filter.type) {
+        case 'number':
+          json = this._setNumberFilter(filter);
+          break;
+        case 'date':
+          json = this._setDateFilter(filter);
+          break;
 
-      if (filter.min)
-      	json['$gte'] = filter.min;
-      if (filter.max)
-      	json['$lte'] = filter.max;
+        // by default treat it like a string
+        default:
+          json = this._setStringFilter(filter);
+      }
 
       result[filter.field] = json;
     });
@@ -48,7 +73,69 @@ export default class QueryBuilder {
   }
 
   /**
-   * Responsible for quering the database and retrieve the metadata for a certain collection
+   * @description
+   * Responsible for building the query statements for filters that are numbers
+   * Builds a statement like: 'higher than number X and/or lower than number Y'
+   *
+   * @private
+   *
+   * @param {JSON} filter one of the specified filters
+   * @return {JSON} the query statement
+   */
+  _setNumberFilter(filter) {
+    let json = {};
+
+    if (filter.min)
+      json['$gte'] = filter.min;
+    if (filter.max)
+      json['$lte'] = filter.max;
+
+    return json;
+  }
+
+  /**
+   * @description
+   * Responsible for building the query statements for filters that are dates
+   * Builds a statement like: 'higher than date X and/or lower than date Y'
+   *
+   * @private
+   *
+   * @param {JSON} filter one of the specified filters
+   * @return {JSON} the query statement
+   */
+  _setDateFilter(filter) {
+    let json = {};
+
+    if (filter.min) {
+      let minDate  = new Date(filter.min);
+      json['$gte'] = minDate;
+    }
+
+    if (filter.max) {
+      let maxDate  = new Date(filter.max);
+      json['$lte'] = maxDate;
+    }
+
+    return json;
+  }
+
+  /**
+   * @description
+   * Responsible for building the query statements for filters that are dates
+   * Builds a statement like: 'contains something like X'
+   *
+   * @private
+   *
+   * @param {JSON} filter one of the specified filters
+   * @return {String} a regex that defines a 'like' query statement
+   */
+  _setStringFilter(filter) {
+    return new RegExp(filter.val, 'i');
+  }
+
+  /**
+   * Responsible for quering the database and retrieve the metadata for
+   * a certain collection
    * @private
    * @param  {String}   collection - the name of the collection to query
    * @param  {Function} callback - The callback that will handle the database response
@@ -61,69 +148,54 @@ export default class QueryBuilder {
             .exec((err, doc) => callback(doc));
   }
 
-  setProjection(group_by) {
-  	let json = {};
-  	switch (group_by) {
-  		case "minute":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'},
-  				h: {'$hour': '$tmstp'},
-  				m: {'$minute': '$tmstp'}
-  			};
-  			break;
-  		case "hour":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'},
-  				h: {'$hour': '$tmstp'}
-  			};
-  			break;
-  		case "day":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'}
-  			};
-  			break;
-  		case "month":
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'}
-  			};
-  			break;
-  		case "year":
-  			json = {
-  				y: {'$year': '$tmstp'}
-  			};
-  			break;
-  		default:
-  			json = {
-  				y: {'$year': '$tmstp'},
-  				m: {'$month': '$tmstp'},
-  				d: {'$dayOfMonth': '$tmstp'},
-  				h: {'$hour': '$tmstp'},
-  				m: {'$minute': '$tmstp'}
-  			};
-  			break;
-  	}
-  	return json;
-  }
-
-  addFilter(req, res) {
-  	let req_data = req.body;
-  	if( req_data.type == 'integer' ){
-  		let PowerSample_m 	= mongoose.model('power_sample');
-  		let homes = PowerSample_m
-  					.find()
-  					.distinct('iid')
-  					.exec(function( err, home_ids ){
-  						res.render('dataConsult/addFilter', {'field': req_data, 'homes': home_ids});
-  					});
-  	}else{
-  		res.render('dataConsult/addFilter', {'field': req_data});
-  	}
-  }
+  // setProjection(group_by) {
+  // 	let json = {};
+  // 	switch (group_by) {
+  // 		case "minute":
+  // 			json = {
+  // 				y: {'$year': '$tmstp'},
+  // 				m: {'$month': '$tmstp'},
+  // 				d: {'$dayOfMonth': '$tmstp'},
+  // 				h: {'$hour': '$tmstp'},
+  // 				m: {'$minute': '$tmstp'}
+  // 			};
+  // 			break;
+  // 		case "hour":
+  // 			json = {
+  // 				y: {'$year': '$tmstp'},
+  // 				m: {'$month': '$tmstp'},
+  // 				d: {'$dayOfMonth': '$tmstp'},
+  // 				h: {'$hour': '$tmstp'}
+  // 			};
+  // 			break;
+  // 		case "day":
+  // 			json = {
+  // 				y: {'$year': '$tmstp'},
+  // 				m: {'$month': '$tmstp'},
+  // 				d: {'$dayOfMonth': '$tmstp'}
+  // 			};
+  // 			break;
+  // 		case "month":
+  // 			json = {
+  // 				y: {'$year': '$tmstp'},
+  // 				m: {'$month': '$tmstp'}
+  // 			};
+  // 			break;
+  // 		case "year":
+  // 			json = {
+  // 				y: {'$year': '$tmstp'}
+  // 			};
+  // 			break;
+  // 		default:
+  // 			json = {
+  // 				y: {'$year': '$tmstp'},
+  // 				m: {'$month': '$tmstp'},
+  // 				d: {'$dayOfMonth': '$tmstp'},
+  // 				h: {'$hour': '$tmstp'},
+  // 				m: {'$minute': '$tmstp'}
+  // 			};
+  // 			break;
+  // 	}
+  // 	return json;
+  // }
 }

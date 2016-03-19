@@ -28,6 +28,7 @@ export default class QueryBuilder {
    */
   getCollectionData(collection, fields, filters, callback) {
     const queryFilters = this._setFilters(filters);
+    // @TODO remove me
     console.log('queryFilters', queryFilters);
     // build the query and return the promise with its result
     db.collection(collection)
@@ -52,6 +53,9 @@ export default class QueryBuilder {
       return result;
 
     filters.forEach((filter) => {
+      // if it has no values, then ignore it
+      if (!filter.val && !filter.min && !filter.max) return;
+
     	let json = {};
       switch (filter.type) {
         case 'number':

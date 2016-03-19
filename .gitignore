@@ -2,4 +2,6 @@ node_modules/
 .sass-cache
 app
 ./public/build
+./public/css
+./public/components
 **/*.log

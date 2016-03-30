@@ -3,5 +3,6 @@ node_modules/
 app
 public/build
 public/css
-public/components
 **/*.log
+/public/components
+!/public/components/bootstrap

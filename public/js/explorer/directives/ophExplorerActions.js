@@ -41,7 +41,7 @@ angular.module('openDataHubApp')
           });
         };
 
-        $scope.showFiltersForm();
+        // $scope.showFiltersForm();
       }]
     };
   });

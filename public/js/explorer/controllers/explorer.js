@@ -19,6 +19,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
       'headers': [],
       'rows': []
     };
+    $scope.mode = 'table'; // or chart
 
     /**
      * @property {json} search - sustains all the filters for data query
@@ -42,6 +43,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
           if (res.status !== 200) throw res.statusText;
           $scope.data.headers = res.data.headers;
           $scope.data.rows    = res.data.rows;
+          console.log('explorer', $scope.data);
         } catch (e) {
           alert(e);
         };

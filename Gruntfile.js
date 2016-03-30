@@ -156,9 +156,9 @@ module.exports = function (grunt) {
             grunt.log.error('Unable to make a delayed live reload.');
           done(reloaded);
         });
-    }, 800);
+    }, 1000);
   });
 
-  // grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'uglify', 'develop', 'watch']);
-  grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'develop', 'watch']);
+  grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'uglify', 'develop', 'watch']);
+  // grunt.registerTask('default', ['babel', 'less', 'sync', 'bower_concat', 'browserify', 'develop', 'watch']);
 };

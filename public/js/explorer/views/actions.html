@@ -17,11 +17,19 @@
             <md-tooltip md-direction="bottom">Download JSON</md-tooltip>
             <i class="fa fa-file-text-o"></i>
           </md-button>
-          <md-button class="md-fab md-raised md-mini" aria-label="Raw data">
+          <md-button
+            class="md-fab md-raised md-mini"
+            aria-label="Raw data"
+            ng-click="mode = 'table'"
+            >
             <md-tooltip md-direction="bottom">Raw data</md-tooltip>
             <i class="fa fa-list"></i>
           </md-button>
-          <md-button class="md-fab md-raised md-mini" aria-label="Chart">
+          <md-button
+            class="md-fab md-raised md-mini"
+            aria-label="Chart"
+            ng-click="mode = 'chart'"
+            >
             <md-tooltip md-direction="bottom">Chart</md-tooltip>
             <i class="fa fa-area-chart"></i>
           </md-button>

@@ -7,40 +7,21 @@
 angular.module('openDataHubApp').controller('FiltersController', [
   "$scope",
   "$mdDialog",
-  "FiltersService",
-  function($scope, $mdDialog, FiltersService) {
-    /**
-     * @property {Array} filterItems - sustains all the fields that are possible
-     * to filter for a specific data collection
-     */
+  "MetadataService",
+  function($scope, $mdDialog, MetadataService) {
 
-
-    /**
-     * [description]
-     * @param  {[type]} function getMetadata(  [description]
-     * @return {[type]}          [description]
-     */
-    (function getMetadata() {
-      // If the user is in the same collection and has previously specified some filters
-      // then preserve the filters (do nothing here)
-      if (
-        $scope.collection &&
-        $scope.collection == $scope.search.collection && // is in the same collection
-        $scope.filterItems
-      ) {
-        return;
-      }
-
+    // If the user is in the same collection and has previously specified some filters
+    // then preserve the filters (do nothing here)
+    if (
+      $scope.collection &&
+      $scope.collection == $scope.search.collection && // is in the same collection
+      $scope.filterItems
+    ) {
+      return;
+    } else {
       $scope.collection = $scope.search.collection;
-      FiltersService.getMetadata($scope.search.collection).then(function (res) {
-        try {
-          if (res.status !== 200) throw res.statusText;
-          setFilterItems(res.data.fields);
-        } catch (e) {
-          console.log(e);
-        };
-      });
-    }());
+      setFilterItems($scope.metadata.fields);
+    }
 
     /**
      * Responsible for setting up the accordion for the filters apply
@@ -71,7 +52,7 @@ angular.module('openDataHubApp').controller('FiltersController', [
 
     $scope.searchData = function() {
       parseFilters();
-      $scope.previewDatasetData();
+      $scope.previewDatasetData($scope.search.collection);
       // $mdDialog.hide();
     };
 

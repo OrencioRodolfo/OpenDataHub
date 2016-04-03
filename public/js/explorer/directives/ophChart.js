@@ -13,11 +13,11 @@ angular.module('openDataHubApp')
       restrict: 'E',
 
       controller: function($scope) {
-        console.log($scope.data);
-
-        $scope.$watch('data', function(val) {
-          console.log('val', val);
-        }, true);
+        // console.log($scope.data);
+        //
+        // $scope.$watch('data', function(val) {
+        //   console.log('val', val);
+        // }, true);
 
         // $scope.labels = setLabels($scope.data.headers, $scope.data.rows);
         $scope.labels = ["January", "February", "March", "April", "May", "June", "July"];

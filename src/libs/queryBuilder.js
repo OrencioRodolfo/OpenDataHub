@@ -28,13 +28,40 @@ export default class QueryBuilder {
    */
   getCollectionData(collection, fields, filters, callback) {
     const queryFilters = this._setFilters(filters);
+    const projection = this._setProjection(fields);
+
     // @TODO remove me
-    console.log('queryFilters', queryFilters);
+    // console.log('queryFilters', queryFilters);
+    // console.log('fields', fields);
+    console.log('projection', projection);
+
     // build the query and return the promise with its result
     db.collection(collection)
-      .find(queryFilters)
+      .find(queryFilters, projection)
       .limit(50)
       .toArray(callback);
+  }
+
+  /**
+   * @description
+   * Responsible for setting up the query 'projection' object
+   * in order to present only the fields marked as visible
+   *
+   * @param {Array} fields an array with the names of the selected fields for visualization
+   */
+  _setProjection(fields) {
+    if (!fields || !fields.length)
+      return {};
+
+    let projection = {
+      _id: -1
+    };
+    for (var i = 0; i < fields.length; i++) {
+      let field = fields[i];
+      projection[field] = 1;
+    }
+
+    return projection;
   }
 
   /**

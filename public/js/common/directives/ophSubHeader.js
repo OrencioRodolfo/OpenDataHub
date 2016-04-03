@@ -38,7 +38,7 @@ angular.module('openDataHubApp')
               if (res.status !== 200) throw res.statusText;
               $scope.user = res.data;
             } catch (e) {
-              alert(e);
+              console.log(e);
             };
           });
         };

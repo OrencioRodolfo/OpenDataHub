@@ -73,32 +73,14 @@ var ExplorerCtrl = function () {
      * @return {json} the collection metadata, identifying its fields, descriptions and so on
      */
     value: function searchDatasetData(req, res) {
-      var async = require('async');
       var req_data = req.body;
       var collection = req_data.collection;
       var fields = req_data.fields;
       var filters = req_data.filters;
       var response = {};
 
-      async.parallel([
-      // get the headers
-      function (callback) {
-        queryBuilder.getCollectionMetadata(collection, function (metadata) {
-          response.headers = metadata.fields;
-          callback();
-        });
-      },
-      // perform the query
-      function (callback) {
-        queryBuilder.getCollectionData(collection, fields, filters, function (err, docs) {
-          response.rows = docs;
-          callback();
-        });
-      }], function (err) {
-        // when it is all done, return the data
-        if (err) {
-          throw err; //Or pass it on to an outer callback, log it or whatever suits your needs
-        }
+      queryBuilder.getCollectionData(collection, fields, filters, function (err, docs) {
+        response.rows = docs;
         res.json(response);
       });
     }

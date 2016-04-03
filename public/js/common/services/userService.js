@@ -21,7 +21,7 @@ angular.module('openDataHubApp')
           if (res.status !== 200) throw res.statusText;
           window.location = `${site_url}`;
         } catch (e) {
-          alert(e);
+          console.log(e);
         };
       });
     }

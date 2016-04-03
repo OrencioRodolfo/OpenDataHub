@@ -48,40 +48,21 @@ export default class ExplorerCtrl {
    * @return {json} the collection metadata, identifying its fields, descriptions and so on
    */
   searchDatasetData (req, res) {
-    const async          = require('async');
-    const req_data       = req.body;
-  	const collection     = req_data.collection;
-  	const fields         = req_data.fields;
-  	const filters        = req_data.filters;
-    let response       = {};
+    const req_data   = req.body;
+  	const collection = req_data.collection;
+  	const fields     = req_data.fields;
+  	const filters    = req_data.filters;
+    let response     = {};
 
-    async.parallel([
-      // get the headers
-      (callback) => {
-        queryBuilder.getCollectionMetadata(collection, (metadata) => {
-          response.headers = metadata.fields;
-          callback();
-        })
-      },
-      // perform the query
-      (callback) => {
-        queryBuilder.getCollectionData(
-          collection,
-          fields,
-          filters,
-          function(err, docs) {
-            response.rows = docs;
-            callback();
-          }
-        );
+    queryBuilder.getCollectionData(
+      collection,
+      fields,
+      filters,
+      function(err, docs) {
+        response.rows = docs;
+        res.json(response);
       }
-    ], function(err) {
-      // when it is all done, return the data
-      if (err) {
-        throw err; //Or pass it on to an outer callback, log it or whatever suits your needs
-      }
-      res.json(response);
-    });
+    );
   }
 }
 

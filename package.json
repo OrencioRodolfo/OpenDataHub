@@ -17,6 +17,7 @@
     "glob": "^5.0.3",
     "grunt-sync": "^0.5.1",
     "jade": "^1.11.0",
+    "lodash": "^4.7.0",
     "method-override": "^2.3.0",
     "moment": "^2.11.1",
     "mongoose": "^4.1.2",

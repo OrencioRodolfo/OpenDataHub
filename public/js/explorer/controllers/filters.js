@@ -10,6 +10,15 @@ angular.module('openDataHubApp').controller('FiltersController', [
   "MetadataService",
   function($scope, $mdDialog, MetadataService) {
 
+    $scope.aggregationBy = {
+      m: 'Minute',
+      h: 'Hour',
+      d: 'Day',
+      w: 'Week',
+      m: 'Month',
+      y: 'Year',
+    };
+
     // If the user is in the same collection and has previously specified some filters
     // then preserve the filters (do nothing here)
     if (

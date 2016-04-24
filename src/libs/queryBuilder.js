@@ -30,11 +30,6 @@ export default class QueryBuilder {
     const queryFilters = this._setFilters(filters);
     const projection = this._setProjection(fields);
 
-    // @TODO remove me
-    // console.log('queryFilters', queryFilters);
-    // console.log('fields', fields);
-    console.log('projection', projection);
-
     // build the query and return the promise with its result
     db.collection(collection)
       .find(queryFilters, projection)

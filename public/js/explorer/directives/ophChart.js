@@ -25,7 +25,6 @@ angular.module('openDataHubApp')
         $scope.$watch('data', function(data) {
           if (data.headers) {
             $scope.chartData = setSeriesLabels(data.headers, data.rows);
-            console.log($scope.chartData);
           }
         }, true);
 
@@ -60,7 +59,6 @@ angular.module('openDataHubApp')
             const rowData = [];
             _.map(row, function(val, index) {
               const field = headersObj[index];
-              console.log(field);
               if (field && field.type === 'number') {
                 chartData[field.field].push(val);
               }

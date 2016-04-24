@@ -1,11 +1,16 @@
 <div class="chart-preview">
+  <!-- {{ chartData }}
+  <br>
+  <br>
+  <br>
+  {{ chartDataSample }} -->
   <canvas
     id="line"
     class="chart chart-line"
-    chart-data="data"
-    chart-labels="labels"
+    chart-data="chartData.data"
+    chart-labels="chartData.labels"
+    chart-series="chartData.series"
     chart-legend="true"
-    chart-series="series"
     >
   </canvas>
 </div>

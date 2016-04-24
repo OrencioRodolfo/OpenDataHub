@@ -29,7 +29,8 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
      * Public attributes
      */
     $scope.metadata = {};
-    $scope.mode = 'table'; // or chart
+    // $scope.mode = 'table'; // or chart
+    $scope.mode = 'chart';
     $scope.data = {
       'headers': [],
       'rows': []
@@ -44,7 +45,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
 
     $scope.$watch('search.collection', function(collection) {
       if (_.isEmpty(collection)) return;
-      
+
       _resetSearchParams();
       previewDatasetData(collection);
     });

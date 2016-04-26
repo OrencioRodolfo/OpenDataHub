@@ -17,7 +17,6 @@ angular.module('openDataHubApp')
     function previewDatasetData(search) {
       const defaultSearch = {
         'collection': '',
-        'groupBy': 'minute',
         'numRows': '50',
         'fields': [],
         'filters': [],

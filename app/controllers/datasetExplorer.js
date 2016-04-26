@@ -77,9 +77,10 @@ var ExplorerCtrl = function () {
       var collection = req_data.collection;
       var fields = req_data.fields;
       var filters = req_data.filters;
+      var groupBy = req_data.groupBy;
       var response = {};
 
-      queryBuilder.getCollectionData(collection, fields, filters, function (err, docs) {
+      queryBuilder.getCollectionData(collection, fields, filters, groupBy, function (err, docs) {
         response.rows = docs;
         res.json(response);
       });

@@ -101,7 +101,6 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
     function _resetSearchParams(){
       $scope.search = {
         'collection': DEFAULT_COLLECTION,
-        'groupBy': 'minute',
         'numRows': '50',
         'fields': [], // an array sustaining the selected fields to be visible on the data preview
         'filters': [] // an array sustaining filters for each field

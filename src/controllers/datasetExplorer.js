@@ -52,12 +52,14 @@ export default class ExplorerCtrl {
   	const collection = req_data.collection;
   	const fields     = req_data.fields;
   	const filters    = req_data.filters;
+  	const groupBy    = req_data.groupBy;
     let response     = {};
 
     queryBuilder.getCollectionData(
       collection,
       fields,
       filters,
+      groupBy,
       function(err, docs) {
         response.rows = docs;
         res.json(response);

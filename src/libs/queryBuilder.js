@@ -14,25 +14,70 @@ export default class QueryBuilder {
 
   /**
    * @description
+   * Responsible for identifying if the data shall be aggregated or not
+   * And, depending on this it is forwarded to the corresponding methods
+   *
+   * @public
+   *
+   * @param  {String} collection the name of the collection to be queried
+   * @param  {Object} fields an array identifying which fields are selected to be
+   * present on the data preview
+   * @param  {Object} filters an array containing all the filters specified by the user
+   * @param  {Object} callback the callback to be executed when the query
+   * is performed. Containing the query result.
+   */
+  getCollectionData(collection, fields, filters, groupBy, callback) {
+    if (groupBy && groupBy.length) {
+      this._getAggregatedData(collection, fields, filters, groupBy, callback);
+    } else {
+      this._getRawData(collection, fields, filters, callback);
+    }
+  }
+
+  /**
+   * @description
    * Responsible for quering the database retriving all the data from the
    * collection, being aware of the filters specified by the user
    *
    * @public
    *
-   * @param  {String}   collection the name of the collection to be queried
-   * @param  {Object}   fields     an array identifying which fields are selected to be
+   * @param  {String} collection the name of the collection to be queried
+   * @param  {Object} fields an array identifying which fields are selected to be
    * present on the data preview
-   * @param  {Object}   filters    an array containing all the filters specified by the user
-   * @param  {Function} callback   the callback to be executed when the query
+   * @param  {Object} filters an array containing all the filters specified by the user
+   * @param  {Object} callback the callback to be executed when the query
    * is performed. Containing the query result.
    */
-  getCollectionData(collection, fields, filters, callback) {
+  _getRawData(collection, fields, filters, callback) {
     const queryFilters = this._setFilters(filters);
     const projection = this._setProjection(fields);
 
     // build the query and return the promise with its result
     db.collection(collection)
       .find(queryFilters, projection)
+      .limit(50)
+      .toArray(callback);
+  }
+
+  _getAggregatedData(collection, fields, filters, groupBy, callback) {
+    const projection = this._setProjection(fields, groupBy);
+    const queryFilters = this._setFilters(filters);
+    const group = this._setGrouping(fields, groupBy);
+
+    const aggregation = [
+      { $project: projection },
+      { $group: group },
+      { $match: queryFilters },
+    ];
+
+    console.log('group', group);
+
+    // build the query and return the promise with its result
+    db.collection(collection)
+      .aggregate(
+        aggregation
+      )
+      .sort({ tmstp: 1 })
       .limit(50)
       .toArray(callback);
   }
@@ -44,7 +89,7 @@ export default class QueryBuilder {
    *
    * @param {Array} fields an array with the names of the selected fields for visualization
    */
-  _setProjection(fields) {
+  _setProjection(fields, groupBy='') {
     if (!fields || !fields.length)
       return {};
 
@@ -52,8 +97,20 @@ export default class QueryBuilder {
       _id: -1
     };
     for (var i = 0; i < fields.length; i++) {
-      let field = fields[i];
+      const field = fields[i];
       projection[field] = 1;
+    }
+
+    if (groupBy.length > 0) {
+      const tmstp = {
+        y: {'$year': '$tmstp'},
+        m: {'$month': '$tmstp'},
+        w: {'$week': '$tmstp'},
+        d: {'$dayOfMonth': '$tmstp'},
+        h: {'$hour': '$tmstp'},
+        min: {'$minute': '$tmstp'}
+      };
+      Object.assign(projection, tmstp);
     }
 
     return projection;
@@ -159,6 +216,51 @@ export default class QueryBuilder {
     return new RegExp(filter.val, 'i');
   }
 
+  _setGrouping(fields, groupBy) {
+    const group = {
+      '_id': {
+        'year': '$y',
+        'month': '$m',
+        'week': '$w',
+        'day': '$d',
+        'hour': '$h',
+        'minute': '$min',
+      }
+    };
+
+    switch (groupBy) {
+      case 'y':
+        group._id = { year: '$y' };
+        break;
+      case 'm':
+        group._id = { year: '$y', month: '$m' };
+        break;
+      case 'w':
+        group._id = { year: '$y', month: '$m', week: '$w' };
+        break;
+      case 'd':
+        group._id = { year: '$y', month: '$m', week: '$w', day: '$d' };
+        break;
+      case 'h':
+        group._id = { year: '$y', month: '$m', week: '$w', day: '$d', hour: '$h' };
+        break;
+      case 'min':
+      default:
+        group._id = { year: '$y', month: '$m', week: '$w', day: '$d', hour: '$h', minute: '$min' };
+        break;
+    }
+
+    for (var i = 0; i < fields.length; i++) {
+      const field = fields[i];
+
+      if (field == 'tmstp')
+				group[field] = { $max: '$'+field };
+			else
+				group[field] = { $avg: '$'+field };
+    }
+    return group;
+  }
+
   /**
    * Responsible for quering the database and retrieve the metadata for
    * a certain collection
@@ -174,54 +276,4 @@ export default class QueryBuilder {
             .exec((err, doc) => callback(doc));
   }
 
-  // setProjection(group_by) {
-  // 	let json = {};
-  // 	switch (group_by) {
-  // 		case "minute":
-  // 			json = {
-  // 				y: {'$year': '$tmstp'},
-  // 				m: {'$month': '$tmstp'},
-  // 				d: {'$dayOfMonth': '$tmstp'},
-  // 				h: {'$hour': '$tmstp'},
-  // 				m: {'$minute': '$tmstp'}
-  // 			};
-  // 			break;
-  // 		case "hour":
-  // 			json = {
-  // 				y: {'$year': '$tmstp'},
-  // 				m: {'$month': '$tmstp'},
-  // 				d: {'$dayOfMonth': '$tmstp'},
-  // 				h: {'$hour': '$tmstp'}
-  // 			};
-  // 			break;
-  // 		case "day":
-  // 			json = {
-  // 				y: {'$year': '$tmstp'},
-  // 				m: {'$month': '$tmstp'},
-  // 				d: {'$dayOfMonth': '$tmstp'}
-  // 			};
-  // 			break;
-  // 		case "month":
-  // 			json = {
-  // 				y: {'$year': '$tmstp'},
-  // 				m: {'$month': '$tmstp'}
-  // 			};
-  // 			break;
-  // 		case "year":
-  // 			json = {
-  // 				y: {'$year': '$tmstp'}
-  // 			};
-  // 			break;
-  // 		default:
-  // 			json = {
-  // 				y: {'$year': '$tmstp'},
-  // 				m: {'$month': '$tmstp'},
-  // 				d: {'$dayOfMonth': '$tmstp'},
-  // 				h: {'$hour': '$tmstp'},
-  // 				m: {'$minute': '$tmstp'}
-  // 			};
-  // 			break;
-  // 	}
-  // 	return json;
-  // }
 }

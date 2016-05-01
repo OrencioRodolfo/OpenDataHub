@@ -23,17 +23,15 @@
     <md-dialog-actions layout="row">
       <span flex></span>
 
-      <md-input-container>
-        <label>Group by</label>
-        <md-select ng-model="search.groupBy">
-          <md-option
-            ng-repeat="(key, value) in aggregationBy"
-            value="{{ key }}"
-            >
-            {{ value }}
-          </md-option>
-        </md-select>
-      </md-input-container>
+      <select class="aggregation-select form-control" name="groupBy" ng-model="search.groupBy">
+        <option value="">None</option>
+        <option
+          ng-repeat="(key, value) in aggregationBy"
+          value="{{ key }}"
+          >
+          {{ value }}
+        </option>
+      </select>
 
       <md-button
         ng-click="cancel()"

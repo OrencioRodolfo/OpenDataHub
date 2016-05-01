@@ -11,7 +11,7 @@ angular.module('openDataHubApp').controller('FiltersController', [
   function($scope, $mdDialog, MetadataService) {
 
     $scope.aggregationBy = {
-      m: 'Minute',
+      min: 'Minute',
       h: 'Hour',
       d: 'Day',
       w: 'Week',

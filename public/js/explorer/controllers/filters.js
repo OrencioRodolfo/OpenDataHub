@@ -61,8 +61,8 @@ angular.module('openDataHubApp').controller('FiltersController', [
 
     $scope.searchData = function() {
       parseFilters();
-      $scope.previewDatasetData($scope.search.collection);
-      // $mdDialog.hide();
+      $scope.previewDatasetData();
+      $mdDialog.hide();
     };
 
 

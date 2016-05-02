@@ -29,8 +29,8 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
      * Public attributes
      */
     $scope.metadata = {};
-    // $scope.mode = 'table'; // or chart
-    $scope.mode = 'chart';
+    $scope.mode = 'table'; // or chart
+    // $scope.mode = 'chart';
     $scope.data = {
       'headers': [],
       'rows': []
@@ -56,14 +56,13 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
      * query filters specified by the user
      * @param {String} collection - the name of the collection to query (by default it will be 'user_event')
      */
-    function previewDatasetData(collection) {
-      $scope.search.collection = collection;
+    function previewDatasetData(collection='') {
       async.parallel(
         [
           // get the headers
           (callback) => {
             // get collection's metadata
-            _getCollectionMetadata(collection, (metadata) => {
+            _getCollectionMetadata($scope.search.collection, (metadata) => {
               $scope.metadata = metadata;
               callback();
             });
@@ -76,6 +75,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
               if (res.status !== 200) throw res.statusText;
               $scope.data.rows    = res.data.rows;
               $scope.data.headers = _setDataHeadersForDisplay();
+              $scope.data.numRows = res.data.numRows;
             } catch (e) {
               console.log(e);
             };
@@ -100,10 +100,13 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
      */
     function _resetSearchParams(){
       $scope.search = {
-        'collection': DEFAULT_COLLECTION,
-        'numRows': '50',
-        'fields': [], // an array sustaining the selected fields to be visible on the data preview
-        'filters': [] // an array sustaining filters for each field
+        collection: DEFAULT_COLLECTION,
+        fields: [], // an array sustaining the selected fields to be visible on the data preview
+        filters: [], // an array sustaining filters for each field
+        pagination: { // default pagination settings
+          page: 1,
+          limit: 10,
+        },
       };
     }
 

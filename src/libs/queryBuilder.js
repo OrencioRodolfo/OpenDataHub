@@ -1,3 +1,5 @@
+const async = require('async');
+
 /**
  * @class QueryBuilder
  * @description
@@ -26,11 +28,11 @@ export default class QueryBuilder {
    * @param  {Object} callback the callback to be executed when the query
    * is performed. Containing the query result.
    */
-  getCollectionData(collection, fields, filters, groupBy, callback) {
+  getCollectionData(collection, fields, filters, pagination, groupBy, callback) {
     if (groupBy && groupBy.length) {
-      this._getAggregatedData(collection, fields, filters, groupBy, callback);
+      this._getAggregatedData(collection, fields, filters, pagination, groupBy, callback);
     } else {
-      this._getRawData(collection, fields, filters, callback);
+      this._getRawData(collection, fields, filters, pagination, callback);
     }
   }
 
@@ -48,38 +50,68 @@ export default class QueryBuilder {
    * @param  {Object} callback the callback to be executed when the query
    * is performed. Containing the query result.
    */
-  _getRawData(collection, fields, filters, callback) {
+  _getRawData(collection, fields, filters, pagination, callback) {
     const queryFilters = this._setFilters(filters);
     const projection = this._setProjection(fields);
+    const result = {};
 
     // build the query and return the promise with its result
-    db.collection(collection)
-      .find(queryFilters, projection)
-      .limit(50)
-      .toArray(callback);
+    const cursor = db.collection(collection).find(queryFilters, projection);
+
+    cursor.count(function(err, count) {
+      result.count = count;
+    });
+
+    cursor
+      .skip(pagination.page * pagination.limit)
+      .limit(pagination.limit)
+      .toArray(function(err, docs) {
+        result.docs = docs;
+        callback(err, result);
+      });
   }
 
-  _getAggregatedData(collection, fields, filters, groupBy, callback) {
+  _getAggregatedData(collection, fields, filters, pagination, groupBy, callback) {
     const projection = this._setProjection(fields, groupBy);
     const queryFilters = this._setFilters(filters);
     const group = this._setGrouping(fields, groupBy);
-
+    const result = {};
     const aggregation = [
       { $project: projection },
       { $group: group },
       { $match: queryFilters },
     ];
 
-    console.log('group', group);
-
     // build the query and return the promise with its result
+    // const cursor = db.collection(collection)
+    //   .aggregate(aggregation)
+    //   .sort({ tmstp: 1 });
+    //
+    // cursor.toArray(function(err, docs) {
+    //   try {
+    //     result.count = docs.length;
+    //     console.log('num row ------------------', docs.length);
+    //   } catch (e) {
+    //     console.log(e);
+    //   }
+    // });
+    //
+    // cursor
+    //   .skip(pagination.page * pagination.limit)
+    //   .limit(pagination.limit)
+    //   .toArray(function(err, docs) {
+    //     result.docs = docs;
+    //     callback(err, result);
+    //   });
     db.collection(collection)
-      .aggregate(
-        aggregation
-      )
+      .aggregate(aggregation)
       .sort({ tmstp: 1 })
-      .limit(50)
-      .toArray(callback);
+      .skip(pagination.page * pagination.limit)
+      .toArray(function(err, docs) {
+        result.count = docs.length;
+        result.docs = docs.slice(0, pagination.limit);
+        callback(err, result);
+      });
   }
 
   /**
@@ -225,7 +257,8 @@ export default class QueryBuilder {
         'day': '$d',
         'hour': '$h',
         'minute': '$min',
-      }
+      },
+      'count': { $sum: 1 }
     };
 
     switch (groupBy) {

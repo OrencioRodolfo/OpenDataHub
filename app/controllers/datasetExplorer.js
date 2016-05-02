@@ -78,10 +78,12 @@ var ExplorerCtrl = function () {
       var fields = req_data.fields;
       var filters = req_data.filters;
       var groupBy = req_data.groupBy;
+      var pagination = req_data.pagination;
       var response = {};
 
-      queryBuilder.getCollectionData(collection, fields, filters, groupBy, function (err, docs) {
-        response.rows = docs;
+      queryBuilder.getCollectionData(collection, fields, filters, pagination, groupBy, function (err, result) {
+        response.rows = result.docs;
+        response.numRows = result.count;
         res.json(response);
       });
     }

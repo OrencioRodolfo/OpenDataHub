@@ -35,14 +35,13 @@ angular.module('openDataHubApp')
             }
           })
           .then(function() {
-            $scope.previewDatasetData();
           }, function() {
             // dialog canceled
           });
         };
 
         // @TODO remove me
-        $scope.showFiltersForm();
+        // $scope.showFiltersForm();
       }]
     };
   });

@@ -53,15 +53,18 @@ export default class ExplorerCtrl {
   	const fields     = req_data.fields;
   	const filters    = req_data.filters;
   	const groupBy    = req_data.groupBy;
+  	const pagination = req_data.pagination;
     let response     = {};
 
     queryBuilder.getCollectionData(
       collection,
       fields,
       filters,
+      pagination,
       groupBy,
-      function(err, docs) {
-        response.rows = docs;
+      function(err, result) {
+        response.rows = result.docs;
+        response.numRows = result.count;
         res.json(response);
       }
     );

@@ -16,7 +16,7 @@
     "spin.js": "~2.3.2",
     "angular": "~1.4.9",
     "angular-material": "~1.0.7",
-    "angular-material-data-table": "^0.9.9",
+    "angular-material-data-table": "^0.10.9",
     "components-font-awesome": "^4.5.0",
     "angular-sticky": "https://github.com/mattosborn/angular-sticky.git",
     "angular-input-masks": "^2.1.1",

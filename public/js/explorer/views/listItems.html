@@ -18,4 +18,12 @@
   </table>
 </md-table-container>
 
-<md-table-pagination md-limit="query.limit" md-page="query.page" md-total="{{desserts.count}}" md-on-paginate="onPaginate" md-page-select></md-table-pagination>
+<md-table-pagination
+  md-page="paginationOptions.page"
+  md-total="{{ data.numRows }}"
+  md-on-paginate="onPaginate"
+  md-limit="paginationOptions.limit"
+  md-limit-options="paginationOptions.limitOptions"
+  md-page-select
+  >
+</md-table-pagination>

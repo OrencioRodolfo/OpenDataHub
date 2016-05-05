@@ -20,4 +20,4 @@ router.post('/searchDatasetData', (req, res) => explorerCtrl.searchDatasetData(r
 
 router.get('/metadata/:collection', (req, res) => explorerCtrl.getMetadata(req, res));
 
-// router.get('/downloadDatasetFile', (req, res) => explorerCtrl.downloadDatasetFile(req, res));
+router.get('/downloadDatasetFile', (req, res) => explorerCtrl.downloadDatasetFile(req, res));

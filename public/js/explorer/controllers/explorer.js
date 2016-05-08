@@ -45,6 +45,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
 
     // on init, load the default collection's data
     $scope.previewDatasetData = previewDatasetData;
+    $scope.downloadDatasetData = downloadDatasetData;
 
     $scope.$watch('search.collection', function(collection) {
       if (_.isEmpty(collection)) return;
@@ -94,11 +95,8 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
      * query filters specified by the user
      * @param {String} collection - the name of the collection to query (by default it will be 'user_event')
      */
-    function downloadDatasetData() {
-      ExplorerService.previewDatasetData($scope.search).then(function(res) {
-        //
-        _hideExplorerSideNav();
-      });
+    function downloadDatasetData(extension) {
+      ExplorerService.downloadDatasetData($scope.search, extension);
     };
 
     /**

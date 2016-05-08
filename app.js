@@ -11,9 +11,7 @@ var express  = require('express'),
     // path        = require('path');
     // http        = require('http');
     // json2csv    = require('json2csv');
-    // fs          = require('node-fs'); // File system library
     // config      = require('./config/config.' + app.get('env')); // Global configuration file
-    // dateFormat  = require('dateformat'); // Global dateFormat library
     // moment      = require('moment'); // http: //momentjs.com/docs/
     // url         = require('url'); // http:    //momentjs.com/docs/
     // progressBar = require('progress');
@@ -23,11 +21,12 @@ var express  = require('express'),
 /**
  * Globals
  */
-GLOBAL.config   = require('./config/config');
-GLOBAL.session  = {};
-GLOBAL.mongo    = require('mongodb');
-GLOBAL.mongoose = require('mongoose');
-GLOBAL.Schema   = mongoose.Schema;
+GLOBAL.config     = require('./config/config');
+GLOBAL.session    = {};
+GLOBAL.mongo      = require('mongodb');
+GLOBAL.mongoose   = require('mongoose');
+GLOBAL.Schema     = mongoose.Schema;
+GLOBAL.dateFormat = require('dateformat'); // Global dateFormat library
 
 /**
  * Libs

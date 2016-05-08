@@ -9,14 +9,18 @@
           </md-button>
         </md-fab-trigger>
         <md-fab-actions>
-          <md-button class="md-fab md-raised md-mini" aria-label="Download CSV">
+          <md-button
+            class="md-fab md-raised md-mini"
+            aria-label="Download CSV"
+            ng-click="downloadDatasetData('csv')"
+            >
             <md-tooltip md-direction="bottom">Download CSV</md-tooltip>
             <i class="fa fa-file-excel-o"></i>
           </md-button>
           <md-button
             class="md-fab md-raised md-mini"
             aria-label="Download JS"
-            ng-click="previewDatasetData('download')"
+            ng-click="downloadDatasetData('json')"
             >
             <md-tooltip md-direction="bottom">Download JSON</md-tooltip>
             <i class="fa fa-file-text-o"></i>

@@ -7,6 +7,7 @@
  */
 angular.module('openDataHubApp')
   .service('ExplorerService', ["$http", function ($http) {
+    const siteUrl = $('#site-url').data('site_url');
 
     /**
      * @description Responsible for making http request for retreiving data from a collection,
@@ -15,6 +16,20 @@ angular.module('openDataHubApp')
      * @return Promise An promise for handeling the http response
      */
     function previewDatasetData(search) {
+      const reqObj = requestBody(search);
+      const url    = `${siteUrl}/datasetExplorer/searchDatasetData`;
+
+      return $http.get(url, { params: reqObj });
+    }
+
+    function downloadDatasetData(search, fileExtension) {
+      search.fileExtension = fileExtension;
+      const data = JSON.stringify(requestBody(search));
+      const url = `${siteUrl}/datasetExplorer/downloadDatasetFile?params=${data}`;
+      window.open(url, '_blank');
+    }
+
+    function requestBody(data) {
       const defaultSearch = {
         'collection': '',
         'numRows': '50',
@@ -22,14 +37,11 @@ angular.module('openDataHubApp')
         'filters': [],
       };
 
-      let reqObj  = Object.assign({}, defaultSearch, search);
-      let siteUrl = $('#site-url').data('site_url');
-      let url     = `${siteUrl}/datasetExplorer/searchDatasetData`;
-
-      return $http.get(url, { params: reqObj });
+      return Object.assign({}, defaultSearch, data);
     }
 
     return {
-      previewDatasetData
-    }
+      previewDatasetData,
+      downloadDatasetData,
+    };
   }]);

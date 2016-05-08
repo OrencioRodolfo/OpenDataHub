@@ -48,7 +48,7 @@ export default class ExplorerCtrl {
    * @return {json} the collection metadata, identifying its fields, descriptions and so on
    */
   searchDatasetData (req, res) {
-    const req_data = this.parseRequestData(req.query);
+    const req_data = this._parseRequestData(req.query);
     let response     = {};
 
     queryBuilder.getCollectionData(
@@ -66,8 +66,7 @@ export default class ExplorerCtrl {
   }
 
   downloadDatasetFile(req, res) {
-    const req_data = this.parseRequestData(req.query);
-    let response     = {};
+    const req_data  = this._parseRequestData(req.query.params);
 
     queryBuilder.getCollectionData(
       req_data.collection,
@@ -75,24 +74,22 @@ export default class ExplorerCtrl {
       req_data.filters,
       req_data.pagination,
       req_data.groupBy,
-      function(err, result) {
-        response.rows = result.docs;
-        response.numRows = result.count;
-        
-        res.json(response);
+      (err, result) => {
+        this._saveDatasetFile(result.docs, req_data.collection, req_data.extension, function(filePath){
+          res.download(filePath);
+        });
       }
     );
-  	// let req_data = req.query;
-  	// res.download(config.fs.storage_folder+req_data.file);
   }
 
-  parseRequestData(data) {
-    let req_data   = this.parseRecursiveJSON(data);
+  _parseRequestData(data) {
+    let req_data   = this._parseRecursiveJSON(data);
   	let collection = req_data.collection;
   	let fields     = req_data.fields || [];
   	let filters    = req_data.filters || [];
   	let groupBy    = req_data.groupBy;
   	let pagination = req_data.pagination;
+  	let extension = req_data.fileExtension;
 
     if (!Array.isArray(filters)) {
       filters = [filters]; // cast it to array
@@ -107,14 +104,15 @@ export default class ExplorerCtrl {
       filters,
       groupBy,
       pagination,
+      extension,
     };
   }
 
-  parseRecursiveJSON(data) {
+  _parseRecursiveJSON(data) {
     if (typeof data == 'object') {
       for (var key in data) {
        if (data.hasOwnProperty(key)) {
-  	     data[key] = this.parseRecursiveJSON(data[key]);
+  	     data[key] = this._parseRecursiveJSON(data[key]);
        }
       }
       return data;
@@ -127,32 +125,39 @@ export default class ExplorerCtrl {
     }
   }
 
-  _saveDatasetFile(data, fields, collection, extension) {
-  	const directory = generateStoragePath();
-  	const time = dateFormat("HHmmss");
-  	const file_name = '/'+collection+'_'+time+'.'+extension;
+  _saveDatasetFile(data, collection, extension, doneCallback) {
+  	const directory = this._generateStoragePath();
+  	const time      = dateFormat("HHmmss");
+  	const fileName  = `/${collection}_${time}.${extension}`;
+  	const filePath  = `${directory.full_path}${fileName}`;
+    const fs       = require('node-fs'); // File system library
+    const json2csv = require('json2csv');
 
   	fs.mkdir(directory.full_path, '0777', true, function (err) {
   		if (err)
   			console.log(err);
   		else{
-  			if( extension == 'js' ){
-  				fs.writeFile(directory.full_path+file_name, data, function(err) {
+  			if (extension == 'json') {
+  				fs.writeFile(filePath, JSON.stringify(data), function(err) {
   					if (err)
   						throw err;
+
+            doneCallback(filePath);
   				});
-  			}else{
+  			} else {
+          const fields = Object.keys(data[0]);
+
   				json2csv({data: data, fields: fields, del: ';'}, function(err, csv) {
-  					fs.writeFile(directory.full_path+file_name, csv, function(err) {
+  					fs.writeFile(filePath, csv, function(err) {
   						if (err)
   							throw err;
+
+              doneCallback(filePath);
   					});
   				});
   			}
   		}
   	});
-
-  	return directory.relative_path+file_name;
   }
 
   _generateStoragePath() {

@@ -15,7 +15,6 @@ var express  = require('express'),
     // moment      = require('moment'); // http: //momentjs.com/docs/
     // url         = require('url'); // http:    //momentjs.com/docs/
     // progressBar = require('progress');
-    // activityLog = require('user/activityLog.js');
     // mailer      = require('mailer'); // Global mailer file
 
 /**
@@ -56,14 +55,14 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// @TODO - evaluate authentication
+// @TODO - REMOVE ME evaluate authentication
 app.use(function (req, res, next) {
-  if (app.get('env') === 'development') {
-    // simulating login
-    req.session.logged_in = true;
-    req.session.name      = "Rodolfo Gonçalves";
-    req.session.user_id 	= '53fa47f3fbce10512ee32985';
-  }
+  // if (app.get('env') === 'development') {
+  //   // simulating login
+  //   req.session.logged_in = true;
+  //   req.session.name      = "Rodolfo Gonçalves";
+  //   req.session.user_id 	= '53fa47f3fbce10512ee32985';
+  // }
 
   next();
 });

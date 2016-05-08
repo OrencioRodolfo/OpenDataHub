@@ -5,6 +5,7 @@ angular.module('openDataHubApp', [
   'ui.utils.masks',
   'chart.js',
   'angular-loading-bar',
+  'ui-notification',
 ])
   .config(function($mdThemingProvider) {
     $mdThemingProvider.theme('default')

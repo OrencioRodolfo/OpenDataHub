@@ -47,58 +47,58 @@ export default class UserCtrl {
   		if (!utils.empty(doc)) {
   			res.send({'errors' : [form.email+' is already being used'] });
   		} else {
-  			this.insertUser(form);
+  			this.insertUser(req, form);
   			res.send({'success' : 'success' });
   		}
   	});
   }
 
-  insertUser (form) {
+  insertUser (req, form) {
     let User_m  = mongoose.model('user');
   	let address = {};
   	let json    = {};
 
-  	if (!utilities.empty(form.first_name))
+  	if (!utils.empty(form.first_name))
   		json.first_name = form.first_name;
 
-  	if (!utilities.empty(form.last_name))
+  	if (!utils.empty(form.last_name))
   		json.last_name = form.last_name;
 
-  	if (!utilities.empty(form.zip_code))
+  	if (!utils.empty(form.zip_code))
   		json.zip_code = form.zip_code;
 
-  	if (!utilities.empty(form.email))
+  	if (!utils.empty(form.email))
   		json.email = form.email;
 
-  	if (!utilities.empty(form.password))
-  		json.password = password_hash.generate(form.password);
+  	if (!utils.empty(form.password))
+  		json.password = this.password_hash.generate(form.password);
 
-  	if (!utilities.empty(form.organization))
+  	if (!utils.empty(form.organization))
   		json.organization = form.organization;
 
-  	if (!utilities.empty(form.organization_role))
+  	if (!utils.empty(form.organization_role))
   		json.organization_role = form.organization_role;
 
-  	if (!utilities.empty(form.purpose))
+  	if (!utils.empty(form.purpose))
   		json.purpose = form.purpose;
 
-  	if (!utilities.empty(form.country))
+  	if (!utils.empty(form.country))
   		address.country = form.country;
 
-  	if (!utilities.empty(form.city))
+  	if (!utils.empty(form.city))
   		address.city = form.city;
 
-  	if (!utilities.empty(form.street))
+  	if (!utils.empty(form.street))
   		address.street = form.street;
 
-  	if (!utilities.empty(form.zip_code))
+  	if (!utils.empty(form.zip_code))
   		address.zip_code = form.zip_code;
 
-  	if (!utilities.empty(address))
+  	if (!utils.empty(address))
   		json.address = address;
 
   	// If session's user id exists, make an update
-  	if (req.session.logged_in && !utilities.empty(req.session.user_id)) {
+  	if (req.session.logged_in && !utils.empty(req.session.user_id)) {
   		User_m.update({ _id: req.session.user_id }, {$set: json}, function(){
   			var user = new User_m(json);
   			return user;
@@ -107,7 +107,7 @@ export default class UserCtrl {
   		var user = new User_m(json);
   		user.save();
   		// sign up activity registration
-  		activityLog.saveActivity(user._id, 1, 'User '+user.first_name+' has signed up.');
+  		this._saveActivity(user._id, 1, 'User '+user.first_name+' has signed up.');
   		return user;
   	}
   }
@@ -188,5 +188,33 @@ export default class UserCtrl {
                 +	'.</p>';
     mailer.init(email, 'SustData: Password recovery', html);
     mailer.sendMail();
+  }
+
+  _saveActivity(user_id, activity_id, obs ) {
+  	var ActivityLog_m	= mongoose.model('activity_log');
+  	var date_time 		= new Date();
+
+  	this._getActivityById(activity_id, function(doc){
+  		var json = {
+  			user		: user_id,
+  			activity	: doc._id,
+  			obs			: obs,
+  			tmstp		: dateFormat(date_time, "yyyy-mm-dd HH:mm:ss"),
+
+  		}
+
+  		var activity_log = new ActivityLog_m(json);
+  		//console.log(activity_log);
+  		activity_log.save();
+  	});
+  }
+
+  _getActivityById(activity_id, callback) {
+  	var Activity_m	= mongoose.model('activity');
+  	Activity_m
+  		.findOne({id: activity_id})
+  		.exec(function(err, doc){
+  			callback(doc);
+  		});
   }
 }

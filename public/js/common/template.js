@@ -82,7 +82,7 @@ function initNavBar(){
 		$('.horizontal-nav .direct-download-js').addClass('active');
 }
 
-function displayErrors(errors){
+global.displayErrors = function(errors) {
 	var html = "";
 	for(var i=0; i<errors.length; i++)
 		html += '<p>'+errors[i]+'</p>';
@@ -90,7 +90,7 @@ function displayErrors(errors){
 	$('#errors-container-js').dialog('open');
 }
 
-function successMessages(messages){
+global.successMessages = function(messages) {
 	var html = "";
 	for(var i=0; i<messages.length; i++)
 		html += '<p>'+messages[i]+'</p>';

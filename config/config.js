@@ -30,6 +30,7 @@ var config = {
     }
   },
   test: {
+    root: rootPath,
     encryption_key: 'Fasdf354Dfva5009f',
     web: {
     	site_url: 'http://'+host,

@@ -6,3 +6,4 @@ public/css
 **/*.log
 /public/components
 !/public/components/bootstrap
+file_storage

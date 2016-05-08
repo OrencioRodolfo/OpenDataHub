@@ -45,10 +45,10 @@ export default class UserCtrl {
 
   	User_m.findOne({email: form.email}, (err, doc) => {
   		if (!utils.empty(doc)) {
-  			res.send({'errors' : [form.email+' is already being used'] });
+  			res.json({'errors' : [form.email+' is already being used'] });
   		} else {
   			this.insertUser(req, form);
-  			res.send({'success' : 'success' });
+  			res.json({'success' : 'success' });
   		}
   	});
   }
@@ -119,7 +119,7 @@ export default class UserCtrl {
 
   profile (req, res) {
     if (!req.session.logged_in) {
-      res.render('template/errorPage', {config: config.web, errors: ["Access denied"]});
+      res.render('template/errorPage', {config: config, errors: ["Access denied"]});
     } else {
       let User_m = mongoose.model('user');
 
@@ -128,7 +128,7 @@ export default class UserCtrl {
         .populate('address.country')
         .exec((err, user) => {
           this.getUserActivityLog(user._id, function(activities){
-            res.render('user/profile/index', {user, activities} );
+            res.render('user/profile/index', {config: config, user, activities} );
           });
         });
     }
@@ -140,7 +140,8 @@ export default class UserCtrl {
       .findOne({_id: req.session.user_id})
       .populate('address.country')
       .exec(function(err, user){
-        res.render('user/profile/profileInfo', {user: user} );
+        console.log(' ------------- ', user);
+        res.render('user/profile/profileInfo', { user } );
       });
   }
 
@@ -216,5 +217,73 @@ export default class UserCtrl {
   		.exec(function(err, doc){
   			callback(doc);
   		});
+  }
+
+  editSettings(req, res) {
+  	var User_m	= mongoose.model('user');
+  	var form 	= req.body;
+
+  	User_m.findOne({email: form.email}, (err, doc) => {
+  		if( !utils.empty(doc) && doc._id != req.session.user_id){
+  			res.json({'errors' : [form.email+' is already being used'] });
+        return;
+  		} else {
+  			// get user
+  			User_m.findById(req.session.user_id, (err, doc) => {
+  				// validate password change
+  				if (!utils.empty(form.password) && !password_hash.verify( form.old_password, doc.password)) {
+  					res.json({'errors' : ['Incorrect password']});
+  					return;
+  				}
+  				this.insertUser(req, form);
+  				res.json({'success' : 'success' });
+          return;
+  			});
+  		}
+  	});
+  }
+
+  recoverPasswordRequest(req, res) {
+  	var User_m		= mongoose.model('user');
+  	var form 		= req.body;
+  	var date_time 	= new Date();
+  	date_time 		= dateFormat(date_time, "yyyymmddHHmmss");
+  	var str 		= date_time+config.encryption_key;
+  	var hash 		= password_hash.generate(str)
+  	User_m.findOne({email: form.email}, (err, user) => {
+  		if (!utils.empty(user)) {
+  			User_m.update(
+  				{ _id: user._id },
+  				{ $set: {hash: hash} },
+  				() => {
+  					this.sendPasswdRecoveryNotification(user._id, form.email, hash);
+  					res.json({success : 'success'});
+  				});
+  		}
+  	});
+  }
+
+  recoverPasswordPage(req, res) {
+  	var url_parts 	= url.parse(req.url,true);
+  	req_data 		= url_parts.query;
+
+  	res.render('user/passwordRecovery', {user: req_data.user, hash: req_data.hash, config: config.web} );
+  }
+
+  changePassword(req, res) {
+  	var User_m	= mongoose.model('user');
+  	var form 	= req.body;
+  	User_m.findOne({_id: form.user, hash: form.hash}, function(err, user){
+  		if (!utils.empty(user)) {
+  			user.password 	= password_hash.generate(form.password);
+  			user.hash 		= null;
+  			user.save(function(){
+  				res.json({success : 'success'});
+  			});
+  		}else{
+  			res.json({errors : 'Your request recovery password is invalid or has expired'});
+  		}
+
+  	});
   }
 }

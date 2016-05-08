@@ -39,18 +39,27 @@ router.get('/profile', function(req, res){
 router.get('/details', function(req, res){
   userCtrl.getUser(req, res);
 });
-//
-// // User profile details (settings)
-// router.get('/getProfileInfo', userCtrl.getProfileInfo);
-//
-// // Edit user settings
-// router.post('/editSettings', userCtrl.editSettings);
+// Edit user settings
+router.post('/editSettings', function(req, res){
+  userCtrl.editSettings(req, res);
+});
 
-// // manage password recovery request
-// router.post('/recoverPassword', userCtrl.recoverPasswordRequest);
-//
-// // load password recovery page
-// router.get('/recoverPassword', userCtrl.recoverPasswordPage);
-//
-// // change password for recovery
-// router.post('/changePassword', userCtrl.changePassword);
+// User profile details (settings)
+router.get('/getProfileInfo', function(req, res){
+  userCtrl.getProfileInfo(req, res);
+});
+
+// manage password recovery request
+router.post('/recoverPassword', function(req, res){
+  userCtrl.recoverPasswordRequest(req, res);
+});
+
+// load password recovery page
+router.get('/recoverPassword', function(req, res){
+  userCtrl.recoverPasswordPage(req, res);
+});
+
+// change password for recovery
+router.post('/changePassword', function(req, res){
+  userCtrl.changePassword(req, res);
+});

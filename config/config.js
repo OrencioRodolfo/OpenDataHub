@@ -33,7 +33,7 @@ var config = {
     root: rootPath,
     encryption_key: 'Fasdf354Dfva5009f',
     web: {
-    	site_url: 'http://'+host,
+      site_url: 'http://aveiro.m-iti.org',
     	port:     3001
     },
     db: {

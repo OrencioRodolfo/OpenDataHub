@@ -16,7 +16,7 @@ router.post('/queryData', (req, res) => explorerCtrl.queryData(req, res));
 
 router.post('/addFilter', (req, res) => explorerCtrl.addFilter(req, res));
 
-router.post('/searchDatasetData', (req, res) => explorerCtrl.searchDatasetData(req, res));
+router.get('/searchDatasetData', (req, res) => explorerCtrl.searchDatasetData(req, res));
 
 router.get('/metadata/:collection', (req, res) => explorerCtrl.getMetadata(req, res));
 

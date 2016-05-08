@@ -26,7 +26,7 @@ angular.module('openDataHubApp')
       let siteUrl = $('#site-url').data('site_url');
       let url     = `${siteUrl}/datasetExplorer/searchDatasetData`;
 
-      return $http.post(url, reqObj);
+      return $http.get(url, { params: reqObj });
     }
 
     return {

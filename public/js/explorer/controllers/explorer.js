@@ -59,8 +59,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
      * query filters specified by the user
      * @param {String} collection - the name of the collection to query (by default it will be 'user_event')
      */
-    function previewDatasetData(collection='') {
-
+    function previewDatasetData() {
       async.parallel(
         [
           // get the headers
@@ -90,6 +89,19 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
     };
 
     /**
+     * @description
+     * Responsible for loading the data related to a specific collection being aware of the
+     * query filters specified by the user
+     * @param {String} collection - the name of the collection to query (by default it will be 'user_event')
+     */
+    function downloadDatasetData() {
+      ExplorerService.previewDatasetData($scope.search).then(function(res) {
+        //
+        _hideExplorerSideNav();
+      });
+    };
+
+    /**
      * Private methods
      */
     function _hideExplorerSideNav() {
@@ -103,7 +115,7 @@ angular.module('openDataHubApp').controller('ExplorerCtrl', [
      * @return {json} all the filters for data query
      */
     function _resetSearchParams(){
-      $scope.search.groupBy = ''; 
+      $scope.search.groupBy = '';
       $scope.search.fields = []; // an array sustaining the selected fields to be visible on the data preview
       $scope.search.filters = [], // an array sustaining filters for each field
       $scope.search.pagination = { // default pagination settings

@@ -48,20 +48,15 @@ export default class ExplorerCtrl {
    * @return {json} the collection metadata, identifying its fields, descriptions and so on
    */
   searchDatasetData (req, res) {
-    const req_data   = req.body;
-  	const collection = req_data.collection;
-  	const fields     = req_data.fields;
-  	const filters    = req_data.filters;
-  	const groupBy    = req_data.groupBy;
-  	const pagination = req_data.pagination;
+    const req_data = this.parseRequestData(req.query);
     let response     = {};
 
     queryBuilder.getCollectionData(
-      collection,
-      fields,
-      filters,
-      pagination,
-      groupBy,
+      req_data.collection,
+      req_data.fields,
+      req_data.filters,
+      req_data.pagination,
+      req_data.groupBy,
       function(err, result) {
         response.rows = result.docs;
         response.numRows = result.count;
@@ -69,6 +64,105 @@ export default class ExplorerCtrl {
       }
     );
   }
+
+  downloadDatasetFile(req, res) {
+    const req_data = this.parseRequestData(req.query);
+    let response     = {};
+
+    queryBuilder.getCollectionData(
+      req_data.collection,
+      req_data.fields,
+      req_data.filters,
+      req_data.pagination,
+      req_data.groupBy,
+      function(err, result) {
+        response.rows = result.docs;
+        response.numRows = result.count;
+        
+        res.json(response);
+      }
+    );
+  	// let req_data = req.query;
+  	// res.download(config.fs.storage_folder+req_data.file);
+  }
+
+  parseRequestData(data) {
+    let req_data   = this.parseRecursiveJSON(data);
+  	let collection = req_data.collection;
+  	let fields     = req_data.fields || [];
+  	let filters    = req_data.filters || [];
+  	let groupBy    = req_data.groupBy;
+  	let pagination = req_data.pagination;
+
+    if (!Array.isArray(filters)) {
+      filters = [filters]; // cast it to array
+    };
+    if (!Array.isArray(fields)) {
+      filters = [filters]; // cast it to array
+    };
+
+    return {
+      collection,
+      fields,
+      filters,
+      groupBy,
+      pagination,
+    };
+  }
+
+  parseRecursiveJSON(data) {
+    if (typeof data == 'object') {
+      for (var key in data) {
+       if (data.hasOwnProperty(key)) {
+  	     data[key] = this.parseRecursiveJSON(data[key]);
+       }
+      }
+      return data;
+    } else if (typeof data == 'string') {
+      try {
+      	return JSON.parse(data);
+      } catch (e) {
+        return data;
+      }
+    }
+  }
+
+  _saveDatasetFile(data, fields, collection, extension) {
+  	const directory = generateStoragePath();
+  	const time = dateFormat("HHmmss");
+  	const file_name = '/'+collection+'_'+time+'.'+extension;
+
+  	fs.mkdir(directory.full_path, '0777', true, function (err) {
+  		if (err)
+  			console.log(err);
+  		else{
+  			if( extension == 'js' ){
+  				fs.writeFile(directory.full_path+file_name, data, function(err) {
+  					if (err)
+  						throw err;
+  				});
+  			}else{
+  				json2csv({data: data, fields: fields, del: ';'}, function(err, csv) {
+  					fs.writeFile(directory.full_path+file_name, csv, function(err) {
+  						if (err)
+  							throw err;
+  					});
+  				});
+  			}
+  		}
+  	});
+
+  	return directory.relative_path+file_name;
+  }
+
+  _generateStoragePath() {
+  	const year = dateFormat("yyyy");
+  	const month = dateFormat("mm");
+  	const day = dateFormat("dd");
+  	const relative_path 	= year+'/'+month+'/'+day;
+  	return { relative_path: relative_path, full_path: config.fs.storage_folder+relative_path };
+  }
+
 }
 
 // response(req_data, docs, res) {
@@ -89,46 +183,4 @@ export default class ExplorerCtrl {
 //     response.more_results = true;
 //     res.render('dataConsult/listRecords', response);
 //   }
-// }
-
-//
-// exports.downloadDatasetFile = function (req, res) {
-// 	let req_data = req.query;
-// 	res.download(config.fs.storage_folder+req_data.file);
-// }
-
-// function saveDatasetFile( data, fields, collection, extension ){
-// 	let directory 	= generateStoragePath();
-// 	let time 		= dateFormat("HHmmss");
-// 	let file_name	= '/'+collection+'_'+time+'.'+extension;
-//
-// 	fs.mkdir(directory.full_path, 0777, true, function (err) {
-// 		if (err)
-// 			console.log(err);
-// 		else{
-// 			if( extension == 'js' ){
-// 				fs.writeFile(directory.full_path+file_name, data, function(err) {
-// 					if (err)
-// 						throw err;
-// 				});
-// 			}else{
-// 				json2csv({data: data, fields: fields, del: ';'}, function(err, csv) {
-// 					fs.writeFile(directory.full_path+file_name, csv, function(err) {
-// 						if (err)
-// 							throw err;
-// 					});
-// 				});
-// 			}
-// 		}
-// 	});
-//
-// 	return directory.relative_path+file_name;
-// }
-//
-// function generateStoragePath(){
-// 	let year 			= dateFormat("yyyy");
-// 	let month			= dateFormat("mm");
-// 	let day 			= dateFormat("dd");
-// 	let relative_path 	= year+'/'+month+'/'+day;
-// 	return {relative_path: relative_path, full_path: config.fs.storage_folder+relative_path};
 // }

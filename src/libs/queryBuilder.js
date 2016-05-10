@@ -175,6 +175,9 @@ export default class QueryBuilder {
         case 'date':
           json = this._setDateFilter(filter);
           break;
+        case 'boolean':
+          json = parseInt(filter.val);
+          break;
 
         // by default treat it like a string
         default:

@@ -41,7 +41,7 @@ angular.module('openDataHubApp')
           if (!items || !items.length) return;
 
           items.forEach(function(item){
-            if (item.inputValue && (item.inputValue.min || item.inputValue.max)) {
+            if (item.inputValue && (item.type != 'number' || item.inputValue.min || item.inputValue.max)) {
               item.hasFilters = true;
             } else {
               item.hasFilters = false;

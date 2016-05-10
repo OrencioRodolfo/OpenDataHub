@@ -63,7 +63,7 @@ export default class QueryBuilder {
     });
 
     cursor
-      .skip(pagination.page * pagination.limit)
+      .skip((pagination.page - 1) * pagination.limit)
       .limit(pagination.limit)
       .toArray(function(err, docs) {
         result.docs = docs;
@@ -82,27 +82,6 @@ export default class QueryBuilder {
       { $match: queryFilters },
     ];
 
-    // build the query and return the promise with its result
-    // const cursor = db.collection(collection)
-    //   .aggregate(aggregation)
-    //   .sort({ tmstp: 1 });
-    //
-    // cursor.toArray(function(err, docs) {
-    //   try {
-    //     result.count = docs.length;
-    //     console.log('num row ------------------', docs.length);
-    //   } catch (e) {
-    //     console.log(e);
-    //   }
-    // });
-    //
-    // cursor
-    //   .skip(pagination.page * pagination.limit)
-    //   .limit(pagination.limit)
-    //   .toArray(function(err, docs) {
-    //     result.docs = docs;
-    //     callback(err, result);
-    //   });
     db.collection(collection)
       .aggregate(aggregation)
       .sort({ tmstp: 1 })
@@ -176,7 +155,7 @@ export default class QueryBuilder {
           json = this._setDateFilter(filter);
           break;
         case 'boolean':
-          json = parseInt(filter.val);
+          json = parseInt(filter.val || 0);
           break;
 
         // by default treat it like a string

@@ -38,4 +38,8 @@ As a live demo, we can point SustData dataset. A Public Dataset for ICT4S Electr
 [See it in action](http://aveiro.m-iti.org:3000)
 
 ## Screenshots
+<img src="https://github.com/OrencioRodolfo/OpenDataHub/blob/master/public/img/readme/Screen%20Shot%202016-05-22%20at%2021.22.55.png" width="700" align="middle"/>
 
+<img src="https://github.com/OrencioRodolfo/OpenDataHub/blob/master/public/img/readme/Screen%20Shot%202016-05-22%20at%2021.24.31.png" width="700" align="middle"/>
+
+<img src="https://github.com/OrencioRodolfo/OpenDataHub/blob/master/public/img/readme/Screen%20Shot%202016-05-22%20at%2021.27.52.png" width="700" align="middle"/>

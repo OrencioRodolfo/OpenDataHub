@@ -3,6 +3,7 @@
 /**
  * Module dependencies.
  */
+// process.env.NODE_ENV = 'test';
 
 var express  = require('express'),
     glob     = require('glob'),
@@ -57,12 +58,12 @@ app.use(session({
 
 // @TODO - REMOVE ME evaluate authentication
 app.use(function (req, res, next) {
-  // if (app.get('env') === 'development') {
-  //   // simulating login
-  //   req.session.logged_in = true;
-  //   req.session.name      = "Rodolfo Gonçalves";
-  //   req.session.user_id 	= '53fa47f3fbce10512ee32985';
-  // }
+  if (app.get('env') === 'development') {
+    // simulating login
+    req.session.logged_in = true;
+    req.session.name      = "Rodolfo Gonçalves";
+    req.session.user_id 	= '53fa47f3fbce10512ee32985';
+  }
 
   next();
 });
